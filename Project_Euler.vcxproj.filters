@@ -1,0 +1,446 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Questions">
+      <UniqueIdentifier>{9a072408-4beb-4bdd-acdf-87a66b897fb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Questions\Q700-Q751">
+      <UniqueIdentifier>{d97fa98f-7066-4332-acdb-128558ab0914}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Questions\Q451-Q500">
+      <UniqueIdentifier>{60b54755-4309-4e91-8833-8591a14d099d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Hackerrank">
+      <UniqueIdentifier>{e27d9d7b-a04f-4dd3-ac0b-af23127e529d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Questions\Q351-Q400">
+      <UniqueIdentifier>{572b1536-8d42-475c-9cb8-f582a2d766c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Questions\Q301-Q350">
+      <UniqueIdentifier>{a242fdca-fea3-41a4-b7ad-0f3c3e24c804}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Questions\Q251-Q300">
+      <UniqueIdentifier>{68e98106-e1d8-47cb-bb41-a1111dd67e23}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Questions\Q201-Q250">
+      <UniqueIdentifier>{5f369330-84b2-4385-91d3-e93cfaad81c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Questions\Q1-Q50">
+      <UniqueIdentifier>{4fce49bf-02ec-401d-88a6-644c365b5145}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Questions\Q51-Q100">
+      <UniqueIdentifier>{415b4e8f-a5e7-4d5a-9021-f9e5b62fe76f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Questions\Q101-Q150">
+      <UniqueIdentifier>{2f2e4ee0-2108-4f73-aeda-3a35acfc9527}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Questions\Q151-Q200">
+      <UniqueIdentifier>{d528a90c-2b53-464c-9cc7-e8c8f3ef3cee}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="functions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="print.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="big_number.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BigInt_128.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="int_64x.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="int_64.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Questions\q1-q50\master1-50.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q1.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q2.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q3.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q4.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q5.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q6.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q7.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q8.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q9.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q10.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q11.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q12.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q13.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q14.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q15.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q16.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q17.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q18.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q19.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q20.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q21.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q22.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q1-q50\q23.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Header_Files\functions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Header_Files\pch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Header_Files\print.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Header_Files\template.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Header_Files\test.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\q51-q100\q67.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q24.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q25.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q26.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q27.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q28.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q29.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q30.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q31.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q32.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q33.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q34.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q35.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q37.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q36.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q700-Q751\q727.h">
+      <Filter>Header Files\Questions\Q700-Q751</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q700-Q751\q719.h">
+      <Filter>Header Files\Questions\Q700-Q751</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q301-Q350\q329.h">
+      <Filter>Header Files\Questions\Q301-Q350</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q38.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q39.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q40.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q41.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q451-Q500\q491.h">
+      <Filter>Header Files\Questions\Q451-Q500</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q42.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q43.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q44.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q45.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q46.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q47.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q48.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q49.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q1-Q50\q50.h">
+      <Filter>Header Files\Questions\Q1-Q50</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q51.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q52.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q53.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q54.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q55.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Header_Files\big_number.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Header_Files\BigInt_128.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q58.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q59.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q60.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q61.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q62.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q63.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q64.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q65.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q66.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q68.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q69.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q70.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q73.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q76.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q77.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q78.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q74.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q75.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q79.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q80.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q81.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q82.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Pet_Detective.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q84.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q85.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q86.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q87.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q90.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q91.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\master51-100.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q56.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q57.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q71.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q72.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Header_Files\bigint.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q92.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Hackerrank\StringReverseMerge.h">
+      <Filter>Header Files\Hackerrank</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Hackerrank\Picking_Numbers.h">
+      <Filter>Header Files\Hackerrank</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q201-Q250\q240.h">
+      <Filter>Header Files\Questions\Q201-Q250</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q201-Q250\q239.h">
+      <Filter>Header Files\Questions\Q201-Q250</Filter>
+    </ClInclude>
+    <ClInclude Include="Header_Files\int_64x.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Header_Files\int_64.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q151-Q200\q170.h">
+      <Filter>Header Files\Questions\Q151-Q200</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q351-Q400\q374.h">
+      <Filter>Header Files\Questions\Q351-Q400</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q151-Q200\q178.h">
+      <Filter>Header Files\Questions\Q151-Q200</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q151-Q200\q175.h">
+      <Filter>Header Files\Questions\Q151-Q200</Filter>
+    </ClInclude>
+    <ClInclude Include="Header_Files\SLL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q251-Q300\q265.h">
+      <Filter>Header Files\Questions\Q251-Q300</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Resources\q11.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Resources\q13.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Resources\q18.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Resources\q22.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Resources\q67.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

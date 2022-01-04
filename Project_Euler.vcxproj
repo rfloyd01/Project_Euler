@@ -1,0 +1,279 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{8D5FD6B4-DD7A-4087-A559-4C5DDA74B7A7}</ProjectGuid>
+    <RootNamespace>ProjectEuler</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>C:\Users\Bobby\Documents\Coding\C++\Project_Euler;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>C:\Users\Bobby\Documents\Coding\C++\Project_Euler;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>true</ConformanceMode>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="BigInt_128.cpp" />
+    <ClCompile Include="big_number.cpp" />
+    <ClCompile Include="functions.cpp" />
+    <ClCompile Include="int_64.cpp" />
+    <ClCompile Include="int_64x.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="print.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Header_Files\bigint.h" />
+    <ClInclude Include="Header_Files\BigInt_128.h" />
+    <ClInclude Include="Header_Files\big_number.h" />
+    <ClInclude Include="Header_Files\functions.h" />
+    <ClInclude Include="Header_Files\int_64.h" />
+    <ClInclude Include="Header_Files\int_64x.h" />
+    <ClInclude Include="Header_Files\pch.h" />
+    <ClInclude Include="Header_Files\print.h" />
+    <ClInclude Include="Header_Files\SLL.h" />
+    <ClInclude Include="Header_Files\template.h" />
+    <ClInclude Include="Header_Files\test.h" />
+    <ClInclude Include="Pet_Detective.h" />
+    <ClInclude Include="Questions\Hackerrank\Picking_Numbers.h" />
+    <ClInclude Include="Questions\Hackerrank\StringReverseMerge.h" />
+    <ClInclude Include="Questions\q1-q50\master1-50.h" />
+    <ClInclude Include="Questions\q1-q50\q1.h" />
+    <ClInclude Include="Questions\q1-q50\q10.h" />
+    <ClInclude Include="Questions\q1-q50\q11.h" />
+    <ClInclude Include="Questions\q1-q50\q12.h" />
+    <ClInclude Include="Questions\q1-q50\q13.h" />
+    <ClInclude Include="Questions\q1-q50\q14.h" />
+    <ClInclude Include="Questions\q1-q50\q15.h" />
+    <ClInclude Include="Questions\q1-q50\q16.h" />
+    <ClInclude Include="Questions\q1-q50\q17.h" />
+    <ClInclude Include="Questions\q1-q50\q18.h" />
+    <ClInclude Include="Questions\q1-q50\q19.h" />
+    <ClInclude Include="Questions\q1-q50\q2.h" />
+    <ClInclude Include="Questions\q1-q50\q20.h" />
+    <ClInclude Include="Questions\q1-q50\q21.h" />
+    <ClInclude Include="Questions\q1-q50\q22.h" />
+    <ClInclude Include="Questions\q1-q50\q23.h" />
+    <ClInclude Include="Questions\Q1-Q50\q24.h" />
+    <ClInclude Include="Questions\Q1-Q50\q25.h" />
+    <ClInclude Include="Questions\Q1-Q50\q26.h" />
+    <ClInclude Include="Questions\Q1-Q50\q27.h" />
+    <ClInclude Include="Questions\Q1-Q50\q28.h" />
+    <ClInclude Include="Questions\Q1-Q50\q29.h" />
+    <ClInclude Include="Questions\q1-q50\q3.h" />
+    <ClInclude Include="Questions\Q1-Q50\q30.h" />
+    <ClInclude Include="Questions\Q1-Q50\q31.h" />
+    <ClInclude Include="Questions\Q1-Q50\q32.h" />
+    <ClInclude Include="Questions\Q1-Q50\q33.h" />
+    <ClInclude Include="Questions\Q1-Q50\q34.h" />
+    <ClInclude Include="Questions\Q1-Q50\q35.h" />
+    <ClInclude Include="Questions\Q1-Q50\q36.h" />
+    <ClInclude Include="Questions\Q1-Q50\q37.h" />
+    <ClInclude Include="Questions\Q1-Q50\q38.h" />
+    <ClInclude Include="Questions\Q1-Q50\q39.h" />
+    <ClInclude Include="Questions\q1-q50\q4.h" />
+    <ClInclude Include="Questions\Q1-Q50\q40.h" />
+    <ClInclude Include="Questions\Q1-Q50\q41.h" />
+    <ClInclude Include="Questions\Q1-Q50\q42.h" />
+    <ClInclude Include="Questions\Q1-Q50\q43.h" />
+    <ClInclude Include="Questions\Q1-Q50\q44.h" />
+    <ClInclude Include="Questions\Q1-Q50\q45.h" />
+    <ClInclude Include="Questions\Q1-Q50\q46.h" />
+    <ClInclude Include="Questions\Q1-Q50\q47.h" />
+    <ClInclude Include="Questions\Q1-Q50\q48.h" />
+    <ClInclude Include="Questions\Q1-Q50\q49.h" />
+    <ClInclude Include="Questions\q1-q50\q5.h" />
+    <ClInclude Include="Questions\Q1-Q50\q50.h" />
+    <ClInclude Include="Questions\q1-q50\q6.h" />
+    <ClInclude Include="Questions\q1-q50\q7.h" />
+    <ClInclude Include="Questions\q1-q50\q8.h" />
+    <ClInclude Include="Questions\q1-q50\q9.h" />
+    <ClInclude Include="Questions\Q151-Q200\q170.h" />
+    <ClInclude Include="Questions\Q151-Q200\q175.h" />
+    <ClInclude Include="Questions\Q151-Q200\q178.h" />
+    <ClInclude Include="Questions\Q201-Q250\q239.h" />
+    <ClInclude Include="Questions\Q201-Q250\q240.h" />
+    <ClInclude Include="Questions\Q251-Q300\q265.h" />
+    <ClInclude Include="Questions\Q301-Q350\q329.h" />
+    <ClInclude Include="Questions\Q351-Q400\q374.h" />
+    <ClInclude Include="Questions\Q451-Q500\q491.h" />
+    <ClInclude Include="Questions\Q51-Q100\master51-100.h" />
+    <ClInclude Include="Questions\Q51-Q100\q51.h" />
+    <ClInclude Include="Questions\Q51-Q100\q52.h" />
+    <ClInclude Include="Questions\Q51-Q100\q53.h" />
+    <ClInclude Include="Questions\Q51-Q100\q54.h" />
+    <ClInclude Include="Questions\Q51-Q100\q55.h" />
+    <ClInclude Include="Questions\Q51-Q100\q56.h" />
+    <ClInclude Include="Questions\Q51-Q100\q57.h" />
+    <ClInclude Include="Questions\Q51-Q100\q58.h" />
+    <ClInclude Include="Questions\Q51-Q100\q59.h" />
+    <ClInclude Include="Questions\Q51-Q100\q60.h" />
+    <ClInclude Include="Questions\Q51-Q100\q61.h" />
+    <ClInclude Include="Questions\Q51-Q100\q62.h" />
+    <ClInclude Include="Questions\Q51-Q100\q63.h" />
+    <ClInclude Include="Questions\Q51-Q100\q64.h" />
+    <ClInclude Include="Questions\Q51-Q100\q65.h" />
+    <ClInclude Include="Questions\Q51-Q100\q66.h" />
+    <ClInclude Include="Questions\q51-q100\q67.h" />
+    <ClInclude Include="Questions\Q51-Q100\q68.h" />
+    <ClInclude Include="Questions\Q51-Q100\q69.h" />
+    <ClInclude Include="Questions\Q51-Q100\q70.h" />
+    <ClInclude Include="Questions\Q51-Q100\q71.h" />
+    <ClInclude Include="Questions\Q51-Q100\q72.h" />
+    <ClInclude Include="Questions\Q51-Q100\q73.h" />
+    <ClInclude Include="Questions\Q51-Q100\q74.h" />
+    <ClInclude Include="Questions\Q51-Q100\q75.h" />
+    <ClInclude Include="Questions\Q51-Q100\q76.h" />
+    <ClInclude Include="Questions\Q51-Q100\q77.h" />
+    <ClInclude Include="Questions\Q51-Q100\q78.h" />
+    <ClInclude Include="Questions\Q51-Q100\q79.h" />
+    <ClInclude Include="Questions\Q51-Q100\q80.h" />
+    <ClInclude Include="Questions\Q51-Q100\q81.h" />
+    <ClInclude Include="Questions\Q51-Q100\q82.h" />
+    <ClInclude Include="Questions\Q51-Q100\q84.h" />
+    <ClInclude Include="Questions\Q51-Q100\q85.h" />
+    <ClInclude Include="Questions\Q51-Q100\q86.h" />
+    <ClInclude Include="Questions\Q51-Q100\q87.h" />
+    <ClInclude Include="Questions\Q51-Q100\q90.h" />
+    <ClInclude Include="Questions\Q51-Q100\q91.h" />
+    <ClInclude Include="Questions\Q51-Q100\q92.h" />
+    <ClInclude Include="Questions\Q700-Q751\q719.h" />
+    <ClInclude Include="Questions\Q700-Q751\q727.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Resources\q11.txt" />
+    <Text Include="Resources\q13.txt" />
+    <Text Include="Resources\q18.txt" />
+    <Text Include="Resources\q22.txt" />
+    <Text Include="Resources\q67.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

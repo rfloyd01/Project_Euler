@@ -1,0 +1,211 @@
+﻿  BigInt_128.cpp
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\BigInt_128.cpp(27,3): warning C4267: 'initializing': conversion from 'size_t' to 'uint8_t', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\BigInt_128.cpp(33,2): warning C4267: 'initializing': conversion from 'size_t' to 'uint8_t', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\BigInt_128.cpp(106,16): warning C4018: '<': signed/unsigned mismatch
+  big_number.cpp
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\big_number.cpp(59,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  functions.cpp
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(47,13): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(115,18): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(330,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(418,42): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(449,42): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(554,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(583,45): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(588,45): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(610,24): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(621,45): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(626,45): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(648,24): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(658,45): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(663,45): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(685,24): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(695,45): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(703,45): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(729,24): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(737,61): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(738,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(758,24): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(766,61): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(767,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(787,24): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(796,61): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(797,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(817,24): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(825,61): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(826,31): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(846,24): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(864,3): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(881,3): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(903,3): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(920,3): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(943,3): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(960,3): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(1002,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(1016,24): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(1013,25): warning C4390: ';': empty controlled statement found; is this the intent?
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(1025,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(1043,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\functions.cpp(1064,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  int_64.cpp
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(128,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(142,67): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(144,52): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(149,49): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(167,7): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(169,60): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(172,51): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(179,6): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(181,59): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(184,50): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(225,52): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(285,38): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(314,23): warning C4309: '=': truncation of constant value
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(315,51): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(376,4): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(388,4): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(423,52): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(500,38): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(588,46): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(653,75): warning C4293: '>>': shift count negative or too big, undefined behavior
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(653,69): warning C4838: conversion from 'int' to 'unsigned __int64' requires a narrowing conversion
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(682,46): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(798,25): warning C4244: 'initializing': conversion from '__int64' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(800,10): warning C4244: 'argument': conversion from '__int64' to 'const unsigned int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(812,18): warning C4244: 'argument': conversion from '__int64' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(818,25): warning C4244: 'argument': conversion from '__int64' to 'const unsigned int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(825,24): warning C4244: 'argument': conversion from '__int64' to 'const unsigned int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(843,56): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(963,32): warning C4244: 'argument': conversion from '__int64' to 'const unsigned int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(972,36): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(1008,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(1013,46): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(1091,18): warning C4018: '>': signed/unsigned mismatch
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(1154,53): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(1171,3): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(1230,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(1433,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(1456,20): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(1539,42): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64.cpp(1637,20): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+  int_64x.cpp
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(88,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(102,67): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(104,52): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(109,49): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(127,7): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(129,60): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(132,51): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(139,6): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(141,59): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(144,50): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(180,52): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(250,38): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(295,52): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(372,38): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(428,32): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(443,37): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(452,3): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(485,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(528,34): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(542,32): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(557,37): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(560,3): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(590,54): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(605,52): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(606,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(609,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(667,25): warning C4244: 'initializing': conversion from '__int64' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(670,15): warning C4244: 'argument': conversion from '__int64' to 'const unsigned int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(682,18): warning C4244: 'argument': conversion from '__int64' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(688,30): warning C4244: 'argument': conversion from '__int64' to 'const unsigned int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(694,29): warning C4244: 'argument': conversion from '__int64' to 'const unsigned int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(712,56): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(783,25): warning C4244: 'initializing': conversion from '__int64' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(785,15): warning C4244: 'argument': conversion from '__int64' to 'const unsigned int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(797,18): warning C4244: 'argument': conversion from '__int64' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(803,30): warning C4244: 'argument': conversion from '__int64' to 'const unsigned int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(808,29): warning C4244: 'argument': conversion from '__int64' to 'const unsigned int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(824,60): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(900,16): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(903,37): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(935,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(974,18): warning C4018: '>': signed/unsigned mismatch
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(1052,53): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(1069,3): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(1111,53): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(1120,53): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(1134,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(1192,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(1232,51): warning C4244: '=': conversion from '_Ty' to 'int', possible loss of data
+          with
+          [
+              _Ty=unsigned __int64
+          ]
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(1240,51): warning C4244: '=': conversion from '_Ty' to 'unsigned int', possible loss of data
+          with
+          [
+              _Ty=unsigned __int64
+          ]
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(1295,20): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(1344,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\int_64x.cpp(1534,42): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  main.cpp
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\Q1-Q50\q27.h(13,12): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Header_Files\test.h(18,23): warning C4244: 'initializing': conversion from 'double' to '__int64', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Header_Files\test.h(23,53): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\q51-q100\q51.h(74,33): warning C4101: 'new_num': unreferenced local variable
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\q51-q100\q52.h(33,28): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\q51-q100\q54.h(22,22): warning C4244: 'initializing': conversion from '__int64' to 'uint8_t', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Header_Files\BigInt.h(120,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Header_Files\BigInt.h(168,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Header_Files\BigInt.h(191,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Header_Files\BigInt.h(238,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Header_Files\BigInt.h(259,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Header_Files\BigInt.h(310,1): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\q51-q100\q63.h(16,22): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\q51-q100\q66.h(39,41): warning C4244: 'argument': conversion from '__int64' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=int
+          ]
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\q51-q100\q66.h(43,4): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\q51-q100\q70.h(45,30): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\q51-q100\q70.h(45,25): warning C4244: 'argument': conversion from '__int64' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\q51-q100\q70.h(49,15): warning C4244: '=': conversion from '__int64' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\q51-q100\q75.h(51,47): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\q51-q100\q79.h(54,41): warning C4244: '+=': conversion from '__int64' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\q51-q100\q80.h(15,14): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\q51-q100\q85.h(38,27): warning C4244: '=': conversion from '_Ty' to 'int', possible loss of data
+          with
+          [
+              _Ty=__int64
+          ]
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\q51-q100\q85.h(45,28): warning C4244: '=': conversion from '_Ty' to 'int', possible loss of data
+          with
+          [
+              _Ty=__int64
+          ]
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\q51-q100\q85.h(50,31): warning C4244: '=': conversion from '_Ty' to 'int', possible loss of data
+          with
+          [
+              _Ty=__int64
+          ]
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\q51-q100\q87.h(18,38): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Questions\q51-q100\q87.h(62,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  pch.cpp
+  print.cpp
+  Generating Code...
+  Project_Euler.vcxproj -> C:\Users\Bobby\Documents\Coding\C++\Project_Euler\x64\Debug\Project_Euler.exe

@@ -1,0 +1,27 @@
+﻿  main.cpp
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\print.h(7,20): warning C4018:  '<': signed/unsigned mismatch
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(22,59): warning C4244:  'argument': conversion from 'int' to 'const _Ty', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(22,59): warning C4244:         with
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(22,59): warning C4244:         [
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(22,59): warning C4244:             _Ty=float
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(22,59): warning C4244:         ]
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(30,22): warning C4018:  '<': signed/unsigned mismatch
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(35,32): warning C4244:  'argument': conversion from 'int' to '_Ty', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(35,32): warning C4244:         with
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(35,32): warning C4244:         [
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(35,32): warning C4244:             _Ty=float
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(35,32): warning C4244:         ]
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(40,32): warning C4244:  'argument': conversion from 'int' to '_Ty', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(40,32): warning C4244:         with
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(40,32): warning C4244:         [
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(40,32): warning C4244:             _Ty=float
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(40,32): warning C4244:         ]
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(55,21): warning C4018:  '<': signed/unsigned mismatch
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(66,20): warning C4018:  '<': signed/unsigned mismatch
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(71,21): warning C4018:  '<': signed/unsigned mismatch
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(73,24): warning C4244:  'argument': conversion from '_Ty' to 'const unsigned int', possible loss of data
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(73,24): warning C4244:         with
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(73,24): warning C4244:         [
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(73,24): warning C4244:             _Ty=float
+C:\Users\Bobby\Documents\Coding\C++\Project_Euler\q329.h(73,24): warning C4244:         ]
+  Project_Euler.vcxproj -> C:\Users\Bobby\Documents\Coding\C++\Project_Euler\Debug\Project_Euler.exe
