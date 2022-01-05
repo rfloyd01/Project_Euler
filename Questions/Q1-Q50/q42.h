@@ -40,7 +40,7 @@ std::pair<std::string, double> q42()
 			inFile >> letter;
 			while (letter != '"') //record letters until the next '"' is found
 			{
-				word_sum += CapitalLetterValue(letter);
+				word_sum += (letter + 1 - 'A');
 				inFile >> letter;
 			}
 
@@ -58,3 +58,8 @@ std::pair<std::string, double> q42()
 //Was able to reuse some code from question #22 which also dealt with giving numeric values to individual letters. Instead of writing a function to test whether or not a number is a 
 //triangular number, I just created an array of the numbers 0 - 1000 where the value is 1 on all triangular numbers and 0 on non-triangular numbers. I figured that none of the word scores
 //would be over 1000 as that would require at least 39 letters (all of which are Z). This took all of 5 minutes to write up.
+
+/*
+1/5/22 Update
+Replaced a function called CapitalLetterValue() with (letter + 1 - 'A') on line 43
+*/

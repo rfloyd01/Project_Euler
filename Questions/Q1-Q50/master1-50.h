@@ -100,3 +100,9 @@ void Run_1to50()
 //average which could probably be improved upon are: 10, 12, 22, 23, 25, 26, 34, 35, 37, 41 and 44. Of these the most agregious are 12, 41, 44 which clock in
 //at .09, .09 and .06 seconds respectively. I don't think these problems really need to be worked on at this point but if I really want to lower the speed then
 //these three questions would be the first place to start.
+
+/*
+1/5/22 Update:
+I've updated a handful of code in the first 30 questions after creating my website, the current runtime for 1-50 is 0.422065 seconds. Unfortunately I'm
+not sure what the runtime was when I first created this so I'll keep a running tally from now on.
+*/
