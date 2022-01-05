@@ -263,6 +263,7 @@
     <ClInclude Include="Questions\Q51-Q100\q90.h" />
     <ClInclude Include="Questions\Q51-Q100\q91.h" />
     <ClInclude Include="Questions\Q51-Q100\q92.h" />
+    <ClInclude Include="Questions\Q51-Q100\q94.h" />
     <ClInclude Include="Questions\Q700-Q751\q719.h" />
     <ClInclude Include="Questions\Q700-Q751\q727.h" />
   </ItemGroup>
