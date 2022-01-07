@@ -264,6 +264,7 @@
     <ClInclude Include="Questions\Q51-Q100\q85.h" />
     <ClInclude Include="Questions\Q51-Q100\q86.h" />
     <ClInclude Include="Questions\Q51-Q100\q87.h" />
+    <ClInclude Include="Questions\Q51-Q100\q89.h" />
     <ClInclude Include="Questions\Q51-Q100\q90.h" />
     <ClInclude Include="Questions\Q51-Q100\q91.h" />
     <ClInclude Include="Questions\Q51-Q100\q92.h" />
