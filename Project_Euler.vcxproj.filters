@@ -49,6 +49,9 @@
     <Filter Include="Header Files\Questions\Q151-Q200">
       <UniqueIdentifier>{d528a90c-2b53-464c-9cc7-e8c8f3ef3cee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Questions\Q401-Q450">
+      <UniqueIdentifier>{a12b454d-a58f-43a9-a50f-56db87c7562b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -433,6 +436,15 @@
     </ClInclude>
     <ClInclude Include="Questions\Q51-Q100\q89.h">
       <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="array_arrays.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="q247.h">
+      <Filter>Header Files\Questions\Q201-Q250</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q401-Q450\q424.h">
+      <Filter>Header Files\Questions\Q401-Q450</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

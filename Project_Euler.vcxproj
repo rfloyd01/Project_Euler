@@ -153,6 +153,7 @@
     <ClCompile Include="print.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="array_arrays.h" />
     <ClInclude Include="Header_Files\bigint.h" />
     <ClInclude Include="Header_Files\BigInt_128.h" />
     <ClInclude Include="Header_Files\big_number.h" />
@@ -165,6 +166,7 @@
     <ClInclude Include="Header_Files\template.h" />
     <ClInclude Include="Header_Files\test.h" />
     <ClInclude Include="Pet_Detective.h" />
+    <ClInclude Include="q247.h" />
     <ClInclude Include="Questions\Hackerrank\Picking_Numbers.h" />
     <ClInclude Include="Questions\Hackerrank\StringReverseMerge.h" />
     <ClInclude Include="Questions\q1-q50\master1-50.h" />
@@ -226,6 +228,7 @@
     <ClInclude Include="Questions\Q251-Q300\q265.h" />
     <ClInclude Include="Questions\Q301-Q350\q329.h" />
     <ClInclude Include="Questions\Q351-Q400\q374.h" />
+    <ClInclude Include="Questions\Q401-Q450\q424.h" />
     <ClInclude Include="Questions\Q451-Q500\q491.h" />
     <ClInclude Include="Questions\Q51-Q100\master51-100.h" />
     <ClInclude Include="Questions\Q51-Q100\q51.h" />
