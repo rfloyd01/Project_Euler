@@ -2,6 +2,7 @@
 
 #include <Header_Files/pch.h>
 #include <Header_Files/print.h>
+#include <Header_Files/functions.h> //includes powers_of_two[]
 #include <vector>
 #include<set>
 #include <fstream>
@@ -70,7 +71,7 @@ class AnswerTile : public BoardTile
 public:
 	int options[10];
 	char clue;
-	ClueTile* horizontalClue, verticalClue;
+	ClueTile* horizontalClue, verticalClue; //every answer tile is part of a horizontal and vertical clue
 
 	AnswerTile()
 	{
@@ -100,6 +101,20 @@ struct LetterPossibility
 		possibilities[i] = i;
 		size = 1;
 		answer = i;
+	}
+
+	int getLowest()
+	{
+		//returns the lowest number still available as a possibility
+		for (int i = 0; i < 10; i++)
+			if (possibilities[i] != -1) return i;
+	}
+
+	int getHighest()
+	{
+		//returns the highest number still available as a possibility
+		for (int i = 9; i >= 0; i--)
+			if (possibilities[i] != -1) return i;
 	}
 
 	void remove(std::vector<int> numbers)
@@ -144,7 +159,198 @@ struct LetterPossibility
 	}
 };
 
+//Function to create all ways of creating numbers in Kakuro (limited to maximum of 6 digits)
+std::vector<std::vector<std::pair<int, std::vector<std::vector<int> > > > >* kakuroNumberCombinations()
+{
+	//this function creates all of the possible Kakuro combos (where the max clue length is 6) and stores them in a comlex vector.
+	//The strucutre of the vector looks like this:
+	/*
+	* { {0 digit numbers (blank)},
+	*   {1 digit numbers --> {{}, {{1}}, {{2}}, ... {{9}}},
+	*   {2 digit numbers --> {{}, {}, {}, {ways to make 3 0b0110000000 {1, 2}}, {ways to make 4{1, 3}}, { ways to make 5{1, 4}, {2, 3}}, ... {ways to make 17{8, 9}}},
+	*   .....
+	*   {6 digit numbers --> {{}, {}, {}, .... {ways to make 21 {1, 2, 3, 4, 5, 6}}, {ways to make 27 {2, 3, 4, 5, 6, 7}, {1, 3, 4, 5, 6, 8}, ...} ...}
+	* }
+	*/
+
+	//in front of each vector will be a binary number representing all of digits that make up the different ways of making a number out of a certain number of digits.
+	//for example there are two ways to make 5 when using only two digits: (1, 4) or (2, 3). Therefore the digits 1, 2, 3 and 4 could potentially be used to create 5.
+	//This means that the binary number in front of the two digit '5' vector would be 0b0111100000 = 30. A value of 1022 would mean that every digit 1-9 could be used
+	//to make the current number at the current length
+
+	//Nothing fancy about this algorithm, it just keeps adding numbers wherever possible. The hardest part is creating and iterating through the data structure
+	std::vector<std::vector<std::pair<int, std::vector<std::vector<int> > > > > combos;
+	for (int i = 0; i < 7; i++)
+	{
+		std::vector<std::pair<int, std::vector<std::vector<int> > > > numberOfDigits;
+		combos.push_back(numberOfDigits);
+	}
+
+	int rowMaximum = 0, currentNum = 9;
+	for (int i = 1; i < 7; i++)
+	{
+		//we start at 1 because we can't make any 0 digit numbers. Technically we can't use any 1 digit numbers on a sudoko board, however, we build off of them
+		//to get our actual combinations.
+		
+		rowMaximum += currentNum--;
+		for (int j = 0; j <= rowMaximum; j++)
+		{
+			std::pair<int, std::vector<std::vector<int > > > actualNumber;
+			actualNumber.first = 0; //binary number representation will always start at 0
+			combos[i].push_back(actualNumber);
+		}
+	}
+
+	//set all of the necessary 1 digit building blocks
+	for (int i = 1; i <= 9; i++)
+	{
+		combos[1][i].first |= powers_of_two[i];
+		combos[1][i].second.push_back({ i });
+	}
+
+	//now iterate over every combo from the 1 digit row to the 5 digit row, adding single digits that are greater than current last digit
+	for (int i = 1; i <= 5; i++)
+	{
+		for (int j = 0; j < combos[i].size(); j++)
+		{
+			if (combos[i][j].second.size() == 0) continue; //no need to check any combos that aren't possible
+			for (int k = 0; k < combos[i][j].second.size(); k++)
+			{
+				int kBinary = 0;
+				for (int l = 0; l < combos[i][j].second[k].size(); l++) kBinary |= powers_of_two[combos[i][j].second[k][l]];
+				for (int l = combos[i][j].second[k].back() + 1; l <= 9; l++)
+				{
+					//create a copy of the existing vector each time we add a new digit to it
+					std::vector<int> copy = combos[i][j].second[k];
+					copy.push_back(l);
+					combos[i + 1][j + l].second.push_back(copy);
+					combos[i + 1][j + l].first |= (kBinary | powers_of_two[l]);
+				}
+			}
+		}
+	}
+
+	//Comment the below out once I've confirmed everything is working
+	/*for (int i = 2; i <= 6; i++)
+	{
+		std::cout << i << "-digit combinations:\n";
+		for (int j = 0; j < combos[i].size(); j++)
+		{
+			if (combos[i][j].second.size() == 0) continue;
+			std::cout << j << " (" << combos[i][j].first << "):\n";
+			for (int k = 0; k < combos[i][j].second.size(); k++) vprint(combos[i][j].second[k]);
+			std::cout << std::endl;
+		}
+	}*/
+
+	return &combos;
+}
+
 //Functions for Board Manipulation
+void createBoard(BoardTile*** board, std::string& boardString, std::vector<std::pair<int, int> > &clueLocations, int dimension)
+{
+	int currentIndex = 2; //always start scanning right after the first comma
+	for (int i = 0; i < dimension; i++)
+	{
+		BoardTile** tiles = new BoardTile * [dimension]; //must use the new keyword here as we don't know the dimension at compile time
+		*(board + i) = tiles;
+		bool stop = false;
+		for (int j = 0; j < dimension; j++)
+		{
+			//any given tile can be a plain tile (represented by an X), answer tile (represented by a 0 or letter A-J) are a clue tile (represented by a '(' ).
+			//If it's one of the first two options tile creation is easy as we only need a single character. The clue tiles though we will need to scann character
+			//by character until hitting the closing ')'.
+			BoardTile* newTile;
+
+			//check to see if this is the very last tile
+			if ((i == (dimension - 1)) && (j == (dimension - 1))) stop = true;
+
+			if (boardString[currentIndex] == 'X')
+			{
+				//create a new blank tile and move on
+				newTile = new BoardTile();
+				currentIndex += 2;
+			}
+			else if (boardString[currentIndex] == '(')
+			{
+				bool horizontal = false, vertical = false;
+
+				//at the clue location to the clueLocation vector
+				std::pair<int, int> clueLocation = { i, j };
+				clueLocations.push_back(clueLocation);
+
+				//we need to scan until hitting a closing ')' to figure out which clues are present
+				int k = currentIndex;
+				while (boardString[++k] != ')')
+				{
+					if (boardString[k] == 'h') horizontal = true;
+					else if (boardString[k] == 'v') vertical = true;
+				}
+
+				//create a new clue tile based on the clues present
+				ClueTile* ct = new ClueTile(vertical, horizontal);
+				currentIndex++; //increment off of the '(' character
+
+				if (boardString[currentIndex] == 'h')
+				{
+					horizontal = true;
+					//if this is a two digit clue then two digits away won't be a comma
+					if (boardString[currentIndex + 2] == ',' || boardString[currentIndex + 2] == ')')
+					{
+						//only add the first digit
+						//ct->hor1 = '0'; //in this case 0 represents no digit here
+						ct->hor2 = boardString[currentIndex + 1];
+						currentIndex += 3; //increment to the next part of the clue
+					}
+					else
+					{
+						//add both digits
+						ct->hor1 = boardString[currentIndex + 1]; //in this case 0 represents no digit here
+						ct->hor2 = boardString[currentIndex + 2];
+						currentIndex += 4; //increment to the next part of the clue
+					}
+				}
+
+				//at this point the letter at the current index will either be a 'v', or a ','
+				if (boardString[currentIndex] == 'v')
+				{
+					//same deal here, need to check if we have 1 or 2 digits to the clue
+					if (boardString[currentIndex + 2] == ')')
+					{
+						//only add the first digit
+						//ct->vert1 = '0'; //in this case 0 represents no digit here
+						ct->vert2 = boardString[currentIndex + 1];
+						currentIndex += 4; //increment to the next part of the clue
+					}
+					else
+					{
+						//add both digits
+						ct->vert1 = boardString[currentIndex + 1]; //in this case 0 represents no digit here
+						ct->vert2 = boardString[currentIndex + 2];
+						currentIndex += 5; //increment to the next part of the clue
+					}
+				}
+				else currentIndex++; //move off the comma and go to next tile
+
+				//after parsing the clue, set the newTile pointer
+				newTile = ct;
+			}
+			else
+			{
+				//create a new answer tile
+				AnswerTile* at = new AnswerTile();
+				at->clue = boardString[currentIndex];
+				newTile = at;
+				currentIndex += 2;
+			}
+
+			newTile->id = dimension * i + j; //keep track of each tiles location on the board
+			*(tiles + j) = newTile; //add the new tile to the board
+
+			if (stop) break; //break out of loop once we hit the last tile
+		}
+	}
+}
 void initialClueSolver(BoardTile*** board, int dimension, std::vector<std::pair<int, int> > &clueLocations, std::vector<LetterPossibility> &letterPossibilities)
 {
 	//this function is used for the initial look at our clues to see if we can convert any letters right off the bat. It should only be called one
@@ -157,7 +363,9 @@ void initialClueSolver(BoardTile*** board, int dimension, std::vector<std::pair<
 	for (int i = 0; i < clueLocations.size(); i++)
 	{
 		ClueTile *currentClue = (ClueTile*)(*(*(board + clueLocations[i].first) + clueLocations[i].second)); //this is some of my craziest pointer dereferencing
-		//for each clue tile, set the length of any corresponding horizontal and vertical answers
+		AnswerTile* currentAnswer;
+		//for each clue tile, set the length of any corresponding horizontal and vertical answers. Also assign the horizontal and vertical clue tiles for each 
+		//answer tile on the board
 		if (currentClue->horizontal != -2)
 		{
 			int clueLength = 1;
@@ -165,6 +373,8 @@ void initialClueSolver(BoardTile*** board, int dimension, std::vector<std::pair<
 			{
 				if (clueLocations[i].second + clueLength == dimension) break;
 				if ((*(*(board + clueLocations[i].first) + clueLocations[i].second + clueLength))->pieceType != "Answer") break;
+				currentAnswer = (AnswerTile*)(*(*(board + clueLocations[i].first) + clueLocations[i].second + clueLength));
+				currentAnswer->horizontalClue = currentClue;
 				clueLength++;
 			}
 			currentClue->horizontalAnswerLength = clueLength - 1;
@@ -176,6 +386,8 @@ void initialClueSolver(BoardTile*** board, int dimension, std::vector<std::pair<
 			{
 				if (clueLocations[i].first + clueLength == dimension) break;
 				if ((*(*(board + clueLocations[i].first + clueLength) + clueLocations[i].second))->pieceType != "Answer") break;
+				currentAnswer = (AnswerTile*)(*(*(board + clueLocations[i].first + clueLength) + clueLocations[i].second));
+				currentAnswer->horizontalClue = currentClue;
 				clueLength++;
 			}
 			currentClue->verticalAnswerLength = clueLength - 1;
@@ -412,11 +624,144 @@ void initialClueSolver(BoardTile*** board, int dimension, std::vector<std::pair<
 			if (letterPossibilities[i].size > 1) letterPossibilities[i].remove({ 0 });
 
 	//Temporary printing function
+	/*std::cout << "Board after initial clue check:\n";
 	for (int i = 0; i < 10; i++)
 	{
 		std::cout << (char)(i + 'A') << ": ";
 		letterPossibilities[i].print();
+	}*/
+}
+void recursiveElimination(int location, int& lowest, int& highest, std::vector<std::pair<std::vector<int>, std::vector<int> > >& letterHeirarchy, std::vector<LetterPossibility>& letterPossibilities)
+{
+	if (letterHeirarchy[location].first.size() == 0)
+	{
+		//this is our base letter, when we first call the function we set the lowest value
+		lowest = letterPossibilities[location].getLowest();
+
+		//first recursively call this function on anything in the LARGER vector
+		for (int i = 0; i < letterHeirarchy[location].second.size(); i++) recursiveElimination(letterHeirarchy[location].second[i], lowest, highest, letterHeirarchy, letterPossibilities);
+
+		//then remove everything from possibilites that's greater than or equal to the 'highest' variable
+		std::vector<int> rem;
+		for (int i = highest; i < 10; i++) rem.push_back(i);
+		letterPossibilities[location].remove(rem);
 	}
+	else if (letterHeirarchy[location].second.size() == 0)
+	{
+		//this is our largest letter, set the highest value (but only if it's not higher than the current highest (we visit some nodes multiple times so we don't
+		//want to raise the highest variable)
+		highest = letterPossibilities[location].getHighest() >= highest ? highest : letterPossibilities[location].getHighest();
+
+		//then remove everything from possibilities anything that's less than or equal to the 'lowest' variable
+		std::vector<int> rem;
+		for (int i = 0; i <= lowest; i++) rem.push_back(i);
+		letterPossibilities[location].remove(rem);
+	}
+	else
+	{
+		//this letter falls somewhere in the middle of the heirarchy. We need the ability to set both the 'lowest' and the
+		//'highest' variable from here
+
+		//first, remove everything from possibilities that's less than or equal to the 'lowest' variable
+		std::vector<int> rem;
+		for (int i = 0; i <= lowest; i++) rem.push_back(i);
+		letterPossibilities[location].remove(rem);
+
+		//now change the lowest variable so that it matches the lowest value of this letter
+		lowest = letterPossibilities[location].getLowest();
+
+		//now recursively call everything higher than this letter
+		for (int i = 0; i < letterHeirarchy[location].second.size(); i++) recursiveElimination(letterHeirarchy[location].second[i], lowest, highest, letterHeirarchy, letterPossibilities);
+
+		//remove everything from possibilites that's greater than or equal to the 'highest' variable
+		std::vector<int> rem2;
+		for (int i = highest; i < 10; i++) rem2.push_back(i);
+		letterPossibilities[location].remove(rem2);
+
+		//finally, set the 'highest' variable equal to the highest possibility of this letter
+		highest = letterPossibilities[location].getHighest();
+	}
+}
+void numberHeirarchy(BoardTile*** board, int dimension, std::vector<std::pair<int, int> >& clueLocations, std::vector<LetterPossibility>& letterPossibilities, std::vector<std::pair<std::vector<int>, std::vector<int> > > letterHeirarchy, bool &heirarchyCreated)
+{
+	//This function attempts to create a heirarcy between letters, it does this by looking at single digit clues that have a letter in one of their answer boxes.
+	//In the example puzzle we know that B < H because the H clue at location (1, 1) has B as a component. In other words, B + something else = H.
+	//Then looking down at the D clue at location (2, 1) we can see that H is a component of it, therefore, H < D. So from looking at just these
+	//two clues we can see that B < H < D. We can also see that I < A for the same reason when looking at clue (3, 0) . In the example we were able to
+	//solve numbers 0-3 just from looking at the two digit clues, which means the other letters must be 4-9. Since H must be larger than B, H CAN'T be 4 and
+	//likewise D CAN'T be 4 OR 5. On the flipside, this also means that B CAN'T be 8 or 9 while H also CAN'T be a 9. These relationships go for I and A as well.
+
+	//To keep track of these relationships an array of pairs of vectors is used. The array will have a length of 10 where each element represents a single letter.
+	//Each element will contain a pair of vectors. The first vector will hold all letters that are known to have a value LESS than the current letter while the second
+	//vector will hold all letters that are known to have a value MORE than the current letter. The first time we call this function the heirarccy hasn't been created yet
+	//so we implement the following code block
+	if (!heirarchyCreated)
+	{
+		for (int i = 0; i < clueLocations.size(); i++)
+		{
+			ClueTile* currentClue = (ClueTile*)(*(*(board + clueLocations[i].first) + clueLocations[i].second)); //this is some of my craziest pointer dereferencing
+			if (currentClue->hor1 == 'Z' && currentClue->hor2 != 'Z')
+			{
+				//we've found a single digit clue, scan all if it's associated answer blocks to see if any letters are found
+				for (int j = 1; j <= currentClue->horizontalAnswerLength; j++)
+				{
+					AnswerTile* currentAnswer = (AnswerTile*)(*(*(board + clueLocations[i].first) + clueLocations[i].second + j));
+					if (currentAnswer->clue != 'O')
+					{
+						letterHeirarchy[currentClue->hor2 - 'A'].first.push_back(currentAnswer->clue - 'A');  //add the found letter to the less than part of the current clue
+						letterHeirarchy[currentAnswer->clue - 'A'].second.push_back(currentClue->hor2 - 'A'); //add the current clue to the more than part of the found letter
+
+						//we also loop through all of the letters in the found letter's less than vector and add to the current clue's vector
+						for (int k = 0; k < letterHeirarchy[currentAnswer->clue - 'A'].first.size(); k++)
+						{
+							letterHeirarchy[currentClue->hor2 - 'A'].first.push_back(letterHeirarchy[currentAnswer->clue - 'A'].first[k]);
+							letterHeirarchy[letterHeirarchy[currentAnswer->clue - 'A'].first[k]].second.push_back(currentClue->hor2 - 'A');
+						}
+					}
+				}
+			}
+			if (currentClue->vert1 == 'Z' && currentClue->vert2 != 'Z')
+			{
+				//we've found a single digit clue, scan all if it's associated answer blocks to see if any letters are found
+				for (int j = 1; j <= currentClue->verticalAnswerLength; j++)
+				{
+					AnswerTile* currentAnswer = (AnswerTile*)(*(*(board + clueLocations[i].first + j) + clueLocations[i].second));
+					if (currentAnswer->clue != 'O')
+					{
+						letterHeirarchy[currentClue->vert2 - 'A'].first.push_back(currentAnswer->clue - 'A');  //add the found letter to the less than part of the current clue
+						letterHeirarchy[currentAnswer->clue - 'A'].second.push_back(currentClue->vert2 - 'A'); //add the current clue to the more than part of the found letter
+
+						//we also loop through all of the letters in the found letter's less than vector and add to the current clue's vector
+						for (int k = 0; k < letterHeirarchy[currentAnswer->clue - 'A'].first.size(); k++)
+						{
+							letterHeirarchy[currentClue->vert2 - 'A'].first.push_back(letterHeirarchy[currentAnswer->clue - 'A'].first[k]);
+							letterHeirarchy[letterHeirarchy[currentAnswer->clue - 'A'].first[k]].second.push_back(currentClue->vert2 - 'A');
+						}
+					}
+				}
+			}
+		}
+		heirarchyCreated = true;
+	}
+
+	//Now that are heirarchy table has been created we can try eliminate a few options for the letters in the table. A recursive function to do this is defined
+	//above as recursiveElimination(). We scan the table to find base numbers (i.e. a number with nothing lower than it, but does have numbers higher then it)
+	//and then call the recursive function at these locations
+	for (int i = 0; i < 10; i++)
+	{
+		int lowest = -1, highest = 100; //pick an arbitrarily low and high number
+		if (letterHeirarchy[i].first.size() == 0 && letterHeirarchy[i].second.size() > 0)
+		{
+			recursiveElimination(i, lowest, highest, letterHeirarchy, letterPossibilities);
+		}
+	}
+	
+	/*std::cout << "Board after letter heirarchy check:\n";
+	for (int i = 0; i < 10; i++)
+	{
+		std::cout << (char)(i + 'A') << ": ";
+		letterPossibilities[i].print();
+	}*/
 }
 void printBoard(BoardTile*** board, int dimension)
 {
@@ -456,6 +801,13 @@ void printBoard(BoardTile*** board, int dimension)
 	}
 	std::cout << std::endl;
 }
+void possibilityTrimViaClue(BoardTile*** board, int dimension, std::vector<LetterPossibility>& letterPossibilities, std::vector<std::vector<std::pair<int, std::vector<std::vector<int> > > > >& combos)
+{
+	//In this function we visit every AnswerTile on the board and try to reduce the total number of digits that can go inside of them. This is done by A) looking at the
+	//horizontal and vertical clues that govern the box and B) looking at any letters actually placed in these AnswerTiles at the start of the puzzle.
+	//For example, if we figured out that one of the clues was 12, and there were three answer boxes making up that clue's answer then our options to fill in the three boxes
+	//would be
+}
 
 std::pair<std::string, double> q424()
 {
@@ -468,137 +820,51 @@ std::pair<std::string, double> q424()
 	std::string boardString;
 	myFile.open("Resources/q424.txt");
 
+	//before looping through all the puzzles, create a complex vector storing all the different ways to solve (up to 6 digit) Kakuro clues
+	std::vector<std::vector<std::pair<int, std::vector<std::vector<int> > > > > combinations = *(kakuroNumberCombinations());
+
 	//TODO: Change this loop from 1 to 200 after working out puzzle solving logic
 	for (int i = 0; i < 1; i++)
 	{
+		//Read the next board from text file
 		std::getline(myFile, boardString);
+
+		//Create variables for board creation
 		int dimension = boardString[0] - '0';
 		BoardTile*** board = new BoardTile**[dimension]; //we won't know the dimension until we read it from file so we initialize the board using pointers
 		std::vector<std::pair<int, int> > clueLocations; //an array holding the location of the clues in the puzzle for faster lookup
 		std::vector<LetterPossibility> letterPossibilities; //represents the available numbers that each letter can represent, the puzzle is solved when each vector has length of 1
+		std::vector<std::pair<std::vector<int>, std::vector<int> > > letterHeirarchy;
+		bool heirarchyCreated = false;
 		for (int i = 0; i < 10; i++)
 		{
 			LetterPossibility lp;
 			letterPossibilities.push_back(lp);
+
+			std::pair<std::vector<int>, std::vector<int> > lh;
+			letterHeirarchy.push_back(lh);
 		}
 
-		int currentIndex = 2; //always start scanning right after the first comma
-		for (int i = 0; i < dimension; i++)
-		{
-			BoardTile** tiles = new BoardTile*[dimension]; //must use the new keyword here as we don't know the dimension at compile time
-			*(board + i) = tiles;
-			bool stop = false;
-			for (int j = 0; j < dimension; j++)
-			{
-				//any given tile can be a plain tile (represented by an X), answer tile (represented by a 0 or letter A-J) are a clue tile (represented by a '(' ).
-				//If it's one of the first two options tile creation is easy as we only need a single character. The clue tiles though we will need to scann character
-				//by character until hitting the closing ')'.
-				BoardTile* newTile;
+		//Create the board from the input string
+		createBoard(board, boardString, clueLocations, dimension);
 
-				//check to see if this is the very last tile
-				if ((i == (dimension - 1)) && (j == (dimension - 1))) stop = true;
-
-				if (boardString[currentIndex] == 'X')
-				{
-					//create a new blank tile and move on
-					newTile = new BoardTile();
-					currentIndex += 2;
-				}
-				else if (boardString[currentIndex] == '(')
-				{
-					bool horizontal = false, vertical = false;
-
-					//at the clue location to the clueLocation vector
-					std::pair<int, int> clueLocation = { i, j };
-					clueLocations.push_back(clueLocation);
-
-					//we need to scan until hitting a closing ')' to figure out which clues are present
-					int k = currentIndex;
-					while (boardString[++k] != ')')
-					{
-						if (boardString[k] == 'h') horizontal = true;
-						else if (boardString[k] == 'v') vertical = true;
-					}
-
-					//create a new clue tile based on the clues present
-					ClueTile* ct = new ClueTile(vertical, horizontal);
-					currentIndex++; //increment off of the '(' character
-
-					if (boardString[currentIndex] == 'h')
-					{
-						horizontal = true;
-						//if this is a two digit clue then two digits away won't be a comma
-						if (boardString[currentIndex + 2] == ',' || boardString[currentIndex + 2] == ')')
-						{
-							//only add the first digit
-							//ct->hor1 = '0'; //in this case 0 represents no digit here
-							ct->hor2 = boardString[currentIndex + 1];
-							currentIndex += 3; //increment to the next part of the clue
-						}
-						else
-						{
-							//add both digits
-							ct->hor1 = boardString[currentIndex + 1]; //in this case 0 represents no digit here
-							ct->hor2 = boardString[currentIndex + 2];
-							currentIndex += 4; //increment to the next part of the clue
-						}
-					}
-
-					//at this point the letter at the current index will either be a 'v', or a ','
-					if (boardString[currentIndex] == 'v')
-					{
-						//same deal here, need to check if we have 1 or 2 digits to the clue
-						if (boardString[currentIndex + 2] == ')')
-						{
-							//only add the first digit
-							//ct->vert1 = '0'; //in this case 0 represents no digit here
-							ct->vert2 = boardString[currentIndex + 1];
-							currentIndex += 4; //increment to the next part of the clue
-						}
-						else
-						{
-							//add both digits
-							ct->vert1 = boardString[currentIndex + 1]; //in this case 0 represents no digit here
-							ct->vert2 = boardString[currentIndex + 2];
-							currentIndex += 5; //increment to the next part of the clue
-						}
-					}
-					else currentIndex++; //move off the comma and go to next tile
-
-					//after parsing the clue, set the newTile pointer
-					newTile = ct;
-				}
-				else
-				{
-					//create a new answer tile
-					AnswerTile* at = new AnswerTile();
-					at->clue = boardString[currentIndex];
-					newTile = at;
-					currentIndex += 2;
-				}
-
-				newTile->id = dimension * i + j; //keep track of each tiles location on the board
-				*(tiles + j) = newTile; //add the new tile to the board
-				
-				if (stop) break; //break out of loop once we hit the last tile
-			}
-		}
-
-		//call the initial algorithm to try and solve some of our clues
+		//Attempt to solve some values for characters based on two digit clues, also assign clue tiles to each answer tile
 		initialClueSolver(board, dimension, clueLocations, letterPossibilities);
 
-		//look at the hierarchy of single letters. In the example puzzle we know that B < H because the H clue at location (1, 1) has B as a component.
-		//Then looking down at the D clue at location (2, 1) we can see that H is a component of it, therefore, H < D. So from looking at just these
-		//two clues we can see that B < H < D. We can also see that I < A for the same reason when looking at clue (3, 0) although currently that doesn't
-		//tie into the BHD chain. In the example we were able to solve numbers 0-3 just from looking at the two digit clues, which means the other letters
-		//must be 4-9. Since H must be larger than B, H CAN'T be 4 and likewise D CAN'T be 4 OR 5. On the flipside, this also means that B CAN'T be 8 or 9
-		//while H also CAN'T be a 9. These relationships go for I and A as well
-		numberHeirarchy(board, dimension, clueLocations, letterPossibilities);
+		//Set the initial number heirarchy and try to eliminate some more options
+		numberHeirarchy(board, dimension, clueLocations, letterPossibilities, letterHeirarchy, heirarchyCreated);
 
-		//create a list of all ways to get all numbers in Kakuro (with a maximum 6x6 board) with all numbers. For example, 15 can be made with two digits
-		//by adding 9+6 or 8+7, three digits by adding 9+5+1, 9+4+2, 8+6+1, 8+5+2, 8+4+3, 7+6+2, 7+5+3 or 6+5+4, four digits by adding 9+3+2+1, 8+4+2+1,
-		//7+5+2+1, 7+4+3+1, 6+5+3+1 or 6+4+3+2 and five digits by adding 5+4+3+2+1. We now need to look at all the individual answer boxes and reduce the
-		//list of what's possible to go there based on 1) Any clues solved with the initialClueSolver() and 2) Any letters currently in the puzzle.
+		std::cout << "Letter Possibilities after initial setup and checks:\n";
+	    for (int i = 0; i < 10; i++)
+	    {
+		    std::cout << (char)(i + 'A') << ": ";
+		    letterPossibilities[i].print();
+	    }
+
+		//Next we attempt to trim the list of possible numbers for each answer tile on the board. By default these tiles start by
+		//allowing all the digits 1-9 as possibilities. We can look at the clues we've solved (or partially solved) so far as well
+		//as look at any letters in the puzzle to reduce the number of possibilities for each box
+		possibilityTrimViaClue(board, dimension, letterPossibilities, combinations);
 
 		//Once we've weedled the answer numbers down by looking at limitations from the clues, it's time to weedle the numbers further down by seeing
 		//how some of these clue boxes play off of eachother. For example, the furthest right clue in the sample is 10. The answer box below this was
@@ -618,8 +884,7 @@ std::pair<std::string, double> q424()
 		delete[] board; //delete the board after each iteration to save on memory
 	}
 
-	//Currently it takes 0.0012555 seconds just to create all of the boards. I think this is so slow because I'm creating lots of things in heap memory
-
+	myFile.close(); //close down the file after reading all boards
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is xxx
