@@ -8,12 +8,12 @@ std::pair<std::string, double> test()
 	auto run_time = std::chrono::steady_clock::now();
 	long long answer = 0;
 
-	std::string password = "?U^Wj[UAh6fjed_j'";
-	for (char c : password)
+	for (int i = 0; i < 100000000; i++)
 	{
-		std::cout << char(c + 5);
+		int yeet = 0b0011001110;
+		answer = log(yeet) / log(2);
 	}
-	std::cout << std::endl;
+	
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 

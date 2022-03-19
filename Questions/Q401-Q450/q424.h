@@ -92,53 +92,63 @@ struct LetterPossibility
 {
 	int size = 10;
 	int possibilities[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+	int possibilitays = 0b1111111111;
 	int answer = -1;
 
 	void solve(int i)
 	{
-		if (i > 9 || i < 0) return;
+		/*if (i > 9 || i < 0) return;
 		for (int i = 0; i < 10; i++) possibilities[i] = -1;
-		possibilities[i] = i;
+		possibilities[i] = i;*/
+		possibilitays = powers_of_two[i];
 		size = 1;
 		answer = i;
 	}
 
 	int getLowest()
 	{
-		//returns the lowest number still available as a possibility
-		for (int i = 0; i < 10; i++)
-			if (possibilities[i] != -1) return i;
+		//returns the lowest number still available as a possibility. This is done by
+		//by using two's complement (algorithm is explained more here: https://stackoverflow.com/questions/12247186/find-the-lowest-set-bit)
+		/*for (int i = 0; i < 10; i++)
+			if (possibilities[i] != -1) return i;*/
+		return log(possibilitays & -possibilitays) / log(2);
 	}
 
 	int getHighest()
 	{
 		//returns the highest number still available as a possibility
-		for (int i = 9; i >= 0; i--)
-			if (possibilities[i] != -1) return i;
+		/*for (int i = 9; i >= 0; i--)
+			if (possibilities[i] != -1) return i;*/
+		return log(possibilitays) / log(2);
 	}
 
-	void remove(std::vector<int> numbers)
+	//void remove(std::vector<int> numbers)
+	//{
+	//	//removes all of the numbers in the given vector, however, only if
+	//	//they haven't been removed already
+	//	for (int i = 0; i < numbers.size(); i++)
+	//	{
+	//		if (possibilities[numbers[i]] == numbers[i])
+	//		{
+	//			possibilities[numbers[i]] = -1;
+	//			size--;
+	//		}
+	//	}
+	//	if (size == 1)
+	//	{
+	//		//set the answer if we've reduced the size variable to 1
+	//		for (int i = 0; i < 10; i++)
+	//			if (possibilities[i] != -1)
+	//			{
+	//				answer = i;
+	//				break;
+	//			}
+	//	}
+	//}
+	void remove(int rem)
 	{
-		//removes all of the numbers in the given vector, however, only if
-		//they haven't been removed already
-		for (int i = 0; i < numbers.size(); i++)
-		{
-			if (possibilities[numbers[i]] == numbers[i])
-			{
-				possibilities[numbers[i]] = -1;
-				size--;
-			}
-		}
-		if (size == 1)
-		{
-			//set the answer if we've reduced the size variable to 1
-			for (int i = 0; i < 10; i++)
-				if (possibilities[i] != -1)
-				{
-					answer = i;
-					break;
-				}
-		}
+		possibilitays ^= (possibilitays & rem);
+		if (!(possibilitays & (possibilitays - 1))) answer = log(possibilitays) / log(2);
 	}
 
 	void print()
@@ -146,7 +156,7 @@ struct LetterPossibility
 		std::string answerString = "[";
 		for (int i = 0; i < 10; i++)
 		{
-			if (possibilities[i] != -1)
+			if (possibilitays & powers_of_two[i])
 			{
 				answerString += std::to_string(i);
 				answerString += ", ";
@@ -396,66 +406,74 @@ void initialClueSolver(BoardTile*** board, int dimension, std::vector<std::pair<
 		if (currentClue->hor1 != 'Z')
 		{
 			leadCharacters.insert(currentClue->hor1);
-			letterPossibilities[currentClue->hor1 - 'A'].remove({ 0, 4, 5, 6, 7, 8, 9 }); //this letter must be a 1, 2 or 3
+			//letterPossibilities[currentClue->hor1 - 'A'].remove({ 0, 4, 5, 6, 7, 8, 9 }); //this letter must be a 1, 2 or 3
+			letterPossibilities[currentClue->hor1 - 'A'].remove(0b1111110001); //this letter must be a 1, 2 or 3
 			//carry out a check here to see if there are only 2 answer tiles for this clue, if so, then the first digit as a 1
 			if (currentClue->horizontalAnswerLength == 2)
 			{
 				letterPossibilities[currentClue->hor1 - 'A'].solve(1);
 				//we can also remove 8 and 9 as options from the second letter (assuming it isn't the same as the first letter)
-				if (currentClue->hor2 != currentClue->hor1) letterPossibilities[currentClue->hor2 - 'A'].remove({ 8, 9 });
+				//if (currentClue->hor2 != currentClue->hor1) letterPossibilities[currentClue->hor2 - 'A'].remove({ 8, 9 });
+				if (currentClue->hor2 != currentClue->hor1) letterPossibilities[currentClue->hor2 - 'A'].remove(0b1100000000);
 				oneFound = true;
 			}
 			else if (currentClue->horizontalAnswerLength == 3)
 			{
-				letterPossibilities[currentClue->hor1 - 'A'].remove({ 3 }); //too short to start with a 3
+				//letterPossibilities[currentClue->hor1 - 'A'].remove({ 3 }); //too short to start with a 3
+				letterPossibilities[currentClue->hor1 - 'A'].remove(0b0000001000); //too short to start with a 3
 				if (letterPossibilities[currentClue->hor1 - 'A'].answer == 2)
 				{
 					//if we've already found which letter 1 is then eliminating 3 here means the answer must be 2
 					//if the answer block only has a length of three and the first digit is 2 then the second digit can only be 0, 1, 2, 3 or 4
 					//because the maximum 3 digit number starting with 2 is 9+8+7 = 24;
-					letterPossibilities[currentClue->hor2 - 'A'].remove({ 5, 6, 7, 8, 9 });
+					//letterPossibilities[currentClue->hor2 - 'A'].remove({ 5, 6, 7, 8, 9 });
+					letterPossibilities[currentClue->hor2 - 'A'].remove(0b1111100000);
 				}
 			}
 			else if (currentClue->horizontalAnswerLength == 6)
 			{
 				//with an answer of this length (which should be possible on a 7x7 board) we can eliminate 1 as a possibility as the smallest number we can 
 				//make is 1+2+3+4+5+6 = 21
-				letterPossibilities[currentClue->hor1 - 'A'].remove({ 1 });
+				//letterPossibilities[currentClue->hor1 - 'A'].remove({ 1 });
+				letterPossibilities[currentClue->hor1 - 'A'].remove(0b0000000010);
 			}
 		}
-		else if (currentClue->hor2 != 'Z') letterPossibilities[currentClue->hor2 - 'A'].remove({ 0, 1, 2 }); //single digit clues can't be 0, 1 or 2
+		//else if (currentClue->hor2 != 'Z') letterPossibilities[currentClue->hor2 - 'A'].remove({ 0, 1, 2 }); //single digit clues can't be 0, 1 or 2
+		else if (currentClue->hor2 != 'Z') letterPossibilities[currentClue->hor2 - 'A'].remove(0b0000000111); //single digit clues can't be 0, 1 or 2
 
 		if (currentClue->vert1 != 'Z')
 		{
 			leadCharacters.insert(currentClue->vert1);
-			letterPossibilities[currentClue->vert1 - 'A'].remove({ 0, 4, 5, 6, 7, 8, 9 }); //this letter must be a 1, 2 or 3
+			//letterPossibilities[currentClue->vert1 - 'A'].remove({ 0, 4, 5, 6, 7, 8, 9 }); //this letter must be a 1, 2 or 3
+			letterPossibilities[currentClue->vert1 - 'A'].remove(0b1111110001);
 			//carry out a check here to see if there are only 2 answer tiles for this clue, if so, then the first digit as a 1
 			if (currentClue->verticalAnswerLength == 2)
 			{
 				letterPossibilities[currentClue->vert1 - 'A'].solve(1);
 				//we can also remove 8 and 9 as options from the second letter (assuming it isn't the same as the first letter)
-				if (currentClue->vert2 != currentClue->vert1) letterPossibilities[currentClue->vert2 - 'A'].remove({ 8, 9 });
+				//if (currentClue->vert2 != currentClue->vert1) letterPossibilities[currentClue->vert2 - 'A'].remove({ 8, 9 });
+				if (currentClue->vert2 != currentClue->vert1) letterPossibilities[currentClue->vert2 - 'A'].remove(0b1100000000);
 				oneFound = true;
 			}
 			else if (currentClue->verticalAnswerLength == 3)
 			{
-				letterPossibilities[currentClue->vert1 - 'A'].remove({ 3 }); //too short to start with a 3
+				letterPossibilities[currentClue->vert1 - 'A'].remove(0b0000001000); //too short to start with a 3
 				if (letterPossibilities[currentClue->vert1 - 'A'].answer == 2)
 				{
 					//if we've already found which letter 1 is then eliminating 3 here means the answer must be 2
 					//if the answer block only has a length of three and the first digit is 2 then the second digit can only be 0, 1, 2, 3 or 4
 					//because the maximum 3 digit number starting with 2 is 9+8+7 = 24;
-					letterPossibilities[currentClue->vert2 - 'A'].remove({ 5, 6, 7, 8, 9 });
+					letterPossibilities[currentClue->vert2 - 'A'].remove(0b1111100000);
 				}
 			}
 			else if (currentClue->verticalAnswerLength == 6)
 			{
 				//with an answer of this length (which should be possible on a 7x7 board) we can eliminate 1 as a possibility as the smallest number we can 
 				//make is 1+2+3+4+5+6 = 21
-				letterPossibilities[currentClue->vert1 - 'A'].remove({ 1 });
+				letterPossibilities[currentClue->vert1 - 'A'].remove(0b0000000010);
 			}
 		}
-		else if (currentClue->vert2 != 'Z') letterPossibilities[currentClue->vert2 - 'A'].remove({ 0, 1, 2 }); //single digit clues can't be 0, 1 or 2
+		else if (currentClue->vert2 != 'Z') letterPossibilities[currentClue->vert2 - 'A'].remove(0b0000000111); //single digit clues can't be 0, 1 or 2
 	}
 
 	//TODO: I think I can safely remove this if statement
@@ -469,11 +487,14 @@ void initialClueSolver(BoardTile*** board, int dimension, std::vector<std::pair<
 			{
 				if (letterPossibilities[i].size > 1)
 				{
-					if (oneFound) letterPossibilities[i].remove({ 0, 1, 4, 5, 6, 7, 8, 9 });
-					else letterPossibilities[i].remove({ 0, 4, 5, 6, 7, 8, 9 });
+					//if (oneFound) letterPossibilities[i].remove({ 0, 1, 4, 5, 6, 7, 8, 9 });
+					if (oneFound) letterPossibilities[i].remove(0b1111110011);
+					//else letterPossibilities[i].remove({ 0, 4, 5, 6, 7, 8, 9 });
+					else letterPossibilities[i].remove(0b1111110001);
 				}
 			}
-			else letterPossibilities[i].remove({ 1, 2, 3 });
+			//else letterPossibilities[i].remove({ 1, 2, 3 });
+			else letterPossibilities[i].remove(0b0000001110);
 		}
 	}
 
@@ -488,7 +509,8 @@ void initialClueSolver(BoardTile*** board, int dimension, std::vector<std::pair<
 		//in case it hasn't already, remove 1 as an option from anything that hasn't been solved yet
 		for (int i = 0; i < 10; i++)
 		{
-			if (letterPossibilities[i].size > 1) letterPossibilities[i].remove({ 1 });
+			//if (letterPossibilities[i].size > 1) letterPossibilities[i].remove({ 1 });
+			if (letterPossibilities[i].size > 1) letterPossibilities[i].remove(0b0000000010);
 			if (letterPossibilities[i].size == 1 && letterPossibilities[i].answer == 2)
 			{
 				twoFound = true;
@@ -563,8 +585,9 @@ void initialClueSolver(BoardTile*** board, int dimension, std::vector<std::pair<
 		//in case it hasn't already, remove 2 as an option from anything that hasn't been solved yet
 		for (int i = 0; i < 10; i++)
 		{
-			if (letterPossibilities[i].size > 1) letterPossibilities[i].remove({ 2 });
-			if (letterPossibilities[i].size == 1 && letterPossibilities[i].answer == 3)
+			//if (letterPossibilities[i].size > 1) letterPossibilities[i].remove({ 2 });
+			if (letterPossibilities[i].size > 1) letterPossibilities[i].remove(0b0000000100);
+			if (letterPossibilities[i].answer == 3)
 			{
 				threeFound = true;
 				break;
@@ -621,7 +644,8 @@ void initialClueSolver(BoardTile*** board, int dimension, std::vector<std::pair<
 	//in case it hasn't already, remove 0 as an option from anything that hasn't been solved yet
 	if (zeroFound)
 		for (int i = 0; i < 10; i++)
-			if (letterPossibilities[i].size > 1) letterPossibilities[i].remove({ 0 });
+			if (letterPossibilities[i].size > 1) letterPossibilities[i].remove(0b0000000001);
+			//if (letterPossibilities[i].size > 1) letterPossibilities[i].remove({ 0 });
 
 	//Temporary printing function
 	/*std::cout << "Board after initial clue check:\n";
@@ -642,9 +666,10 @@ void recursiveElimination(int location, int& lowest, int& highest, std::vector<s
 		for (int i = 0; i < letterHeirarchy[location].second.size(); i++) recursiveElimination(letterHeirarchy[location].second[i], lowest, highest, letterHeirarchy, letterPossibilities);
 
 		//then remove everything from possibilites that's greater than or equal to the 'highest' variable
-		std::vector<int> rem;
-		for (int i = highest; i < 10; i++) rem.push_back(i);
-		letterPossibilities[location].remove(rem);
+		//std::vector<int> rem;
+		//for (int i = highest; i < 10; i++) rem.push_back(i);
+		//letterPossibilities[location].remove(rem);
+		letterPossibilities[location].remove((0b1111111111 << highest) & 0b1111111111); //if highest = 6 then binary number in remove() would be 0b111100000
 	}
 	else if (letterHeirarchy[location].second.size() == 0)
 	{
@@ -653,9 +678,10 @@ void recursiveElimination(int location, int& lowest, int& highest, std::vector<s
 		highest = letterPossibilities[location].getHighest() >= highest ? highest : letterPossibilities[location].getHighest();
 
 		//then remove everything from possibilities anything that's less than or equal to the 'lowest' variable
-		std::vector<int> rem;
+		/*std::vector<int> rem;
 		for (int i = 0; i <= lowest; i++) rem.push_back(i);
-		letterPossibilities[location].remove(rem);
+		letterPossibilities[location].remove(rem);*/
+		letterPossibilities[location].remove(0b1111111111 >> (10 - (lowest + 1)));
 	}
 	else
 	{
@@ -663,9 +689,10 @@ void recursiveElimination(int location, int& lowest, int& highest, std::vector<s
 		//'highest' variable from here
 
 		//first, remove everything from possibilities that's less than or equal to the 'lowest' variable
-		std::vector<int> rem;
+		/*std::vector<int> rem;
 		for (int i = 0; i <= lowest; i++) rem.push_back(i);
-		letterPossibilities[location].remove(rem);
+		letterPossibilities[location].remove(rem);*/
+		letterPossibilities[location].remove(0b1111111111 >> (10 - (lowest + 1)));
 
 		//now change the lowest variable so that it matches the lowest value of this letter
 		lowest = letterPossibilities[location].getLowest();
@@ -674,9 +701,10 @@ void recursiveElimination(int location, int& lowest, int& highest, std::vector<s
 		for (int i = 0; i < letterHeirarchy[location].second.size(); i++) recursiveElimination(letterHeirarchy[location].second[i], lowest, highest, letterHeirarchy, letterPossibilities);
 
 		//remove everything from possibilites that's greater than or equal to the 'highest' variable
-		std::vector<int> rem2;
+		/*std::vector<int> rem2;
 		for (int i = highest; i < 10; i++) rem2.push_back(i);
-		letterPossibilities[location].remove(rem2);
+		letterPossibilities[location].remove(rem2);*/
+		letterPossibilities[location].remove((0b1111111111 << highest) & 0b1111111111); //if highest = 6 then binary number in remove() would be 0b111100000
 
 		//finally, set the 'highest' variable equal to the highest possibility of this letter
 		highest = letterPossibilities[location].getHighest();
