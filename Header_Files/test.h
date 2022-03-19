@@ -6,14 +6,7 @@ std::pair<std::string, double> test()
 {
 	//ignore these lines, I use them in other header files
 	auto run_time = std::chrono::steady_clock::now();
-	long long answer = 0;
-
-	for (int i = 0; i < 100000000; i++)
-	{
-		int yeet = 0b0011001110;
-		answer = log(yeet) / log(2);
-	}
-	
+	long long answer = -1;
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
