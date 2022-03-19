@@ -35,10 +35,11 @@ class ClueTile : public BoardTile
 {
 public:
 	//vertical and horizontal hold the numeric values for the clues, if a clue hasn't been solved yet the value will be -1,
-	//if the clue doesn't exist the value is -2
+	//if the clue doesn't exist the value is -2, if the clue has been partially solved (for two digit clues) then the value
+	//will be -3
 	int vertical, horizontal;
-	//int verticalOptions[2][10], horizontalOptions[2][10];
 	int verticalAnswerLength, horizontalAnswerLength;
+	std::vector<int> verticalPartials, horizontalPartials; //if a two digit clue has been partially solved these vectors hold the options
 	char vert1, vert2, hor1, hor2; //represent the clue letters
 
 	//Constructors
@@ -69,7 +70,7 @@ public:
 class AnswerTile : public BoardTile
 {
 public:
-	int options[10];
+	int possibilities, answer;
 	char clue;
 	ClueTile* horizontalClue, verticalClue; //every answer tile is part of a horizontal and vertical clue
 
@@ -77,78 +78,53 @@ public:
 	{
 		this->pieceType = "Answer";
 		this->clue = 'O';
-		for (int i = 0; i < 10; i++) options[i] = i;
+		this->answer = -1;
+		this->possibilities = 0b1111111110; //0 isn't a possibility for answer tiles
+	}
+
+	void remove(int rem)
+	{
+		possibilities ^= (possibilities & rem);
+		if (!(possibilities & (possibilities - 1))) answer = log(possibilities) / log(2);
 	}
 
 	void printPossibilities()
 	{
 		//prints all posibilities for each digit of both the horizontal and vertical clues
 		std::cout << "Answer Tile Possibilities: ";
-		for (int i = 0; i < 10; i++) if (this->options[i] != -1) std::cout << this->options[i] << " ";
+		for (int i = 0; i < 10; i++) if (possibilities & powers_of_two[i]) std::cout << i << " ";
 		std::cout << std::endl;
 	}
 };
 struct LetterPossibility
 {
 	int size = 10;
-	int possibilities[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-	int possibilitays = 0b1111111111;
+	int possibilities = 0b1111111111;
 	int answer = -1;
 
 	void solve(int i)
 	{
-		/*if (i > 9 || i < 0) return;
-		for (int i = 0; i < 10; i++) possibilities[i] = -1;
-		possibilities[i] = i;*/
-		possibilitays = powers_of_two[i];
+		possibilities = powers_of_two[i];
 		size = 1;
 		answer = i;
 	}
 
 	int getLowest()
 	{
-		//returns the lowest number still available as a possibility. This is done by
-		//by using two's complement (algorithm is explained more here: https://stackoverflow.com/questions/12247186/find-the-lowest-set-bit)
-		/*for (int i = 0; i < 10; i++)
-			if (possibilities[i] != -1) return i;*/
-		return log(possibilitays & -possibilitays) / log(2);
+		//returns the lowest number still available as a possibility.
+		return log(possibilities & -possibilities) / log(2);
 	}
 
 	int getHighest()
 	{
 		//returns the highest number still available as a possibility
-		/*for (int i = 9; i >= 0; i--)
-			if (possibilities[i] != -1) return i;*/
-		return log(possibilitays) / log(2);
+		return log(possibilities) / log(2);
 	}
 
-	//void remove(std::vector<int> numbers)
-	//{
-	//	//removes all of the numbers in the given vector, however, only if
-	//	//they haven't been removed already
-	//	for (int i = 0; i < numbers.size(); i++)
-	//	{
-	//		if (possibilities[numbers[i]] == numbers[i])
-	//		{
-	//			possibilities[numbers[i]] = -1;
-	//			size--;
-	//		}
-	//	}
-	//	if (size == 1)
-	//	{
-	//		//set the answer if we've reduced the size variable to 1
-	//		for (int i = 0; i < 10; i++)
-	//			if (possibilities[i] != -1)
-	//			{
-	//				answer = i;
-	//				break;
-	//			}
-	//	}
-	//}
 	void remove(int rem)
 	{
-		possibilitays ^= (possibilitays & rem);
-		if (!(possibilitays & (possibilitays - 1))) answer = log(possibilitays) / log(2);
+		possibilities ^= (possibilities & rem);
+		if (!(possibilities & (possibilities - 1))) answer = log(possibilities) / log(2);
 	}
 
 	void print()
@@ -156,7 +132,7 @@ struct LetterPossibility
 		std::string answerString = "[";
 		for (int i = 0; i < 10; i++)
 		{
-			if (possibilitays & powers_of_two[i])
+			if (possibilities & powers_of_two[i])
 			{
 				answerString += std::to_string(i);
 				answerString += ", ";
@@ -170,7 +146,7 @@ struct LetterPossibility
 };
 
 //Function to create all ways of creating numbers in Kakuro (limited to maximum of 6 digits)
-std::vector<std::vector<std::pair<int, std::vector<std::vector<int> > > > >* kakuroNumberCombinations()
+ void kakuroNumberCombinations(std::vector<std::vector<std::pair<int, std::vector<std::vector<int> > > > >& combos)
 {
 	//this function creates all of the possible Kakuro combos (where the max clue length is 6) and stores them in a comlex vector.
 	//The strucutre of the vector looks like this:
@@ -189,7 +165,7 @@ std::vector<std::vector<std::pair<int, std::vector<std::vector<int> > > > >* kak
 	//to make the current number at the current length
 
 	//Nothing fancy about this algorithm, it just keeps adding numbers wherever possible. The hardest part is creating and iterating through the data structure
-	std::vector<std::vector<std::pair<int, std::vector<std::vector<int> > > > > combos;
+	//std::vector<std::vector<std::pair<int, std::vector<std::vector<int> > > > > combos;
 	for (int i = 0; i < 7; i++)
 	{
 		std::vector<std::pair<int, std::vector<std::vector<int> > > > numberOfDigits;
@@ -253,7 +229,7 @@ std::vector<std::vector<std::pair<int, std::vector<std::vector<int> > > > >* kak
 		}
 	}*/
 
-	return &combos;
+	//return &combos;
 }
 
 //Functions for Board Manipulation
@@ -645,7 +621,6 @@ void initialClueSolver(BoardTile*** board, int dimension, std::vector<std::pair<
 	if (zeroFound)
 		for (int i = 0; i < 10; i++)
 			if (letterPossibilities[i].size > 1) letterPossibilities[i].remove(0b0000000001);
-			//if (letterPossibilities[i].size > 1) letterPossibilities[i].remove({ 0 });
 
 	//Temporary printing function
 	/*std::cout << "Board after initial clue check:\n";
@@ -666,9 +641,6 @@ void recursiveElimination(int location, int& lowest, int& highest, std::vector<s
 		for (int i = 0; i < letterHeirarchy[location].second.size(); i++) recursiveElimination(letterHeirarchy[location].second[i], lowest, highest, letterHeirarchy, letterPossibilities);
 
 		//then remove everything from possibilites that's greater than or equal to the 'highest' variable
-		//std::vector<int> rem;
-		//for (int i = highest; i < 10; i++) rem.push_back(i);
-		//letterPossibilities[location].remove(rem);
 		letterPossibilities[location].remove((0b1111111111 << highest) & 0b1111111111); //if highest = 6 then binary number in remove() would be 0b111100000
 	}
 	else if (letterHeirarchy[location].second.size() == 0)
@@ -678,9 +650,6 @@ void recursiveElimination(int location, int& lowest, int& highest, std::vector<s
 		highest = letterPossibilities[location].getHighest() >= highest ? highest : letterPossibilities[location].getHighest();
 
 		//then remove everything from possibilities anything that's less than or equal to the 'lowest' variable
-		/*std::vector<int> rem;
-		for (int i = 0; i <= lowest; i++) rem.push_back(i);
-		letterPossibilities[location].remove(rem);*/
 		letterPossibilities[location].remove(0b1111111111 >> (10 - (lowest + 1)));
 	}
 	else
@@ -689,9 +658,6 @@ void recursiveElimination(int location, int& lowest, int& highest, std::vector<s
 		//'highest' variable from here
 
 		//first, remove everything from possibilities that's less than or equal to the 'lowest' variable
-		/*std::vector<int> rem;
-		for (int i = 0; i <= lowest; i++) rem.push_back(i);
-		letterPossibilities[location].remove(rem);*/
 		letterPossibilities[location].remove(0b1111111111 >> (10 - (lowest + 1)));
 
 		//now change the lowest variable so that it matches the lowest value of this letter
@@ -701,9 +667,6 @@ void recursiveElimination(int location, int& lowest, int& highest, std::vector<s
 		for (int i = 0; i < letterHeirarchy[location].second.size(); i++) recursiveElimination(letterHeirarchy[location].second[i], lowest, highest, letterHeirarchy, letterPossibilities);
 
 		//remove everything from possibilites that's greater than or equal to the 'highest' variable
-		/*std::vector<int> rem2;
-		for (int i = highest; i < 10; i++) rem2.push_back(i);
-		letterPossibilities[location].remove(rem2);*/
 		letterPossibilities[location].remove((0b1111111111 << highest) & 0b1111111111); //if highest = 6 then binary number in remove() would be 0b111100000
 
 		//finally, set the 'highest' variable equal to the highest possibility of this letter
@@ -829,12 +792,128 @@ void printBoard(BoardTile*** board, int dimension)
 	}
 	std::cout << std::endl;
 }
+void clueLetters(BoardTile*** board, int dimension, std::vector<std::pair<int, int> >& clueLocations, std::vector<LetterPossibility>& letterPossibilities)
+{
+	//attempts to solve clues with the current state of the letterPossibilities. iterate over all the clues and see which ones have
+	//been solved or partially solved and then fill out the possibility vectors for any unsolved clues
+	for (int i = 0; i < clueLocations.size(); i++)
+	{
+		ClueTile* currentClue = (ClueTile*)(*(*(board + clueLocations[i].first) + clueLocations[i].second));
+
+		if (currentClue->hor1 != 'Z')
+		{
+			if (letterPossibilities[currentClue->hor1 - 'A'].answer != -1) currentClue->horizontal = -3; //represents a partial solve
+			if (letterPossibilities[currentClue->hor2 - 'A'].answer != -1)
+			{
+				if (currentClue->horizontal == -3) currentClue->horizontal = (10 * letterPossibilities[currentClue->hor1 - 'A'].answer) + (letterPossibilities[currentClue->hor2 - 'A'].answer); //this clue is solved
+				else currentClue->horizontal = -3; //represents a partial solve
+			}
+		}
+		else if (currentClue->hor2 != 'Z')
+			if (letterPossibilities[currentClue->hor2 - 'A'].answer != -1) currentClue->horizontal = letterPossibilities[currentClue->hor2 - 'A'].answer; //solved
+
+		if (currentClue->vert1 != 'Z')
+		{
+			if (letterPossibilities[currentClue->vert1 - 'A'].answer != -1) currentClue->vertical = -3; //represents a partial solve
+			if (letterPossibilities[currentClue->vert2 - 'A'].answer != -1)
+			{
+				if (currentClue->vertical == -3) currentClue->vertical = (10 * letterPossibilities[currentClue->vert1 - 'A'].answer) + letterPossibilities[currentClue->vert2 - 'A'].answer; //this clue is solved
+				else currentClue->vertical = -3; //represents a partial solve
+			}
+		}
+		else if (currentClue->vert2 != 'Z')
+			if (letterPossibilities[currentClue->vert2 - 'A'].answer != -1) currentClue->vertical = letterPossibilities[currentClue->vert2 - 'A'].answer; //solved
+
+		//if any clues aren't fully solved then fill out their possibility vectors
+		if (currentClue->horizontal == -3 || currentClue->horizontal == -1)
+		{
+			for (int j = 0; j < 10; j++)
+			{
+				if (currentClue->hor1 != 'Z' && !(powers_of_two[j] & letterPossibilities[currentClue->hor1 - 'A'].possibilities)) continue;
+
+				for (int k = 0; k < 10; k++)
+					if (powers_of_two[k] & letterPossibilities[currentClue->hor2 - 'A'].possibilities) currentClue->horizontalPartials.push_back(10 * j + k);
+
+				if (currentClue->hor1 == 'Z') break;
+			}
+
+			/*std::cout << "Horizontal Partial Possibilites: ";
+			vprint(currentClue->horizontalPartials);*/
+		}
+
+		if (currentClue->vertical == -3 || currentClue->vertical == -1)
+		{
+			for (int j = 0; j < 10; j++)
+			{
+
+				if (currentClue->vert1 != 'Z' && !(powers_of_two[j] & letterPossibilities[currentClue->vert1 - 'A'].possibilities)) continue;
+
+				for (int k = 0; k < 10; k++)
+					if (powers_of_two[k] & letterPossibilities[currentClue->vert2 - 'A'].possibilities) currentClue->verticalPartials.push_back(10 * j + k);
+
+				if (currentClue->vert1 == 'Z') break;
+			}
+
+			/*std::cout << "Vertical Partial Possibilites: ";
+			vprint(currentClue->verticalPartials);*/
+		}
+	}
+}
 void possibilityTrimViaClue(BoardTile*** board, int dimension, std::vector<LetterPossibility>& letterPossibilities, std::vector<std::vector<std::pair<int, std::vector<std::vector<int> > > > >& combos)
 {
 	//In this function we visit every AnswerTile on the board and try to reduce the total number of digits that can go inside of them. This is done by A) looking at the
 	//horizontal and vertical clues that govern the box and B) looking at any letters actually placed in these AnswerTiles at the start of the puzzle.
-	//For example, if we figured out that one of the clues was 12, and there were three answer boxes making up that clue's answer then our options to fill in the three boxes
-	//would be
+	//For example, if we figured out that one of the clues was 12, and there were two answer boxes making up that clue's answer then our options to fill in the three boxes
+	//would be (9, 3), (8, 4) and (7, 5). At a glance we can see that the numbers 1, 2, 3 and 6 couldn't be utilized here.
+	AnswerTile* currentAnswer;
+	BoardTile* boardTile;
+
+	for (int i = 0; i < dimension; i++)
+	{
+		for (int j = 0; j < dimension; j++)
+		{
+			//I don't have the answer tiles saved into an array so we just scan the whole board.
+			boardTile = (*(*(board + i) + j));
+			if (boardTile->pieceType == "Answer")
+			{
+				currentAnswer = (AnswerTile*)boardTile;
+				if (currentAnswer->answer > 0) continue; //no need to do anything with a tile we've already solved
+
+				//first look to see if the answer tile has a letter associated with it. We use the bitwise ~ to reverse all the bits because we want to 
+				//remove anything that ISN'T an option
+				if (currentAnswer->clue != 'O') currentAnswer->remove(~letterPossibilities[currentAnswer->clue - 'A'].possibilities & 0b1111111111);
+
+				//if this particular clue has been solved, look into the combo vector to see what options are allowed in this square
+				if (currentAnswer->horizontalClue->horizontal > 0)
+				{
+					int allowableDigits = combos[currentAnswer->horizontalClue->horizontalAnswerLength][currentAnswer->horizontalClue->horizontal].first;
+					currentAnswer->remove(~allowableDigits & 0b1111111111); //remove digits that aren't allowed
+				}
+				else if (currentAnswer->horizontalClue->horizontal == -3)
+				{
+					//this is a partially solved clue, create a combined binary number of what's allowed and then remove anything not allowed. For example,
+					//if we knew that the clue had a length of 2 and had the potential of being 14, 15 or 16, we'd combine the allowable digit binary numbers
+					//from these three possibilities. 14 with 2 digits can be (9, 5) or (8, 6), 15 can be (9, 6) or (8, 7) and 16 can be (9, 7). Combining these
+					//possibilities means that we can have 5, 6, 7, 8 or 9 in the boxes.
+					int allowableDigits = 0;
+					for (int k = 0; k < currentAnswer->horizontalClue->horizontalPartials.size(); k++)
+						allowableDigits |= combos[currentAnswer->horizontalClue->horizontalAnswerLength][currentAnswer->horizontalClue->horizontalPartials[k]].first;
+
+					currentAnswer->remove(~allowableDigits & 0b1111111111); //remove digits that aren't allowed from the combined allowedDigits
+				}
+				else
+				{
+					//the clue isn't even partially solved so weedling down possibilities is tough. One check we can do here at least, is to look and see if it's
+					//a single digit clue. If so then look at the length. If the length is 2 then we can eliminate 9 as a possibility (because 9 + 1 = 10). If 
+					//the length is 3 then we can eliminate 9, 8 and 7 as possibilities (because 7 + 2 + 1 = 10).
+
+					//TODO: I'm sure there's some other checks I can do here to help eliminate possibilites. For example, even if a clue isn't partially solved,
+					//it doesn't mean that it's individual components aren't partially solved. Let's say I had a clue of "EF" where E has been narrowed down to
+					//1 and 2 and F has been narrowed down to 3 and 4. This means the only possibilities for the clue are 13, 14, 23 and 24
+				}
+			}
+		}
+	}
 }
 
 std::pair<std::string, double> q424()
@@ -849,7 +928,8 @@ std::pair<std::string, double> q424()
 	myFile.open("Resources/q424.txt");
 
 	//before looping through all the puzzles, create a complex vector storing all the different ways to solve (up to 6 digit) Kakuro clues
-	std::vector<std::vector<std::pair<int, std::vector<std::vector<int> > > > > combinations = *(kakuroNumberCombinations());
+	std::vector<std::vector<std::pair<int, std::vector<std::vector<int> > > > > combinations;
+	kakuroNumberCombinations(combinations);
 
 	//TODO: Change this loop from 1 to 200 after working out puzzle solving logic
 	for (int i = 0; i < 1; i++)
@@ -888,6 +968,9 @@ std::pair<std::string, double> q424()
 		    std::cout << (char)(i + 'A') << ": ";
 		    letterPossibilities[i].print();
 	    }
+
+		//After our initial analysis of the clues and letters, insert our letter values into each clue
+		clueLetters(board, dimension, clueLocations, letterPossibilities);
 
 		//Next we attempt to trim the list of possible numbers for each answer tile on the board. By default these tiles start by
 		//allowing all the digits 1-9 as possibilities. We can look at the clues we've solved (or partially solved) so far as well
