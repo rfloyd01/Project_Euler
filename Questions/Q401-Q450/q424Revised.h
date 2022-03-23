@@ -237,6 +237,75 @@ public:
 	}
 };
 
+//Function to create all ways of creating numbers in Kakuro (limited to maximum of 6 digits)
+void kakuroNumberCombinationsRevised(std::vector<std::vector<int> >& combos)
+{
+	//Nothing fancy about this algorithm, it just keeps adding numbers wherever possible. The structure for the final
+	//vector is as follows. The first vector represents how many digits we have and the second vector represents the number
+	//we're trying to make. Each integer in the second vector is a binary representation of all the digits that can be
+	//used to make the current number at the current digits.
+
+	//For example, combos[3][8] is a binary number representing all of the digits that can be used to make the number
+	//8 while using 3 distinct digits. We can make 8 with 3 digits with [5, 2, 1] or [4, 3, 1]. Since the digits 1 - 5
+	//or all used here then combos[3][8] would be 0b0000111110 = 62. To get this final vector we'll need to keep vectors
+	//of all the actual combinations as we're building them (i.e. [5, 2, 1] and [4, 3, 1] would need to be saved), however,
+	//these can be discarded at the end of this function
+
+	std::vector<std::vector<std::vector<std::vector<int> > > > constructionCombos;
+
+	for (int i = 0; i < 7; i++)
+	{
+		//6 digits is the maximum clue length for this problem (real kakuro goes up to 9)
+		std::vector<std::vector<std::vector<int> > > constructionNumberOfDigits;
+		std::vector<int> numberOfDigits;
+		constructionCombos.push_back(constructionNumberOfDigits);
+		combos.push_back(numberOfDigits);
+	}
+
+	int rowMaximum = 0, currentNum = 9;
+	for (int i = 1; i < 7; i++)
+	{
+		//we start at 1 because we can't make any 0 digit numbers. Technically we can't use any 1 digit numbers on a kakuro board either, however, we build off of them
+		//to get our actual combinations.
+		rowMaximum += currentNum--;
+		for (int j = 0; j <= rowMaximum; j++)
+		{
+			std::vector<std::vector<int> > actualNumber;
+			constructionCombos[i].push_back(actualNumber);
+			combos[i].push_back(0);
+		}
+	}
+
+	//set all of the necessary 1 digit building blocks
+	for (int i = 1; i <= 9; i++)
+	{
+		constructionCombos[1][i].push_back({ i });
+		combos[1][i] = powers_of_two[i];
+	}
+
+	//now iterate over every combo from the 1 digit row to the 5 digit row, adding single digits that are greater than current last digit
+	for (int i = 1; i <= 5; i++)
+	{
+		for (int j = 0; j < constructionCombos[i].size(); j++)
+		{
+			if (constructionCombos[i][j].size() == 0) continue; //no need to check any combos that aren't possible
+			for (int k = 0; k < constructionCombos[i][j].size(); k++)
+			{
+				int kBinary = 0;
+				for (int l = 0; l < constructionCombos[i][j][k].size(); l++) kBinary |= powers_of_two[constructionCombos[i][j][k][l]];
+				for (int l = constructionCombos[i][j][k].back() + 1; l <= 9; l++)
+				{
+					//create a copy of the existing vector each time we add a new digit to it
+					std::vector<int> copy = constructionCombos[i][j][k];
+					copy.push_back(l);
+					constructionCombos[i + 1][j + l].push_back(copy);
+					combos[i + 1][j + l] |= (kBinary | powers_of_two[l]);
+				}
+			}
+		}
+	}
+}
+
 //Functions for Kakuro Board manipulation
 void createBoard(std::string boardString, KakuroBoard &board)
 {
@@ -378,8 +447,8 @@ std::pair<std::string, double> q424Revised()
 
 	//Before looping through all the puzzles, create a vector that stores all the different ways to solve (up to 6 digit) Kakuro clues.
 	//This will make it much quicker to see at a glance what possibilities can be removed from answer tiles
-	std::vector<std::vector<std::pair<int, std::vector<std::vector<int> > > > > combinations;
-	kakuroNumberCombinations(combinations);
+	std::vector<std::vector<int> > combinations;
+	kakuroNumberCombinationsRevised(combinations);
 
 	std::ifstream myFile;
 	std::string boardString;
