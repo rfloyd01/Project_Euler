@@ -1111,7 +1111,6 @@ std::pair<std::string, double> q424()
 		bool print = false;
 		while (kakuroBoard.getLetterPossibilities()->getLettersSolved() != 0b1111111111)
 		{
-
 			//The first thing we do is examine our letter heirarchy and see if we can eliminate any letter possibilities.
 			//A recursive function is called on all letters at the base of a heirarchy chain
 			possibilityTrimViaHeirarchy(kakuroBoard, letterHeirarchy);
