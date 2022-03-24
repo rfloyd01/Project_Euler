@@ -229,7 +229,6 @@
     <ClInclude Include="Questions\Q301-Q350\q329.h" />
     <ClInclude Include="Questions\Q351-Q400\q374.h" />
     <ClInclude Include="Questions\Q401-Q450\q424.h" />
-    <ClInclude Include="Questions\Q401-Q450\q424Revised.h" />
     <ClInclude Include="Questions\Q451-Q500\q491.h" />
     <ClInclude Include="Questions\Q51-Q100\master51-100.h" />
     <ClInclude Include="Questions\Q51-Q100\q51.h" />
