@@ -1193,12 +1193,6 @@ void clueTrimViaAnswer(BoardTile*** board, std::vector<std::pair<int, int> >& cl
 					//removed = true;
 				}
 			}
-			if (removed)
-			{
-				
-
-				//removed = false; //reset this variable before doing vertical clue checks
-			}
 			//if we ended up eliminating anything then we need to update the letterPossibilities array
 			int clueLength = currentClue->horizontalPossibilities[0] < 10 ? 1 : 2;
 
@@ -1226,10 +1220,6 @@ void clueTrimViaAnswer(BoardTile*** board, std::vector<std::pair<int, int> >& cl
 					currentClue->verticalPossibilities.erase(currentClue->verticalPossibilities.begin() + i);
 					removed = true;
 				}
-			}
-			if (removed)
-			{
-				
 			}
 			//if we ended up eliminating anything then we need to update the letterPossibilities array
 			int clueLength = currentClue->verticalPossibilities[0] < 10 ? 1 : 2;
@@ -1553,12 +1543,6 @@ std::pair<std::string, double> q424()
 		//the puzzle is solved. On each iteration of the loop we keep track of whether or not anything has changed. If we make it 
 		//through an iteration without anything changing then a function is called to force pick an answer to see if it let's us
 		//solve the puzzle (or reach an unsolvable state)
-		//for (int j = 0; j < 5; j++)
-		//if (i == printGame)
-		//{
-		//	//while testing, only want to print the game board of certain games
-		//	printAllLetterPossibilities(letterPossibilities);
-		//}
 		bool solved;
 		int loopCounter = 1;
 		while (true)
