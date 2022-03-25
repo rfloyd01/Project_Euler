@@ -53,7 +53,7 @@ class LetterPossibilities
 {
 private:
 	Possibilities letterPossibilities[10];
-	int lettersSolved = 0, numbersSolved = 0, numberOfLettersSolved = 0;
+	int numbersSolved = 0;
 	long long answer = 0;
 
 	void solve(int letter, int value)
@@ -65,9 +65,7 @@ private:
 			if (i != letter)
 				this->remove(i + 'A', value);
 
-		this->lettersSolved |= powers_of_two[letter];
 		this->numbersSolved |= value;
-		this->numberOfLettersSolved++;
 		this->answer += powers_of_ten[9 - letter] * (log(value) / log(2));
 	}
 
@@ -94,19 +92,10 @@ public:
 			letterPossibilities[i].print();
 			std::cout << std::endl;
 		}
-		std::cout << this->numberOfLettersSolved << " Letters have been solved." << std::endl;
 		std::cout << std::endl;
 	}
-	int getNumberOfLettersFound()
-	{
-		return this->numberOfLettersSolved;
-	}
-	int getLettersSolved() { return this->lettersSolved; }
 	int getNumbersSolved() { return this->numbersSolved; }
-	Possibilities* seePossibility(char letter)
-	{
-		return &this->letterPossibilities[letter - 'A'];
-	}
+	Possibilities* seePossibility(char letter) { return &this->letterPossibilities[letter - 'A']; }
 	long long getAnswer() { return this->answer; }
 };
 class BoardTile
@@ -137,8 +126,6 @@ class ClueTile : public BoardTile
 {
 private:
 	char clueLetters[2][2] = { {' ', ' '}, {' ', ' '} };
-	//std::vector<int> cluePossibilities[2];
-	//LetterPossibilities* currentLetterPossibilities;
 	Possibilities* cluePossibilities[2][2] = { {nullptr, nullptr}, {nullptr, nullptr} };
 	int answerLengths[2] = { 0, 0 };
 	int solvedClueValues[2] = { 0, 0 };
@@ -184,6 +171,20 @@ private:
 	int solvedAnswer = 0;
 
 public:
+	void remove(int num)
+	{
+		//takes a binary number as input and removes it's bits as
+		//possibilities. If no bits actually match then nothing happens
+		if (!(num & this->answerPossibilities.digits)) return;
+
+		//if there are digits to remove, remove them and mark the answer
+		//tile possibilities as having been changed
+		this->answerPossibilities.remove(num);
+
+		//check to see if we've solved the answer tile. If so set the answer
+		if (this->answerPossibilities.solved())
+			this->solvedAnswer = this->answerPossibilities.getHighest();
+	}
 	void setInternalClue(char letter) { this->internalClue = letter; }
 	void setSolvedAnswer(int ans) { this->solvedAnswer = ans; }
 	int getSolvedAnswer() { return this->solvedAnswer; }
@@ -497,7 +498,6 @@ void createBoard(std::string boardString, KakuroBoard& board)
 				{
 					if (currentClue->getClueLetter(orientation, 1) != ' ')
 					{
-						//std::cout << "Clue at location " << i << ", " << j << " has a " << orientation << " clue." << std::endl;
 						//we set k in the below loop by using the fact that orientation = 0 for Horizontal and 1 for Vertical.
 						//By converting to a boolean this means that when looking at horizontal clues, k starts at a value of j + 1
 						//while for vertical clues k will start at a value of i + i. We use the same logic to increment to the next tile.
@@ -741,13 +741,12 @@ void answerTrimViaClue(KakuroBoard& board, std::vector<std::vector<int> >& combo
 		//First look to see if the answer tile has a letter associated with it. We use the bitwise ~ to reverse all the bits because we want to 
 		//remove anything that ISN'T an option. The & 0b1111111111 is to ensure our number doesn't wrap around to a negative value
 		if (currentAnswer->getInternalClue() != ' ')
-			currentAnswer->getPossibilities()->remove(~(board.getLetterPossibilities()->seePossibility(currentAnswer->getInternalClue())->digits) & 0b1111111111);
+			currentAnswer->remove(~(board.getLetterPossibilities()->seePossibility(currentAnswer->getInternalClue())->digits) & 0b1111111111);
 
 		//Look at all options in the clue possibilities list and for both horizontal and vertical clues and compare with the combos vector
 		//for the given clue length
 		for (int orientation = Horizontal; orientation < Vertical; orientation++)
 		{
-			//std::vector<int>* cluePossibilities = currentAnswer->getGoverningClue(orientation)->getCluePossibilities(orientation);
 			if (currentAnswer->getGoverningClue(orientation)->getClueLetter(orientation, 1) != ' ')
 			{
 				int allowableDigits = 0; //a binary number representing all digits that can be used
@@ -769,15 +768,8 @@ void answerTrimViaClue(KakuroBoard& board, std::vector<std::vector<int> >& combo
 				}
 
 				//Remove anything not included in 'allowedDigits'
-				currentAnswer->getPossibilities()->remove(~allowableDigits & 0b1111111111);
+				currentAnswer->remove(~allowableDigits & 0b1111111111);
 			}
-		}
-
-		//check to see if the current answer tile is solved, if so then update it's solved value
-		if (currentAnswer->getPossibilities()->solved())
-		{
-			//std::cout << "Solved answer (answerTrimViaClue()) at location (" << currentAnswer->getLocation().first << ", " << currentAnswer->getLocation().second << ')' << std::endl;
-			currentAnswer->setSolvedAnswer(currentAnswer->getPossibilities()->getHighest());
 		}
 
 		//Check again to see if this answer tile has a letter inside of it, if anything was eliminated as a possiblity from the 
@@ -789,6 +781,9 @@ void answerTrimViaClue(KakuroBoard& board, std::vector<std::vector<int> >& combo
 void clueTrimViaAnswer(KakuroBoard& board, std::pair<int, int>& newPossibilities, bool& found, bool recursion = false, ClueTile* currentClue = nullptr,
 	int goal = 0, int currentNumber = 0, int usedNumbers = 0, bool horizontal = false, int level = 0)
 {
+	//This function looks at all of the number possibilities for the clue and sees if there's anyway to hit each of these
+	//possibilities with the possible numbers in the answer boxes. If any of the clue possibilities can't be acheived then
+	//the clue letters are updated to reflect this.
 	if (!recursion)
 	{
 		//this first part of the function is just for setting things up for the recursive part of the algorithm
@@ -827,7 +822,7 @@ void clueTrimViaAnswer(KakuroBoard& board, std::pair<int, int>& newPossibilities
 				board.getLetterPossibilities()->remove(currentClue->getClueLetter(orientation, 1), ~newCluePossibilities.second & 0b1111111111);
 				if (!oneDigit) board.getLetterPossibilities()->remove(currentClue->getClueLetter(orientation, 0), ~newCluePossibilities.first & 0b1111111111);
 
-				//After updates have been made, see if the clue has been solved
+				//After updates have been made, see if the clue has been solved.
 				currentClue->attemptClueSolve();
 			}
 		}
@@ -836,7 +831,6 @@ void clueTrimViaAnswer(KakuroBoard& board, std::pair<int, int>& newPossibilities
 	{
 		//This is the recursive part of the function. Every possibility proven to still work is appended to the newPossibilities vector.
 		//A new vector is created as opposed to erasing elements from the old one as it's more efficient to just create a new one.
-
 		if (level == currentClue->getClueAnswerLength(!horizontal))
 		{
 			//base of recursion. If we made it here check to see if we've hit the goal.
@@ -905,16 +899,10 @@ void answerTrimViaAnswer(KakuroBoard& board, std::pair<int, int> location, int* 
 					AnswerTile* currentAnswer = (AnswerTile*)board.getTile(currentClue->getLocation().first + (orientation * (j + 1)), currentClue->getLocation().second + (!orientation * (j + 1)));
 					bool solvedYet = currentAnswer->getPossibilities()->solved(); //check to see if the current answer tile has been solved yet
 
-					/*if (currentAnswer->getLocation().first == 2 && currentAnswer->getLocation().second == 6)
-						std::cout << "Possibilities at (2, 6) are: " << tileOptions[j] << std::endl;*/
-
 					if (!solvedYet)
 					{
 						currentAnswer->getPossibilities()->digits = tileOptions[j];
 
-						//check to see if we've solved the clue now, if so, set the appropriate solvedAnswer
-						if (currentAnswer->getPossibilities()->solved()) currentAnswer->setSolvedAnswer(currentAnswer->getPossibilities()->getHighest()); //set tile to solved status
-						//std::cout << "Solved answer (answerTrimViaAnswer()) at location (" << currentAnswer->getLocation().first << ", " << currentAnswer->getLocation().second << ')' << std::endl;
 						//Check to see if this answer tile has a letter inside of it, if so then we've solved for a letter
 						if (currentAnswer->getInternalClue() != ' ')
 							board.getLetterPossibilities()->remove(currentAnswer->getInternalClue(), ~(currentAnswer->getPossibilities()->digits) & 0b1111111111);
@@ -931,7 +919,6 @@ void answerTrimViaAnswer(KakuroBoard& board, std::pair<int, int> location, int* 
 		{
 			//base of recursion. If we made it here then all numbers in the selected numbers array will work.
 			//Update the possibilities vector accordingly
-
 			if (currentSum == goal)
 				for (int i = 0; i < clueSize; i++) answerTilePossibilities[i] |= selectedNumbers[i];
 
@@ -1002,9 +989,6 @@ void possibilityTrimViaPossibility(KakuroBoard& board, bool recursion = false, s
 			}
 		}
 
-		//TODO: For efficiency I should put a check here to see if there are only 3-4 letters left unsolved. If so then
-		//searching for triples and quads isn't necessary
-
 		//recursively search through the letters to see if we have any triples or quads.
 		possibilityTrimViaPossibility(board, true, &potential_triples_quads, &actual_triples_quads, 0, 0, 0, 0, true);
 
@@ -1017,9 +1001,6 @@ void possibilityTrimViaPossibility(KakuroBoard& board, bool recursion = false, s
 				if (!(actual_triples_quads[i].first & powers_of_two[j]))
 					board.getLetterPossibilities()->remove(j + 'A', actual_triples_quads[i].second);
 		}
-
-		//TODO: Steps 2 and 3 seem like they can be wrapped into one function, also, think about searching for hidden doubles and triples
-		//as well as hidden singles
 
 		//Step 2. Check for hidden singles
 		//One final check we do here, is to see if there are any numbers which only exist as a possibility within a single number. For example,
@@ -1107,13 +1088,11 @@ std::pair<std::string, double> q424()
 
 		//Now that setup is complete, we enter our solve loop and don't exit it
 		//until all 10 letters have been discovered
-		int loopCount = 0;
-		bool print = false;
-		while (kakuroBoard.getLetterPossibilities()->getLettersSolved() != 0b1111111111)
+		while (kakuroBoard.getLetterPossibilities()->getNumbersSolved() != 0b1111111111)
 		{
 			//The first thing we do is examine our letter heirarchy and see if we can eliminate any letter possibilities.
 			//A recursive function is called on all letters at the base of a heirarchy chain
-			possibilityTrimViaHeirarchy(kakuroBoard, letterHeirarchy);
+			possibilityTrimViaHeirarchy(kakuroBoard, letterHeirarchy); //TODO: Add speed ups
 
 			//Next we attempt to trim the list of possible numbers for each answer tile on the board by looking at their clues
 			answerTrimViaClue(kakuroBoard, combinations);
