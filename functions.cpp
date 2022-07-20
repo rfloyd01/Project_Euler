@@ -514,8 +514,8 @@ int polcoeff(std::vector<std::vector<int> >& polynomials, int order, int mod)
 	return coefficients[order];
 }
 
-void getPartitions(int n, std::vector<std::vector<std::vector<int> > >& all_partitions,
-	int currentLength, int currentValue, int maxNumber, int maxLength, std::vector<int>* currentPartition, bool recursive)
+void getPartitions(int n, std::vector<std::vector<std::vector<int> > >& all_partitions, int maxNumber, int maxLength,
+	int currentLength, int currentValue, std::vector<int>* currentPartition, bool recursive)
 {
 	//This recursive function returns a vector with all of the partitions of n where the maximum number allowed in
 	//each partition is maxNumber and the maximum length allowed for each partition is denoted by maxLength.
@@ -545,17 +545,29 @@ void getPartitions(int n, std::vector<std::vector<std::vector<int> > >& all_part
 		for (int i = 1; i <= maxLength; i++) all_partitions.push_back(partition_length);
 
 		//Then we recursively build all partitions from the starting vectors in the 0th element
-		for (int i = 0; i < all_partitions[0].size(); i++) getPartitions(n, all_partitions, 1, all_partitions[0][i][0], maxNumber, maxLength, &all_partitions[0][i], true);
+		for (int i = 0; i < all_partitions[0].size(); i++) getPartitions(n, all_partitions, maxNumber, maxLength, 1, all_partitions[0][i][0], &all_partitions[0][i], true);
+		all_partitions[0].clear();
 	}
 	else
 	{
-		//the recursive part of the function, this section actually builds out all of our partitions.
-
-		//If the value of our current partition equals n then there's no need to continue, add the partition
-		//and go back up a level
+		//the recursive part of the function, this section actually builds out all of our partitions. Start of with the base cases, of which 
+		//there are two. Either we're one digit away from our max length, our we're not but have reached n
 		if (currentValue == n)
 		{
+			//If the value of our current partition equals n then there's no need to continue, add the partition
+		    //and go back up a level
 			all_partitions[currentLength].push_back(*currentPartition);
+			return;
+		}
+		else if (currentLength == (maxLength - 1))
+		{
+			//there's only one number left that we can add, add it (if it's within our limits) and then return
+			if (n - currentValue <= currentPartition->back())
+			{
+				currentPartition->push_back(n - currentValue);
+				all_partitions[currentLength + 1].push_back(*currentPartition);
+				currentPartition->pop_back();
+			}
 			return;
 		}
 
@@ -568,9 +580,8 @@ void getPartitions(int n, std::vector<std::vector<std::vector<int> > >& all_part
 		for (int i = start_point; i > 0; i--)
 		{
 			currentPartition->push_back(i); //add i to the back of the current partition
-			getPartitions(n, all_partitions, currentLength + 1, currentValue + i, maxNumber, maxLength, currentPartition, true);
+			getPartitions(n, all_partitions, maxNumber, maxLength, currentLength + 1, currentValue + i, currentPartition, true);
 			currentPartition->pop_back(); //remove i from the back of the current partition before moving on
-
 		}
 	}
 }
