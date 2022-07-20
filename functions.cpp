@@ -514,6 +514,66 @@ int polcoeff(std::vector<std::vector<int> >& polynomials, int order, int mod)
 	return coefficients[order];
 }
 
+void getPartitions(int n, std::vector<std::vector<std::vector<int> > >& all_partitions,
+	int currentLength, int currentValue, int maxNumber, int maxLength, std::vector<int>* currentPartition, bool recursive)
+{
+	//This recursive function returns a vector with all of the partitions of n where the maximum number allowed in
+	//each partition is maxNumber and the maximum length allowed for each partition is denoted by maxLength.
+	//If maxNumber and maxLength are left blank then this function will just return all of the possible
+	//partitions.
+	if (!recursive)
+	{
+		//The non-recursive part of the function is just used for setting everything up
+		if (maxNumber == 0) maxNumber = n;
+		if (maxLength == 0) maxLength = n;
+
+		//std::vector<std::vector<std::vector<int> > > all_partitions;
+		std::vector<std::vector<int> > partition_length;
+
+		for (int i = maxNumber; i > 0; i--)
+		{
+			std::vector<int> partition = { i };
+			partition_length.push_back(partition);
+		}
+
+		//we use the 0th element of the all_partitions vector to build our other partitions. This element
+		//gets deleted after the other partitions have been created.
+		all_partitions.push_back(partition_length); //represents partitions of length 0
+		partition_length.clear();
+
+		//We start with an empty vector for all of the other lengths
+		for (int i = 1; i <= maxLength; i++) all_partitions.push_back(partition_length);
+
+		//Then we recursively build all partitions from the starting vectors in the 0th element
+		for (int i = 0; i < all_partitions[0].size(); i++) getPartitions(n, all_partitions, 1, all_partitions[0][i][0], maxNumber, maxLength, &all_partitions[0][i], true);
+	}
+	else
+	{
+		//the recursive part of the function, this section actually builds out all of our partitions.
+
+		//If the value of our current partition equals n then there's no need to continue, add the partition
+		//and go back up a level
+		if (currentValue == n)
+		{
+			all_partitions[currentLength].push_back(*currentPartition);
+			return;
+		}
+
+		//otherwise add all numbers possible via a loop. We can only add numbers that are less than or equal to
+		//the number at the end of the current partition to maintain distinctiveness. For a little more efficiency
+		//we can see what the maximum number possible is and start from there (for example, if we were trying to 
+		//make partitions of 12 and our current partition was [11], then it wouldn't makes sense to try adding
+		//any of the numbers 11 - 2 onto the back as 1 is the largest option here.
+		int start_point = (n - currentValue < currentPartition->back()) ? n - currentValue : currentPartition->back();
+		for (int i = start_point; i > 0; i--)
+		{
+			currentPartition->push_back(i); //add i to the back of the current partition
+			getPartitions(n, all_partitions, currentLength + 1, currentValue + i, maxNumber, maxLength, currentPartition, true);
+			currentPartition->pop_back(); //remove i from the back of the current partition before moving on
+
+		}
+	}
+}
 
 template <typename T>
 T ModPow(T base, T exp, T modulus, bool overflow)

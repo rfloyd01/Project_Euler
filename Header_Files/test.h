@@ -1,23 +1,20 @@
 #pragma once
 
 #include <Header_Files/pch.h>
+#include <Header_Files/functions.h>
+#include <Header_Files/print.h>
 
+//test
 std::pair<std::string, double> test()
 {
-	//ignore these lines, I use them in other header files
 	auto run_time = std::chrono::steady_clock::now();
-	long long answer = -1;
-	
-	int* testOne = new int[4]();
-	int* testTwo = new int[4]();
+	long long answer = 1; //answer could be initialized to no-pivot as there's only one case of that
 
-	for (int i = 0; 9 < 4; i++)
-	{
-		testOne[i] = i;
-		testTwo[i] = i;
-	}
+	std::vector<std::vector<std::vector<int> > > partitions;
+	getPartitions(6, partitions, 0, 0);
 
-	std::cout << (testOne == testTwo) << std::endl;
+	for (int i = 1; i < partitions.size(); i++)
+		for (int j = 0; j < partitions[i].size(); j++) vprint(partitions[i][j]);
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 

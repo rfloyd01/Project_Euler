@@ -41,6 +41,8 @@ std::vector<long long> polynomial_multiply(std::vector<long long>& p1, std::vect
 std::vector<int> polynomial_mod_multiply(std::vector<int>& p1, std::vector<int>& p2, int mod, int cut_off = 0);
 long long polcoeff(std::vector<std::vector<long long> >& polynomials, int order);
 int polcoeff(std::vector<std::vector<int> >& polynomials, int order, int mod);
+void getPartitions(int n, std::vector<std::vector<std::vector<int> > > &all_partitions, int currentLength = 0,
+	int currentValue = 0, int maxNumber = 0, int maxLength = 0, std::vector<int>* currentPartition = nullptr, bool recursive = false);
 
 //Template Functions
 template <typename T>

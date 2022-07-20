@@ -13,6 +13,9 @@ enum Letters { A, B, C, D, E, F, G, H, I, J };
 enum Directions { Horizontal, Vertical };
 enum Tiles { Board, Clue, Answer };
 
+int maximumTileNumbers[10] = { 0, 9, 17, 24, 30, 35, 39, 42, 44, 45 };
+int minimumTileNumbers[10] = { 0, 1, 3, 6, 10, 15, 21, 28, 36, 45 };
+
 class KakuroBoard;
 
 struct Possibilities
@@ -660,16 +663,18 @@ void AnswerTile::answerTrimViaSolvedAnswer(bool print)
 
 	if (print) this->governingBoard->printAllAnswerPossibilities();
 }
+void sudokuStylePossibilityElimination(KakuroBoard& board, int numberOfPossibilities = 10, AnswerTile** answerArray = nullptr, bool recursion = false, std::vector<std::pair<int, int> >* ptq = nullptr, std::vector<std::pair<int, int> >* atq = nullptr, int currentCombo = 0,
+	int numbersInCombo = 0, int currentLocation = 0, int numberOfNumbers = 0, bool triplePossible = false);
 
 //Functions for Kakuro Board Manipulation
-void initialClueSolver(KakuroBoard& board)
+void initialClueSolver(KakuroBoard* board)
 {
 	//this function is used for the initial look at our clues to see if we can convert any letters right off the bat. It should only be called one
 	//time, as soon as the board has been created.
 	int leadCharacters = 0, leadCharactersFound = 0; //used to see if we have three different letters in leading positions of double digit clues
 	int fourDigitAnswers[10] = { 0 }; //used to potentially find which letter is 2
-	std::pair<int, ClueTile**> clues = board.getClues();
-	LetterPossibilities* letterPossibilities = board.getLetterPossibilities();
+	std::pair<int, ClueTile**> clues = board->getClues();
+	LetterPossibilities* letterPossibilities = board->getLetterPossibilities();
 
 	//scan all of the clues looking for two digits clues as they can help us solve for number 0-3
 	for (int i = 0; i < clues.first; i++)
@@ -772,7 +777,7 @@ void initialClueSolver(KakuroBoard& board)
 		currentClue->attemptClueSolve();
 	}
 }
-void possibilityTrimViaHeirarchy(KakuroBoard& board, std::pair<int, int>* letterHeirarchy, int currentLocation = 0, bool recursion = false)
+void possibilityTrimViaHeirarchy(KakuroBoard* board, std::pair<int, int>* letterHeirarchy, int currentLocation = 0, bool recursion = false)
 {
 	//This was a tricky little function to implement. The problem was that even if we can see at a glance all of the
 	//letters that are larger or smaller than the current one, we can't tell the exact order. This means that we can't
@@ -788,28 +793,28 @@ void possibilityTrimViaHeirarchy(KakuroBoard& board, std::pair<int, int>* letter
 	else
 	{
 		//Step 1: Take the lowest value of the current letter and remove it (as well as anything lower than it) as an option from all letters in the higher than list
-		int low = 0b1111111111 >> (9 - board.getLetterPossibilities()->seePossibility(currentLocation + 'A')->getLowest());
+		int low = 0b1111111111 >> (9 - board->getLetterPossibilities()->seePossibility(currentLocation + 'A')->getLowest());
 		for (int i = 0; i < 10; i++)
-			if (letterHeirarchy[currentLocation].second & powers_of_two[i]) board.getLetterPossibilities()->remove(i + 'A', low);
+			if (letterHeirarchy[currentLocation].second & powers_of_two[i]) board->getLetterPossibilities()->remove(i + 'A', low);
 
 		//Step 2: Recursively Call this function on everything in the higher than list
 		for (int i = 0; i < 10; i++)
 			if (letterHeirarchy[currentLocation].second & powers_of_two[i]) possibilityTrimViaHeirarchy(board, letterHeirarchy, i, true);
 
 		//Step 3: Take the highest value of the current letter and remove it (as well as anything higher than it) as an option from all letters in the lower than list
-		int high = (0b1111111111 << board.getLetterPossibilities()->seePossibility(currentLocation + 'A')->getHighest()) & 0b1111111111;
+		int high = (0b1111111111 << board->getLetterPossibilities()->seePossibility(currentLocation + 'A')->getHighest()) & 0b1111111111;
 		for (int i = 0; i < 10; i++)
-			if (letterHeirarchy[currentLocation].first & powers_of_two[i]) board.getLetterPossibilities()->remove(i + 'A', high);
+			if (letterHeirarchy[currentLocation].first & powers_of_two[i]) board->getLetterPossibilities()->remove(i + 'A', high);
 	}
 }
-void answerTrimViaClue(KakuroBoard& board, std::vector<std::vector<int> >& combos)
+void answerTrimViaClue(KakuroBoard* board, std::vector<std::vector<int> >& combos)
 {
 	//In this function we visit every AnswerTile on the board and try to reduce the total number of digits that can go inside of them.
 	//This is done by A) looking at any letters actually placed in these AnswerTile at the start of the puzzle and B) looking at the
 	//horizontal and vertical clues that govern the box. For example, if we figured out that one of the clues was 12, and there were
 	//two answer boxes making up that clue's answer then our options to fill in the three boxes would be (9, 3), (8, 4) and (7, 5).
 	//At a glance we can see that the numbers 1, 2, 3 and 6 couldn't be utilized here.
-	std::pair<int, AnswerTile**> answers = board.getAnswers();
+	std::pair<int, AnswerTile**> answers = board->getAnswers();
 
 	for (int i = 0; i < answers.first; i++)
 	{
@@ -819,7 +824,7 @@ void answerTrimViaClue(KakuroBoard& board, std::vector<std::vector<int> >& combo
 		//First look to see if the answer tile has a letter associated with it. We use the bitwise ~ to reverse all the bits because we want to 
 		//remove anything that ISN'T an option. The & 0b1111111111 is to ensure our number doesn't wrap around to a negative value
 		if (currentAnswer->getInternalClue() != ' ')
-			currentAnswer->remove(~(board.getLetterPossibilities()->seePossibility(currentAnswer->getInternalClue())->digits) & 0b1111111111);
+			currentAnswer->remove(~(board->getLetterPossibilities()->seePossibility(currentAnswer->getInternalClue())->digits) & 0b1111111111);
 
 		//Look at all options in the clue possibilities list and for both horizontal and vertical clues and compare with the combos vector
 		//for the given clue length
@@ -856,7 +861,7 @@ void answerTrimViaClue(KakuroBoard& board, std::vector<std::vector<int> >& combo
 
 	
 }
-void clueTrimViaAnswer(KakuroBoard& board, std::pair<int, int>& newPossibilities, bool& found, bool recursion = false, ClueTile* currentClue = nullptr,
+void clueTrimViaAnswer(KakuroBoard* board, std::pair<int, int>& newPossibilities, bool& found, bool recursion = false, ClueTile* currentClue = nullptr,
 	int goal = 0, int currentNumber = 0, int usedNumbers = 0, bool horizontal = false, int level = 0)
 {
 	//This function looks at all of the number possibilities for the clue and sees if there's anyway to hit each of these
@@ -865,7 +870,7 @@ void clueTrimViaAnswer(KakuroBoard& board, std::pair<int, int>& newPossibilities
 	if (!recursion)
 	{
 		//this first part of the function is just for setting things up for the recursive part of the algorithm
-		std::pair<int, ClueTile**> clues = board.getClues();
+		std::pair<int, ClueTile**> clues = board->getClues();
 		for (int i = 0; i < clues.first; i++)
 		{
 			ClueTile* currentClue = *(clues.second + i);
@@ -897,8 +902,8 @@ void clueTrimViaAnswer(KakuroBoard& board, std::pair<int, int>& newPossibilities
 				}
 
 				//remove any possibilities not included in newCluePossibilities for the appropriate clue letter
-				board.getLetterPossibilities()->remove(currentClue->getClueLetter(orientation, 1), ~newCluePossibilities.second & 0b1111111111);
-				if (!oneDigit) board.getLetterPossibilities()->remove(currentClue->getClueLetter(orientation, 0), ~newCluePossibilities.first & 0b1111111111);
+				board->getLetterPossibilities()->remove(currentClue->getClueLetter(orientation, 1), ~newCluePossibilities.second & 0b1111111111);
+				if (!oneDigit) board->getLetterPossibilities()->remove(currentClue->getClueLetter(orientation, 0), ~newCluePossibilities.first & 0b1111111111);
 
 				//After updates have been made, see if the clue has been solved.
 				currentClue->attemptClueSolve();
@@ -922,7 +927,7 @@ void clueTrimViaAnswer(KakuroBoard& board, std::pair<int, int>& newPossibilities
 			return;
 		}
 
-		AnswerTile* currentAnswer = (AnswerTile*)board.getTile(currentClue->getLocation().first + !horizontal * (level + 1), currentClue->getLocation().second + horizontal * (level + 1));
+		AnswerTile* currentAnswer = (AnswerTile*)board->getTile(currentClue->getLocation().first + !horizontal * (level + 1), currentClue->getLocation().second + horizontal * (level + 1));
 		for (int i = currentAnswer->getPossibilities()->getLowest(); i <= currentAnswer->getPossibilities()->getHighest(); i++)
 		{
 			if (powers_of_two[i] & usedNumbers) continue; //don't pick a numbers that's been picked already
@@ -934,13 +939,13 @@ void clueTrimViaAnswer(KakuroBoard& board, std::pair<int, int>& newPossibilities
 		}
 	}
 }
-void answerTrimViaAnswer(KakuroBoard& board, std::pair<int, int> location, int* answerTilePossibilities, int* selectedNumbers, int clueSize = 0, int currentNumber = 0, int currentSum = 0,
+void answerTrimViaAnswer(KakuroBoard* board, std::pair<int, int> location, int* answerTilePossibilities, int* selectedNumbers, std::vector<std::vector<int> >* combos, int clueSize = 0, int currentNumber = 0, int currentSum = 0,
 	int goal = 0, bool horizontal = false, bool recursion = false, int level = 0)
 {
 	if (!recursion)
 	{
 		//this part of the function is just to get everything set up for the recursive part below
-		std::pair<int, ClueTile**> clues = board.getClues();
+		std::pair<int, ClueTile**> clues = board->getClues();
 		for (int i = 0; i < clues.first; i++)
 		{
 			ClueTile* currentClue = *(clues.second + i);
@@ -952,19 +957,28 @@ void answerTrimViaAnswer(KakuroBoard& board, std::pair<int, int> location, int* 
 				//answered, or if they haven't changed since last iteration (and clue is also the same)
 				//then there's no reason to check again.
 				int clueLength = currentClue->getClueAnswerLength(orientation), numberSolved = 0, numberChanged = 0;
-				int* currentTileOptions = new int[clueLength](), * tileOptions = new int[clueLength](), * usedDigits = new int[clueLength]();
+				AnswerTile** answerTiles = new AnswerTile * [clueLength]();
+				int *tileOptions = new int[clueLength](), * usedDigits = new int[clueLength]();
 				bool oneDigit = false;
 				for (int j = 0; j < clueLength; j++)
 				{
-					AnswerTile* currentAnswer = (AnswerTile*)board.getTile(currentClue->getLocation().first + (orientation * (j + 1)), currentClue->getLocation().second + (!orientation * (j + 1)));
-					currentTileOptions[j] = currentAnswer->getPossibilities()->digits;
-					if (currentAnswer->getSolvedAnswer() != 0) numberSolved++;
-					numberChanged += currentAnswer->getPossibilities()->changed;
+					answerTiles[j] = (AnswerTile*)board->getTile(currentClue->getLocation().first + (orientation * (j + 1)), currentClue->getLocation().second + (!orientation * (j + 1)));
+					//currentTileOptions[j] = currentAnswer->getPossibilities()->digits;
+					if (answerTiles[j]->getSolvedAnswer() != 0) numberSolved++;
+					numberChanged += answerTiles[j]->getPossibilities()->changed;
 				}
+
+				//TODO:
+				//Before actually going through with the brute force operation, a check is called to make sure
+				//that there aren't too many possibilities. For example, if the clue has 5 answer tiles and each
+				//one of those currently allows the number 1-9 in them then there are theoretically ~3,000 options to
+				//recursively check. Most likely with this many possibilities there won't be much actually altered
+				//and this fairly time expensive check will be mostly useless.
+
 
 				if ((numberSolved == clueLength) || (numberChanged == 0 && currentClue->cluePossibilitiesChanged(orientation))) goto nextClue;
 
-				//Something has changed since last iteration so we go ahead and carry out the check
+				//Something has changed since last iteration so we go ahead and carry out the check.
 				if (currentClue->getClueLetter(orientation, 0) == ' ') oneDigit = true; //this is a 1 digit clue
 
 				//check all possibilites for the current clue
@@ -978,7 +992,7 @@ void answerTrimViaAnswer(KakuroBoard& board, std::pair<int, int> location, int* 
 						if (powers_of_two[k] & currentClue->getCluePossibility(orientation, 1)->digits)
 						{
 							answerTrimViaAnswer(board, { currentClue->getLocation().first + orientation, currentClue->getLocation().second + !orientation },
-								tileOptions, usedDigits, clueLength, 0, 0, 10 * j + k, !orientation, true);
+								tileOptions, usedDigits, combos, clueLength, 0, 0, 10 * j + k, !orientation, true);
 
 							//If every answer tile is confirmed to have the same possibilities before checking every potential clue
 							//we break out early (as checking more clues won't be able to 'add' more possibilities)
@@ -987,7 +1001,7 @@ void answerTrimViaAnswer(KakuroBoard& board, std::pair<int, int> location, int* 
 							{
 								//check the tileOption array to see if it's identical to the current options for the clue's answer
 								//tiles. If so, then nothing can be eliminated and we return from this functino early
-								if (currentTileOptions[l] != tileOptions[l])
+								if (answerTiles[l]->getPossibilities()->digits != tileOptions[l])
 								{
 									earlyBreakOut = false;
 									break;
@@ -1004,7 +1018,7 @@ void answerTrimViaAnswer(KakuroBoard& board, std::pair<int, int> location, int* 
 				//update the answer tile possibilities to reflect what's stored in the tileOptions array
 				for (int j = 0; j < currentClue->getClueAnswerLength(orientation); j++)
 				{
-					AnswerTile* currentAnswer = (AnswerTile*)board.getTile(currentClue->getLocation().first + (orientation * (j + 1)), currentClue->getLocation().second + (!orientation * (j + 1)));
+					AnswerTile* currentAnswer = (AnswerTile*)board->getTile(currentClue->getLocation().first + (orientation * (j + 1)), currentClue->getLocation().second + (!orientation * (j + 1)));
 					bool solvedYet = currentAnswer->getPossibilities()->solved(); //check to see if the current answer tile has been solved yet
 
 					if (!solvedYet) currentAnswer->remove(~tileOptions[j] & 0b1111111111); //remove anything that isn't a possibility
@@ -1014,16 +1028,16 @@ void answerTrimViaAnswer(KakuroBoard& board, std::pair<int, int> location, int* 
 			nextClue:
 				delete[] usedDigits;
 				delete[] tileOptions;
-				delete[] currentTileOptions;
+				delete[] answerTiles;
 			}
 		}
 		//After running the function, go through and set the changed variable to false for every letter.
 	    //The other functions in the game loop will reset these variables to true if they get changed again.
 		for (int i = 0; i < 10; i++)
-			board.getLetterPossibilities()->seePossibility(i + 'A')->changed = false;
+			board->getLetterPossibilities()->seePossibility(i + 'A')->changed = false;
 
-		AnswerTile** answerTiles = board.getAnswers().second;
-		for (int i = 0; i < board.getAnswers().first; i++)
+		AnswerTile** answerTiles = board->getAnswers().second;
+		for (int i = 0; i < board->getAnswers().first; i++)
 		{
 			AnswerTile* currentAnswer = *(answerTiles + i);
 			currentAnswer->getPossibilities()->changed = false;
@@ -1032,9 +1046,11 @@ void answerTrimViaAnswer(KakuroBoard& board, std::pair<int, int> location, int* 
 	else
 	{
 		//the recursive part of the function
-		AnswerTile* currentAnswer = (AnswerTile*)board.getTile(location.first, location.second);
-		if (level == (clueSize - 1))
+		AnswerTile* currentAnswer = (AnswerTile*)board->getTile(location.first, location.second);
+		//if (level == (clueSize - 1))
+		if (clueSize == 1)
 		{
+			//std::cout << "current level is: " << level << std::endl;
 			//Base of recursion. We're currently looking at the final answer tile for the clue, instead of iterating through
 			//all of it's options, just see if the number we need exists as a possibility
 			int numberNeeded = goal - currentSum;
@@ -1045,14 +1061,29 @@ void answerTrimViaAnswer(KakuroBoard& board, std::pair<int, int> location, int* 
 				if ((powers_of_two[numberNeeded] & currentAnswer->getPossibilities()->digits) && (!(powers_of_two[numberNeeded] & currentNumber)))
 				{
 					selectedNumbers[level] = powers_of_two[numberNeeded];
-					for (int i = 0; i < clueSize; i++) answerTilePossibilities[i] |= selectedNumbers[i];
+					//selectedNumbers[clueSize - 1] = powers_of_two[numberNeeded];
+					for (int i = 0; i < (level + 1); i++) answerTilePossibilities[i] |= selectedNumbers[i];
 					selectedNumbers[level] = 0;
+					//selectedNumbers[clueSize - 1] = 0;
 				}
 			}
 
 			return;
 		}
 
+		//Before going on, we do a check to make sure we can still possibly reach our goal number. For example,
+		//let's say the goal is 24 and there are 4 answer tiles. For the first tile a 1 was selected and for the
+		//second tile a 2 was selected. We now have only two more tiles to reach (24 - 1 - 2) 21 which isn't possible
+		//so therefore we go up to the previous level of the recursion. Oppositely if there are too many tiles and it's
+		//not possible to stay under the goal any longer (for example, we only need a value of 1 to hit the goal but
+		//there are two answer tiles left) we also return to the previous recursion level.
+		int to_goal = goal - currentSum;
+		if ((to_goal > maximumTileNumbers[clueSize]) || (to_goal < minimumTileNumbers[clueSize]))
+		{
+			//std::cout << "clue size: " << clueSize << ", current goal: " << goal - currentSum << std::endl;
+			return;
+		}
+		
 		//if the current answer tile has already been solved then we must select that number, no need to loop
 		if (currentAnswer->getSolvedAnswer() != 0)
 		{
@@ -1063,16 +1094,20 @@ void answerTrimViaAnswer(KakuroBoard& board, std::pair<int, int> location, int* 
 				{
 					selectedNumbers[level] = powers_of_two[solvedNumber]; //add number to selected vector
 					answerTrimViaAnswer(board, { location.first + !horizontal, location.second + horizontal },
-						answerTilePossibilities, selectedNumbers, clueSize, currentNumber | powers_of_two[solvedNumber], currentSum + solvedNumber, goal, horizontal, true, level + 1);
+						answerTilePossibilities, selectedNumbers, combos, clueSize - 1, currentNumber | powers_of_two[solvedNumber], currentSum + solvedNumber, goal, horizontal, true, level + 1);
 					selectedNumbers[level] = 0; //remove number from selected vector
 				}
 			}
 		}
 		else
 		{
-			//otherwise, loop through all possiblities that can go in the current number tile
-			for (int i = currentAnswer->getPossibilities()->getLowest(); i <= currentAnswer->getPossibilities()->getHighest(); i++)
+			//otherwise, loop through all possiblities that can go in the current number tile. Look at all digits currently allowed
+			//in the tile for the current goal number by using the combination vector defined at beginning of program
+			Possibilities possibilitiesViaCombo; possibilitiesViaCombo.digits = combos->at(clueSize)[to_goal];
+
+			for (int i = possibilitiesViaCombo.getLowest(); i <= possibilitiesViaCombo.getHighest(); i++)
 			{
+				//std::cout << i << ", clue size: " << clueSize << ", current goal: " << goal - currentSum << std::endl;
 				//select any possible number that won't make us go over the goal
 				if (powers_of_two[i] & currentAnswer->getPossibilities()->digits) //make sure that the number can go in the box
 				{
@@ -1082,7 +1117,7 @@ void answerTrimViaAnswer(KakuroBoard& board, std::pair<int, int> location, int* 
 						{
 							selectedNumbers[level] = powers_of_two[i]; //add number to selected vector
 							answerTrimViaAnswer(board, { location.first + !horizontal, location.second + horizontal },
-								answerTilePossibilities, selectedNumbers, clueSize, currentNumber | powers_of_two[i], currentSum + i, goal, horizontal, true, level + 1);
+								answerTilePossibilities, selectedNumbers, combos, clueSize - 1, currentNumber | powers_of_two[i], currentSum + i, goal, horizontal, true, level + 1);
 							selectedNumbers[level] = 0; //remove number from selected vector
 						}
 					}
@@ -1091,7 +1126,7 @@ void answerTrimViaAnswer(KakuroBoard& board, std::pair<int, int> location, int* 
 		}
 	}
 }
-void possibilityTrimViaPossibility(KakuroBoard& board, bool recursion = false, std::vector<std::pair<int, int> >* ptq = nullptr, std::vector<std::pair<int, int> >* atq = nullptr, int currentCombo = 0,
+void possibilityTrimViaPossibility(KakuroBoard* board, bool recursion = false, std::vector<std::pair<int, int> >* ptq = nullptr, std::vector<std::pair<int, int> >* atq = nullptr, int currentCombo = 0,
 	int numbersInCombo = 0, int currentLocation = 0, int numberOfNumbers = 0, bool triplePossible = false)
 {
 	//this function attempts to trim down possibilities for the letters simply by looking at the relationships for what's possible in the letters.
@@ -1107,7 +1142,7 @@ void possibilityTrimViaPossibility(KakuroBoard& board, bool recursion = false, s
 		{
 			//count the number of possibilities for each letter. Anything with 2, 3 or 4 can
 			//potentially be a double, triple or quad
-			Possibilities* currentPossibility = board.getLetterPossibilities()->seePossibility(i + 'A');
+			Possibilities* currentPossibility = board->getLetterPossibilities()->seePossibility(i + 'A');
 			int bitCount = 0;
 			for (int j = 0; j < 10; j++)
 				if (currentPossibility->digits & powers_of_two[j]) bitCount++;
@@ -1116,7 +1151,7 @@ void possibilityTrimViaPossibility(KakuroBoard& board, bool recursion = false, s
 			{
 				int matches = 1;
 				for (int j = i + 1; j < 10; j++) //check the current double, triple or quad against all other letters for a potential match
-					if (currentPossibility->digits == board.getLetterPossibilities()->seePossibility(j + 'A')->digits) matches++;
+					if (currentPossibility->digits == board->getLetterPossibilities()->seePossibility(j + 'A')->digits) matches++;
 
 
 				if (matches == bitCount)
@@ -1124,8 +1159,8 @@ void possibilityTrimViaPossibility(KakuroBoard& board, bool recursion = false, s
 					//if the number of matches equals the bit count then we have a double, triple or quad on our hands. Iterate through
 					//all the letters possibilities and remove the matched numbers from anything not part of the double, triple or quad.
 					for (int j = 0; j < 10; j++)
-						if (currentPossibility->digits != board.getLetterPossibilities()->seePossibility(j + 'A')->digits)
-							board.getLetterPossibilities()->remove(j + 'A', currentPossibility->digits);
+						if (currentPossibility->digits != board->getLetterPossibilities()->seePossibility(j + 'A')->digits)
+							board->getLetterPossibilities()->remove(j + 'A', currentPossibility->digits);
 				}
 				else
 				{
@@ -1145,7 +1180,7 @@ void possibilityTrimViaPossibility(KakuroBoard& board, bool recursion = false, s
 			//of the pair represents the numbers that actually make up the quad.
 			for (int j = 0; j < 10; j++)
 				if (!(actual_triples_quads[i].first & powers_of_two[j]))
-					board.getLetterPossibilities()->remove(j + 'A', actual_triples_quads[i].second);
+					board->getLetterPossibilities()->remove(j + 'A', actual_triples_quads[i].second);
 		}
 
 		//Step 2. Check for hidden singles
@@ -1160,7 +1195,7 @@ void possibilityTrimViaPossibility(KakuroBoard& board, bool recursion = false, s
 			bool single = true;
 			for (int j = 0; j < 10; j++)
 			{
-				if (board.getLetterPossibilities()->seePossibility(j + 'A')->digits & powers_of_two[i])
+				if (board->getLetterPossibilities()->seePossibility(j + 'A')->digits & powers_of_two[i])
 				{
 					letterCount++;
 					location = j;
@@ -1171,7 +1206,7 @@ void possibilityTrimViaPossibility(KakuroBoard& board, bool recursion = false, s
 					break;
 				}
 			}
-			if (single) board.getLetterPossibilities()->remove(location + 'A', ~powers_of_two[i] & 0b1111111111);
+			if (single) board->getLetterPossibilities()->remove(location + 'A', ~powers_of_two[i] & 0b1111111111);
 		}
 	}
 	else
@@ -1196,6 +1231,155 @@ void possibilityTrimViaPossibility(KakuroBoard& board, bool recursion = false, s
 
 			//if we haven't continued yet then there's a chance for a match here
 			possibilityTrimViaPossibility(board, true, ptq, atq, newCombo, numbersInCombo | powers_of_two[ptq->at(i).first], i + 1, numberOfNumbers + 1, (triplePossible && (bits <= 3)));
+		}
+	}
+}
+void sudokuStylePossibilityElimination(KakuroBoard* board, int numberOfPossibilities, AnswerTile** answerArray, bool recursion, std::vector<std::pair<int, int> >* ptq, std::vector<std::pair<int, int> >* atq, int currentCombo,
+	int numbersInCombo, int currentLocation, int numberOfNumbers, bool triplePossible)
+{
+	//TODO: This function will most likely get deleted, keep it around for now just in case though. The intent of it was to extend the functionality of the 
+	// possibilityTrimViaPossibility() function to apply to answer tiles as well as the letter possibilities. Using Sudoku style elimination MIGHT be helpful for answer
+	// tiles in a few rare cases, but for the most part, there's only 2-3 answer tiles per clue so looking for doubles and triples isn't all that helpful. Furthermore,
+	// you can't look for naked singles and things like that because there's no guarantee that a certain number must go in a row or column like in sudoku. Just
+	// because there's only one box in which the number 3 can go in a row for example, doesn't mean that the 3 will actually go in it (which wouldn't be the case
+	// for Sudoku)
+
+	//this function attempts to trim down possibilities for the letters simply by looking at the relationships for what's possible in the letters.
+	//This function implements what I like to call "Sudoku solving techniques", i.e. looking for doubles, triples, and other Sudoku techniques just
+	//in the letter possilities themselves. Due to the nature of triples and quads only needing to be a subset, it's easier to take a recursive approach
+	//when looking for them so this function is split into a recursive, and non-recursive section.
+
+	//Step 1. Look for naked doubles, triples and quadruples
+	if (!recursion)
+	{
+		std::vector<std::pair<int, int> > potential_triples_quads, actual_triples_quads;
+		for (int i = 0; i < numberOfPossibilities; i++)
+		{
+			//Set the possibility tile based on whether we're looking at letter possibilities
+			//or answer possibilities. This is needed to access the appropriate remove() method
+			Possibilities* currentPossibility;
+			if (answerArray != nullptr) currentPossibility = (*(answerArray + i))->getPossibilities();
+			else currentPossibility = board->getLetterPossibilities()->seePossibility(i + 'A');
+
+			//count the number of possibilities for each letter. Anything with 2, 3 or 4 can
+			//potentially be a double, triple or quad
+			int bitCount = 0;
+			for (int j = 0; j < 10; j++)
+				if (currentPossibility->digits & powers_of_two[j]) bitCount++;
+
+			if ((bitCount == 2 || bitCount == 3) || bitCount == 4)
+			{
+				int matches = 1;
+				for (int j = i + 1; j < numberOfPossibilities; j++) //check the current double, triple or quad against all other letters for a potential match
+				{
+					if (answerArray != nullptr)
+					{ 
+						if (currentPossibility->digits == (*(answerArray + j))->getPossibilities()->digits) matches++;
+					}
+					else
+					{
+						if (currentPossibility->digits == board->getLetterPossibilities()->seePossibility(j + 'A')->digits) matches++;
+					}
+				}
+
+				if (matches == bitCount)
+				{
+					//if the number of matches equals the bit count then we have a double, triple or quad on our hands. Iterate through
+					//all the letters possibilities and remove the matched numbers from anything not part of the double, triple or quad.
+					if (answerArray != nullptr)
+					{
+						for (int j = 0; j < numberOfPossibilities; j++)
+							if (currentPossibility->digits != (*(answerArray + j))->getPossibilities()->digits)
+								(*(answerArray + j))->remove(currentPossibility->digits);
+					}
+					else
+					{
+						for (int j = 0; j < numberOfPossibilities; j++)
+							if (currentPossibility->digits != board->getLetterPossibilities()->seePossibility(j + 'A')->digits)
+								board->getLetterPossibilities()->remove(j + 'A', currentPossibility->digits);
+					}
+				}
+				else
+				{
+					//we didn't find any doubles, triples or quads so add this letter to the triples_quads vector
+					potential_triples_quads.push_back({ i, currentPossibility->digits });
+				}
+			}
+		}
+
+		//recursively search through the letters to see if we have any triples or quads.
+		sudokuStylePossibilityElimination(board, numberOfPossibilities, answerArray, true, &potential_triples_quads, &actual_triples_quads, 0, 0, 0, 0, true);
+
+		//remove letter possibilities based on whether or not any triples or quads were found
+		for (int i = 0; i < actual_triples_quads.size(); i++)
+		{
+			//the first number in the pair represents the Letters that are members of the triple/quad while the second number
+			//of the pair represents the numbers that actually make up the quad.
+			if (answerArray != nullptr)
+			{
+				for (int j = 0; j < 10; j++)
+					if (!(actual_triples_quads[i].first & powers_of_two[j]))
+						(*(answerArray + j))->remove(actual_triples_quads[i].second);
+			}
+			else
+			{
+				for (int j = 0; j < 10; j++)
+					if (!(actual_triples_quads[i].first & powers_of_two[j]))
+						board->getLetterPossibilities()->remove(j + 'A', actual_triples_quads[i].second);
+			}
+		}
+
+		//Step 2. Check for hidden singles (this only applies to letter possibilities, not answer tiles)
+		//One final check we do here, is to see if there are any numbers which only exist as a possibility within a single number. For example,
+		//if the letter possibilities looked like this: A: [3, 4, 5, 6, 7, 8, 9], B: [2, 3, 4, 5, 6, 7, 8, 9], C: [2, 3, 4, 5, 6, 7, 8, 9]
+		//D: [3, 4, 5, 6], E: [2, 3, 4, 5, 6, 7, 8, 9], F: [6, 7], G: [7, 8, 9], H: [7, 8], I: [1], J: [0, 2, 3, 4, 5, 6, 7, 8, 9]... We can
+		//see that the number 0 only exists within the J array, therefore J MUST be 0.
+		if (answerArray == nullptr)
+		{
+			for (int i = 0; i < 10; i++)
+			{
+				//TODO: Add a way to skip i values that have already been solved
+				int letterCount = 0, location = 0;
+				bool single = true;
+				for (int j = 0; j < 10; j++)
+				{
+					if (board->getLetterPossibilities()->seePossibility(j + 'A')->digits & powers_of_two[i])
+					{
+						letterCount++;
+						location = j;
+					}
+					if (letterCount > 1)
+					{
+						single = false;
+						break;
+					}
+				}
+				if (single) board->getLetterPossibilities()->remove(location + 'A', ~powers_of_two[i] & 0b1111111111);
+			}
+		}
+	}
+	else
+	{
+		//this is the recursive part of the function
+		if ((numberOfNumbers == 3 && triplePossible) || numberOfNumbers == 4) //base case
+		{
+			//we've found a triple or a quad, add it to the tripleQuadActual vector
+			atq->push_back({ numbersInCombo, currentCombo });
+		}
+
+		//since we need at least a triple, no need to check further in the array than 3 options from the end
+		for (int i = currentLocation; i < ptq->size(); i++)
+		{
+			int newCombo = currentCombo | ptq->at(i).second;
+			int bits = 0;
+			//count the bits in the combo (unfortunately I only know how to do this 1 bit at a time)
+			for (int j = 0; j < 10; j++)
+				if (newCombo & powers_of_two[j]) bits++;
+
+			if (bits > 4) continue;
+
+			//if we haven't continued yet then there's a chance for a match here
+			sudokuStylePossibilityElimination(board, numberOfPossibilities, answerArray, true, ptq, atq, newCombo, numbersInCombo | powers_of_two[ptq->at(i).first], i + 1, numberOfNumbers + 1, (triplePossible && (bits <= 3)));
 		}
 	}
 }
@@ -1231,7 +1415,7 @@ std::pair<std::string, double> q424()
 		//we can do to help reduce the total number of options for each letter
 		std::pair<int, int > letterHeirarchy[10] = { {0, 0} };
 		createLetterHeirarchy(kakuroBoard, letterHeirarchy, 0, 0);
-		initialClueSolver(kakuroBoard);
+		initialClueSolver(&kakuroBoard);
 
 		if (i == printGame) kakuroBoard.printBoard();
 
@@ -1239,27 +1423,31 @@ std::pair<std::string, double> q424()
 		//until all 10 letters have been discovered
 		int loopCount = 0;
 		while (kakuroBoard.getLetterPossibilities()->getNumbersSolved() != 0b1111111111)
+		//for (int j = 0; j < 1; j++)
 		{
 			//The first thing we do is examine our letter heirarchy and see if we can eliminate any letter possibilities.
 			//A recursive function is called on all letters at the base of a heirarchy chain
-			possibilityTrimViaHeirarchy(kakuroBoard, letterHeirarchy);
+			possibilityTrimViaHeirarchy(&kakuroBoard, letterHeirarchy);
 
 			//Second we use "Sudoku Style" elimination techniques to try and reduce the letter possibilites even further
-			possibilityTrimViaPossibility(kakuroBoard);
+			possibilityTrimViaPossibility(&kakuroBoard);
 
 			//Next we attempt to trim the list of possible numbers for each answer tile on the board by looking at their clues
-			answerTrimViaClue(kakuroBoard, combinations);
+			answerTrimViaClue(&kakuroBoard, combinations);
 			
 			//With the answer tiles trimmed down a little bit now, we take a look back at the clues and see if we can reduce the
 			//possibilities for each clue based on the new answer tiles
-			clueTrimViaAnswer(kakuroBoard, letterHeirarchy[0], dummy); //letterHeirarchy[0] and dummy are used as placeholders
+			clueTrimViaAnswer(&kakuroBoard, letterHeirarchy[0], dummy); //letterHeirarchy[0] and dummy are used as placeholders
 
 			//Call this function again just in case any of the clues changed from call to clueTrimViaAnswer()
-			answerTrimViaClue(kakuroBoard, combinations);
+			answerTrimViaClue(&kakuroBoard, combinations);
 
 			//Now we use a brute force recursive algorithm to see if each of the possible numbers for every answer tile can actually be
 			//used in a solution. Any numbers that aren't found to be part of a solution are removed from the possibility list.
-			answerTrimViaAnswer(kakuroBoard, { 0, 0 }, nullptr, nullptr);
+			//if (i == printGame) kakuroBoard.printAllLetterPossibilities();
+			//if (i == printGame) kakuroBoard.printAllAnswerPossibilities();
+			answerTrimViaAnswer(&kakuroBoard, { 0, 0 }, nullptr, nullptr, &combinations);
+			//if (i == printGame) kakuroBoard.printAllAnswerPossibilities();
 		}
 		answer += kakuroBoard.getAnswer(); //after solving the puzzle add the answer to the final total
 	}
@@ -1269,12 +1457,15 @@ std::pair<std::string, double> q424()
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 1059760019628
-	//ran in 0.225812 seconds --> 0.187944 seconds --> 0.176166 seconds --> 0.0920652 seconds --> 0.0743379 seconds --> 0.0645144 seconds
 	//
-	//changes
+	//time improvements:
+	//ran in 0.225812 seconds --> 0.187944 seconds --> 0.176166 seconds --> 0.0920652 seconds --> 0.0743379 seconds --> 0.0645144 seconds --> 0.0581446 seconds
+	//
+	//changes for above improvements:
 	//original solve --> changed a < to a <= in one of the functions --> automatic cascading of answer tile solving --> stop answerTrivViaAnswer recursion at one level before base -->
 	// break out of answerTimViaAnswer before checking each clue possibility if all answer tiles are found to remain the same --> moved possibility trim via possibility to second function
-	// of loop and added a second call to answerTrimViaClue after call to clueTrimViaAnswer
+	// of loop and added a second call to answerTrimViaClue after call to clueTrimViaAnswer --> altered a for loop in answerTrimViaAnswer to start at the minimum combo value based
+	// on the current tiles left and number to goal
 
 	//I think the only way to meaningfully cutdown on the runtime at this point will be to completely overhaul how the answerTrimViaAnswer works. Currently it's just a complete
 	//brute force check. I added logic so that this function only gets called if there are changes that were made, however, it didn't really shave off that much time. SO when it

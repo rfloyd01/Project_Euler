@@ -28,9 +28,6 @@
     <Filter Include="Header Files\Questions\Q351-Q400">
       <UniqueIdentifier>{572b1536-8d42-475c-9cb8-f582a2d766c1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Questions\Q301-Q350">
-      <UniqueIdentifier>{a242fdca-fea3-41a4-b7ad-0f3c3e24c804}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Questions\Q251-Q300">
       <UniqueIdentifier>{68e98106-e1d8-47cb-bb41-a1111dd67e23}</UniqueIdentifier>
     </Filter>
@@ -51,6 +48,12 @@
     </Filter>
     <Filter Include="Header Files\Questions\Q401-Q450">
       <UniqueIdentifier>{a12b454d-a58f-43a9-a50f-56db87c7562b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Questions\Q301-Q350">
+      <UniqueIdentifier>{a242fdca-fea3-41a4-b7ad-0f3c3e24c804}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Questions\Q751-Q800">
+      <UniqueIdentifier>{a9754368-6774-46fb-90f9-e707dd880cc5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -445,6 +448,12 @@
     </ClInclude>
     <ClInclude Include="Questions\Q401-Q450\q424.h">
       <Filter>Header Files\Questions\Q401-Q450</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q401-Q450\q425.h">
+      <Filter>Header Files\Questions\Q401-Q450</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q751-Q800\q799.h">
+      <Filter>Header Files\Questions\Q751-Q800</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
