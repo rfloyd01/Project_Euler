@@ -39,9 +39,10 @@ std::pair<std::string, double> q240()
 	int modulus = 1000000007;
 
 	//initialize an array for factorials % 1,000,000,007
-	long long* factorials = new long long[total_dice + 1]();
+	//the maximum factorial we will need is equal to n + the number of top dice
+	long long* factorials = new long long[goal + number_top_dice + 1]();
 	factorials[0] = 1;
-	for (int i = 1; i <= total_dice; i++) factorials[i] = factorials[i - 1] * i % modulus;
+	for (int i = 1; i <= goal + number_top_dice; i++) factorials[i] = factorials[i - 1] * i % modulus;
 
 	//minimum_minimum represents the smallest possible value for the minimum top die
 	int minimum_minimum = goal - (number_top_dice - 1) * dice_sides;

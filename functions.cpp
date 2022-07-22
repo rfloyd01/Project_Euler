@@ -608,53 +608,10 @@ long long permutationsOfPartitions(int n, int l, int maximum, int minimum)
 }
 
 template <typename T>
-T ModPow(T base, T exp, T modulus, bool overflow)
-{
-	//returns base ^ exp % modulus
-	//if overflow == 1 then the ModMult() function is used instead of normal multiplication to prevent overflow of 64-bit integers
-	//this causes the function to take longer to run, but will prevent potential unwanted errors
-
-	base %= modulus;
-	T result = 1;
-	while (exp > 0)
-	{
-		//if (exp & 1) result = (result * base) % modulus;
-		//base = (base * base) % modulus;
-		//exp >>= 1;
-		if (exp & 1)
-		{
-			if (overflow) result = ModMult(result, base, modulus);
-			else result = (result * base) % modulus;
-		}
-		if (overflow) base = ModMult(base, base, modulus);
-		else base = (base * base) % modulus;
-		exp >>= 1;
-	}
-	return result;
-}
-
-template <typename T>
 T BinomialMod(T n, T k, T m)
 {
 	//returns choose(n, k) % m
 	if (m > n) return BinomialModLargePrime(n, k, m);
-}
-
-template <typename T>
-T BinomialModLargePrime(T n, T k, T m, long long* factorials)
-{
-	//when m is larger than n we can use this function as opposed to the other BinomialMod function.
-	//factorials is a precalculated array of factorials that have been modulus divided by m. If we're
-	//passed a nullptr then this will be calculated now.
-	if (factorials == nullptr)
-	{
-		//create array for all factorials % m up to n
-		factorials = new long long[n + 1]();
-		factorials[0] = 1;
-		for (int i = 1; i <= n; i++) factorials[i] = factorials[i - 1] * i % m;
-	}
-
-	return (factorials[n] / (factorials[k] * factorials[n - k] % m)) % m;
 }
 
 long long MyPow(long long x, unsigned long long p)
