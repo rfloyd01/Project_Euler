@@ -43,6 +43,7 @@ long long polcoeff(std::vector<std::vector<long long> >& polynomials, int order)
 int polcoeff(std::vector<std::vector<int> >& polynomials, int order, int mod);
 void getPartitions(int n, std::vector<std::vector<std::vector<int> > > &all_partitions, int maxNumber = 0, int maxLength = 0, 
 	int currentLength = 0, int currentValue = 0, std::vector<int>* currentPartition = nullptr, bool recursive = false);
+long long permutationsOfPartitions(int n, int l, int maximum = 0, int minimum = 0);
 
 //Template Functions
 template <typename T>
@@ -63,6 +64,14 @@ T ModMult(T a, T b, T mod)
 
 template <typename T>
 T ModPow(T base, T exp, T modulus, bool overflow);
+
+template <typename T>
+T BinomialMod(T n, T k, T m);
+
+template <typename T>
+T BinomialModLargePrime(T n, T k, T m, long long* factorials);
+
+long long MyPow(long long x, unsigned long long p);
 
 template <typename T>
 void MatrixVectorMult(T* M, T* V, const int size)

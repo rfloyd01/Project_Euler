@@ -442,7 +442,6 @@ std::vector<long long> polynomial_multiply(std::vector<long long>& p1, std::vect
 
 	return p3;
 }
-
 std::vector<int> polynomial_mod_multiply(std::vector<int>& p1, std::vector<int>& p2, int mod, int cut_off)
 {
 	std::vector<int> p3;
@@ -473,7 +472,6 @@ std::vector<int> polynomial_mod_multiply(std::vector<int>& p1, std::vector<int>&
 
 	return p3;
 }
-
 long long polcoeff(std::vector<std::vector<long long> >& polynomials, int order)
 {
 	//this function returns the coefficient of order "order" of the generating function
@@ -493,7 +491,6 @@ long long polcoeff(std::vector<std::vector<long long> >& polynomials, int order)
 
 	return coefficients[order];
 }
-
 int polcoeff(std::vector<std::vector<int> >& polynomials, int order, int mod)
 {
 	//this function returns the coefficient of order "order" of the generating function
@@ -513,7 +510,6 @@ int polcoeff(std::vector<std::vector<int> >& polynomials, int order, int mod)
 
 	return coefficients[order];
 }
-
 void getPartitions(int n, std::vector<std::vector<std::vector<int> > >& all_partitions, int maxNumber, int maxLength,
 	int currentLength, int currentValue, std::vector<int>* currentPartition, bool recursive)
 {
@@ -585,6 +581,31 @@ void getPartitions(int n, std::vector<std::vector<std::vector<int> > >& all_part
 		}
 	}
 }
+long long permutationsOfPartitions(int n, int l, int maximum, int minimum)
+{
+	//returns the number of distinct permutations for the partitions of n that have a length of l, 
+	//where the maximum integer allowed is maximum and the least integer allowed is minimum. Maximum must be
+	//greater than or equal to minimum, and less than or equal to n while minimum must be greater than or
+	//equal to 1 and less than or equal to maximum.
+	if (maximum == 0) maximum = n;
+	else if (maximum > n) maximum = n;
+
+	if (minimum == 0) minimum = 1;
+	else if (minimum < 1) minimum = 1;
+	else if (minimum > maximum) minimum = maximum;
+
+	//This function utilizes generating functions to find the partitions.
+	int target = n - minimum * l, primary = maximum - minimum + 1, flip = -1;
+	int secondaryDenominator = target + primary, secondaryNumerator = l + secondaryDenominator - 1;
+	long long answer = 0;
+
+	//we get an equation of the form: [x^target]: (1 - x^primary)^l * (1 - x)^-l
+	//for which we solve using binomial expansion
+	for (int i = 0; i <= target / primary; i++)
+		answer += choose(l, i) * choose((secondaryNumerator -= primary), (secondaryDenominator -= primary)) * (flip *= -1);
+
+	return answer;
+}
 
 template <typename T>
 T ModPow(T base, T exp, T modulus, bool overflow)
@@ -612,6 +633,40 @@ T ModPow(T base, T exp, T modulus, bool overflow)
 	return result;
 }
 
+template <typename T>
+T BinomialMod(T n, T k, T m)
+{
+	//returns choose(n, k) % m
+	if (m > n) return BinomialModLargePrime(n, k, m);
+}
+
+template <typename T>
+T BinomialModLargePrime(T n, T k, T m, long long* factorials)
+{
+	//when m is larger than n we can use this function as opposed to the other BinomialMod function.
+	//factorials is a precalculated array of factorials that have been modulus divided by m. If we're
+	//passed a nullptr then this will be calculated now.
+	if (factorials == nullptr)
+	{
+		//create array for all factorials % m up to n
+		factorials = new long long[n + 1]();
+		factorials[0] = 1;
+		for (int i = 1; i <= n; i++) factorials[i] = factorials[i - 1] * i % m;
+	}
+
+	return (factorials[n] / (factorials[k] * factorials[n - k] % m)) % m;
+}
+
+long long MyPow(long long x, unsigned long long p)
+{
+	if (p == 0) return 1;
+	if (p == 1) return x;
+
+	//T tmp = MyPow(x, p / 2)
+	long long tmp = MyPow(x, p / 2);
+	if (p % 2 == 0) return tmp * tmp;
+	else return x * tmp * tmp;
+}
 BigNum::BigNum()
 {
 	//default constructor for BigNum

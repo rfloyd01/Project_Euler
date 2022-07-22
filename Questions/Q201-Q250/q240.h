@@ -1,5 +1,5 @@
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes polynomial_multiply(), polcoeff() and <vector>
+#include <Header_Files/functions.h> //includes permutationsOfPartitions()
 #include <iostream>
 
 //Top Dice
@@ -10,6 +10,12 @@ std::pair<std::string, double> q240()
 
     int goal = 70, dice_sides = 12, number_top_dice = 10, total_dice = 20;
 	int larger_than_lowest, lowest, lower_than_lowest;
+	long long modulus = 1000000007;
+
+	//initialize an array for factorials % 1,000,000,007
+	long long* factorials = new long long[total_dice + 1]();
+	factorials[0] = 1;
+	for (int i = 1; i <= total_dice; i++) factorials[i] = factorials[i - 1] * i;//% modulus;
 
 	//minimum_minimum represents the smallest possible value for the minimum top die
 	int minimum_minimum = goal - (number_top_dice - 1) * dice_sides;
@@ -18,75 +24,75 @@ std::pair<std::string, double> q240()
 	//maximum_minimum represents the largest possible value for the minimum top die
 	int maximum_minimum = goal / number_top_dice;
 
-	//we will always be adding to the answer by splitting the dice into three separate categories:
-	//greater than lowest top die, lowest top die and lower than lowest top die. These three categories
-	//will always add up to total_dice so therefore when we add to the answer it will always be by a
-	//factor of the form total_dice! / (greater_than_lowest! * lowest! * lower_than_lowest!). Because
-	//of this it will be a little more efficient to precalculate all of the possible ways to choose
-	//three sets of dice lengths from a maximum amount of total dice. For example, with 20 total dice
-	//you could have 20! / (0! * 0! * 20!), 20! / (6! * 10! * 4!), etc...
-	std::vector<std::vector<long long> > ways_to_choose;
-	long long fact = factorial(total_dice);
-	for (int first_digit = 0; first_digit <= total_dice; first_digit++)
-	{
-		std::vector<long long> chose;
-		for (int second_digit = 0; second_digit <= total_dice - first_digit; second_digit++)
-		{
-			//looking at the form: total_dice! / (first_digit! * second_digit! * (total_dice - first_digit - second_digit)!)
-			chose.push_back(fact / (factorial(first_digit) * factorial(second_digit) * factorial(total_dice - first_digit - second_digit)));
-		}
-		ways_to_choose.push_back(chose);
-	}
+	////Memoize ways to split dice into three sections. For example, with 20 total dice
+	////you could have 20! / (0! * 0! * 20!), 20! / (6! * 6! * 8!), 20! / (10! * 6! * 4!), etc...
+	//std::vector<std::vector<long long> > ways_to_choose;
+	//long long fact = factorials[total_dice];
+	//for (int first_digit = 0; first_digit <= total_dice; first_digit++)
+	//{
+	//	std::vector<long long> chose;
+	//	for (int second_digit = 0; second_digit <= total_dice - first_digit; second_digit++)
+	//	{
+	//		//looking at the form: total_dice! / (first_digit! * second_digit! * (total_dice - first_digit - second_digit)!)
+	//		chose.push_back(factorials[total_dice] / (factorials[first_digit] * factorials[second_digit] * factorials[total_dice - first_digit - second_digit]));
+	//	}
+	//	ways_to_choose.push_back(chose);
+	//}
+	
+	//Memoize ways to split dice into two sections
+	long long* ways_to_choose = new long long[number_top_dice + 1]();
+	for (int i = 0; i <= number_top_dice; i++) ways_to_choose[i] = (factorials[total_dice] / (factorials[i] * factorials[total_dice - i]));
 
-	for (int i = minimum_minimum; i <= maximum_minimum; i++)
+	for (int least_top_die_value = minimum_minimum; least_top_die_value <= maximum_minimum; least_top_die_value++)
 	{
-		//check all of the possible minimum top dice values
-
-		int fewest = (number_top_dice * (i + 1)) - goal;
-		int most = ((number_top_dice * dice_sides) - goal) / (dice_sides - i);
+		//calculate both the most and least number of least valued top die we can have
+		//for the current least top die value
+		int fewest = (number_top_dice * (least_top_die_value + 1)) - goal;
+		int most = ((number_top_dice * dice_sides) - goal) / (dice_sides - least_top_die_value);
 		if (fewest <= 0) fewest = 1;
-		if (most > dice_sides) most = dice_sides;
-		//"fewest" represents the smallest possible amount of the lowest value top die (i) that can
-		//be used and still be able to reach "n" while "most" represents the most of die "i" that can
-		//be used and reach n. For example if i == 5 then it's possible to reach 70 with one 5, one
-		//9 and eight 7's so "fewest" would be 1. 70 can be made using seven 5's but not with eight
-		//because you would need a die value greater than 12 to reach 70 (5 * 8 = 40 leaving two
-		//dice to make up the other 30 which would be 15 on each die). So in this case "most" = 7.
+		if (most > dice_sides) most = number_top_dice;
 
-		for (int j = fewest; j <= most; j++)
+		for (int amount_of_least_top_dice = fewest; amount_of_least_top_dice <= most; amount_of_least_top_dice++)
 		{
-			//test each possible amount of the smallest top die value
-			larger_than_lowest = number_top_dice - j; //the number of top dice greater than the minimum
+			////test each possible amount of the smallest top die value
+			//larger_than_lowest = number_top_dice - amount_of_least_top_dice; //the number of top dice greater than the minimum
 
+			////calculate the total number of ways to shuffle the Top Dice that are larger than the smallest
+			////top die value, save it in the large_shuffle variable
+			//long long large_shuffle = permutationsOfPartitions(goal - amount_of_least_top_dice * least_top_die_value, number_top_dice - amount_of_least_top_dice, dice_sides, least_top_die_value + 1);
+			//long long temp = 0;
 
-			//need to create a generating function which shows all of the ways to combine "large_top_dice" digits where each 
-			//digit is greater than the value of "i". We then take the (goal - #_of_smallest_top_die * value_smallest_top_die)th
-			//order of this generating function to figure out the number of ways to shuffle all of the large_top_dice
-			std::vector<long long> p = { 0 };
-			std::vector<std::vector<long long> > polynomials;
-			for (int l = 1; l <= i; l++) p.push_back(0); //generating function shouldn't include digits less than or equal to "i"
-			for (int l = i + 1; l <= dice_sides; l++) p.push_back(1); //can utilize any number greater than "i"
-			for (int l = 0; l < larger_than_lowest; l++) polynomials.push_back(p); //need "large_top_dice" digits for generating function
+			//for (int k = 0; k <= (total_dice - number_top_dice); k++)
+			//{
+			//	//"k" represents the number of non-top_dice that are equal to the lowest top die value
+			//	//of "i"
+			//	lowest = amount_of_least_top_dice + k; //lowest is the total amount of least top dice value, some are counted towards goal score and some aren't
+			//	lower_than_lowest = total_dice - lowest - larger_than_lowest; //number of dice less than lowest top die
+			//	temp += ways_to_choose[lowest][larger_than_lowest] * pow(least_top_die_value - 1, lower_than_lowest);
+			//}
 
-			long long large_shuffle = polcoeff(polynomials, goal - j * i);
-			long long temp = 0;
+			//if (least_top_die_value == 7) std::cout << temp * large_shuffle << std::endl;
+			//answer += temp * large_shuffle;
+			
+			//First we calculate the total ways to shuffle the dice that are less than or equal to the least valued top die
+			int number_lower_dice = total_dice - number_top_dice + amount_of_least_top_dice;
+			long long small_shuffle = MyPow(least_top_die_value, number_lower_dice) - MyPow(least_top_die_value - 1, number_lower_dice);
 
-			for (int k = 0; k <= (total_dice - number_top_dice); k++)
-			{
-				//"k" represents the number of non-top_dice that are equal to the lowest top die value
-				//of "i"
-				lowest = j + k; //lowest is the total amount of least top dice value, some are counted towards goal score and some aren't
-				lower_than_lowest = total_dice - lowest - larger_than_lowest; //number of dice less than lowest top die
+			for (int i = 1; i < amount_of_least_top_dice; i++)
+				small_shuffle -= factorials[number_lower_dice] / (factorials[i] * factorials[number_lower_dice - i]) * (long long)pow(least_top_die_value - 1, number_lower_dice - i);
 
-				//not casting pow() to a long long was causing my answer to be off by 300, which is an error of 4e-15 % from the actual answer.
-				//this took literal hours of debugging before figuring out, which goes to show just how troublesome floating point errors can be
-				temp += ways_to_choose[lowest][larger_than_lowest] * (long long)pow(i - 1, lower_than_lowest);
-			}
+			//Next we calculate the total ways to shuffle the top dice that are greater than the least valued top die
+			long long large_shuffle = permutationsOfPartitions(goal - amount_of_least_top_dice * least_top_die_value, number_top_dice - amount_of_least_top_dice, dice_sides, least_top_die_value + 1);
 
-			answer += temp * large_shuffle;
+			//We multiply the ways to individually shuffle the upper and lower dice with the overall number of ways to shuffle
+			//the dice together
+			answer += ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle * small_shuffle;
 		}
 	}
+	//ran in 0.000304 seconds
 
+	delete[] factorials;
+	delete[] ways_to_choose;
     return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
     //the answer is 7448717393364181966
