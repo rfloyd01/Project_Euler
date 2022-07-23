@@ -4,6 +4,7 @@
 #include <Header_Files/int_64x.h>
 #include <vector>
 #include <string>
+#include <iostream>
 
 //arrays with common values
 extern int powers_of_two[11]; // = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024 };
@@ -105,7 +106,9 @@ T BinomialModLargePrime(T n, T k, T m, long long* factorials)
 		for (int i = 1; i <= n; i++) factorials[i] = factorials[i - 1] * i % m;
 	}
 
-	return (factorials[n] / (factorials[k] * factorials[n - k] % m)) % m;
+	T mult_inverse = ModPow((T)((factorials[n - k] * factorials[k]) % m), (T)(m - 2), (T)m, 1);
+	//std::cout << "choose(" << n << ", " << k << ") MOD " << m << " = " << (factorials[n] * mult_inverse) % m << std::endl;
+	return (factorials[n] * mult_inverse) % m;
 }
 
 long long MyPow(long long x, unsigned long long p);
