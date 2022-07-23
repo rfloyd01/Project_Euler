@@ -44,14 +44,16 @@ std::pair<std::string, double> q240()
     auto run_time = std::chrono::steady_clock::now();
 	long long answer = 0;
 
-    long long goal = 70, dice_sides = 12, number_top_dice = 10, total_dice = 20;
+    //long long goal = 250, dice_sides = 50, number_top_dice = 50, total_dice = 10000;
+	//long long goal = 70, dice_sides = 12, number_top_dice = 10, total_dice = 20;
+	long long goal = 15, dice_sides = 6, number_top_dice = 3, total_dice = 5;
 	long long modulus = 1000000007;
 
 	//initialize an array for factorials % 1,000,000,007
 	//the maximum factorial we will need is equal to n + the number of top dice
-	long long* factorials = new long long[goal + number_top_dice + 1]();
+	long long* factorials = new long long[total_dice + 1]();
 	factorials[0] = 1;
-	for (int i = 1; i <= goal + number_top_dice; i++) factorials[i] = factorials[i - 1] * i % modulus;
+	for (int i = 1; i <= total_dice; i++) factorials[i] = factorials[i - 1] * i % modulus;
 
 	//minimum_minimum represents the smallest possible value for the minimum top die
 	int minimum_minimum = goal - (number_top_dice - 1) * dice_sides;
@@ -61,8 +63,8 @@ std::pair<std::string, double> q240()
 	int maximum_minimum = goal / number_top_dice;
 	
 	//Memoize ways to split dice into two sections
-	long long* ways_to_choose = new long long[number_top_dice + 1]();
-	for (long long i = 0; i <= number_top_dice; i++) ways_to_choose[i] = BinomialModLargePrime(total_dice, i, modulus, factorials);
+	long long* ways_to_choose = new long long[total_dice + 1]();
+	for (long long i = 0; i <= total_dice; i++) ways_to_choose[i] = BinomialModLargePrime(total_dice, i, modulus, factorials);
 	//for (int i = 0; i <= number_top_dice; i++) std::cout << total_dice << "! / " << i << "!" << total_dice - i << "! = " << ways_to_choose[i] << std::endl << std::endl;
 	//for (int i = 0; i <= number_top_dice; i++) ways_to_choose[i] = (factorials[total_dice] / (factorials[i] * factorials[total_dice - i]));
 
@@ -71,10 +73,25 @@ std::pair<std::string, double> q240()
 	{
 		//calculate both the most and least number of least valued top die we can have
 		//for the current least top die value
-		int fewest = (number_top_dice * (least_top_die_value + 1)) - goal;
-		int most = ((number_top_dice * dice_sides) - goal) / (dice_sides - least_top_die_value);
-		if (fewest <= 0) fewest = 1;
-		if (most > dice_sides) most = number_top_dice;
+		int fewest;
+		int most;
+
+		if (least_top_die_value * number_top_dice == goal)
+		{
+			//the equation for setting the fewest and most possible top dice for the current least top die value
+			//breaks down if our goal number can only be reached by having all the top dice be the maximum number.
+			//For example if the goal was 120, we could only get there if every Top Die was 12.
+			fewest = number_top_dice;
+			most = number_top_dice;
+		}
+		else
+		{
+			//these equations should work in all other cases
+			fewest = (number_top_dice * (least_top_die_value + 1)) - goal;
+			most = ((number_top_dice * dice_sides) - goal) / (dice_sides - least_top_die_value);
+			if (fewest <= 0) fewest = 1;
+			if (most > dice_sides) most = number_top_dice;
+		}
 
 		for (long long amount_of_least_top_dice = fewest; amount_of_least_top_dice <= most; amount_of_least_top_dice++)
 		//for (int amount_of_least_top_dice = fewest; amount_of_least_top_dice < fewest + 1; amount_of_least_top_dice++)
