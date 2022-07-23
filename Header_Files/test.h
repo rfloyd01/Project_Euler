@@ -57,8 +57,8 @@ std::pair<std::string, double> test()
 	long long* ways_to_choose = new long long[number_top_dice + 1]();
 	for (int i = 0; i <= number_top_dice; i++) ways_to_choose[i] = (factorials[total_dice] / (factorials[i] * factorials[total_dice - i]));
 
-	//for (int least_top_die_value = minimum_minimum; least_top_die_value <= maximum_minimum; least_top_die_value++)
-	for (int least_top_die_value = minimum_minimum; least_top_die_value < minimum_minimum + 1; least_top_die_value++)
+	for (int least_top_die_value = minimum_minimum; least_top_die_value <= maximum_minimum; least_top_die_value++)
+	//for (int least_top_die_value = minimum_minimum; least_top_die_value < minimum_minimum + 1; least_top_die_value++)
 	{
 		//calculate both the most and least number of least valued top die we can have
 		//for the current least top die value
@@ -66,8 +66,8 @@ std::pair<std::string, double> test()
 		int most = ((number_top_dice * dice_sides) - goal) / (dice_sides - least_top_die_value);
 		if (fewest <= 0) fewest = 1;
 		if (most > dice_sides) most = number_top_dice;
-		//for (int amount_of_least_top_dice = fewest; amount_of_least_top_dice <= most; amount_of_least_top_dice++)
-		for (int amount_of_least_top_dice = fewest; amount_of_least_top_dice < fewest + 1; amount_of_least_top_dice++)
+		for (int amount_of_least_top_dice = fewest; amount_of_least_top_dice <= most; amount_of_least_top_dice++)
+		//for (int amount_of_least_top_dice = fewest; amount_of_least_top_dice < fewest + 1; amount_of_least_top_dice++)
 		{
 			//First we calculate the total ways to shuffle the dice that are less than or equal to the least valued top die
 			int number_lower_dice = total_dice - number_top_dice + amount_of_least_top_dice;

@@ -3,7 +3,7 @@
 #include <iostream>
 
 //Top Dice
-long long permutationsOfPartitionsMod(int n, int l, int maximum, int minimum, int mod, long long* facts)
+long long permutationsOfPartitionsMod(long long n, long long l, long long maximum, long long minimum, long long mod, long long* facts)
 {
 	//the same as my standard permutationsOfPartitions() function, but uses the BinomialModLargePrime() function
 	//instead of the standard choose() function.
@@ -29,7 +29,7 @@ long long permutationsOfPartitionsMod(int n, int l, int maximum, int minimum, in
 	//for which we solve using binomial expansion
 	for (long long i = 0; i <= target / primary; i++)
 	{
-		long long numb = (BinomialModLargePrime((long long)l, i, (long long)mod, facts) * BinomialModLargePrime((secondaryNumerator -= primary), (secondaryDenominator -= primary), (long long)mod, facts)) % mod * (flip *= -1);
+		long long numb = (BinomialModLargePrime(l, i, mod, facts) * BinomialModLargePrime((secondaryNumerator -= primary), (secondaryDenominator -= primary), mod, facts)) % mod * (flip *= -1);
 		//std::cout << BinomialModLargePrime((long long)l, i, (long long)mod, facts) << " * " << BinomialModLargePrime(secondaryNumerator, secondaryDenominator, (long long)mod, facts) << " % " << mod << " = " << (BinomialModLargePrime((long long)l, i, (long long)mod, facts) * BinomialModLargePrime(secondaryNumerator, secondaryDenominator, (long long)mod, facts)) % mod << std::endl;
 		//std::cout << (9 * 377348994) << std::endl;
 		//std::cout << "binomal(" << secondaryNumerator << ", " << secondaryDenominator << ") % 1000000007 = " << BinomialModLargePrime(secondaryNumerator, secondaryDenominator, mod, facts) << std::endl;
@@ -44,8 +44,8 @@ std::pair<std::string, double> q240()
     auto run_time = std::chrono::steady_clock::now();
 	long long answer = 0;
 
-    int goal = 70, dice_sides = 12, number_top_dice = 10, total_dice = 20;
-	int modulus = 1000000007;
+    long long goal = 70, dice_sides = 12, number_top_dice = 10, total_dice = 20;
+	long long modulus = 1000000007;
 
 	//initialize an array for factorials % 1,000,000,007
 	//the maximum factorial we will need is equal to n + the number of top dice
@@ -62,11 +62,11 @@ std::pair<std::string, double> q240()
 	
 	//Memoize ways to split dice into two sections
 	long long* ways_to_choose = new long long[number_top_dice + 1]();
-	for (int i = 0; i <= number_top_dice; i++) ways_to_choose[i] = BinomialModLargePrime(total_dice, i, modulus, factorials);
+	for (long long i = 0; i <= number_top_dice; i++) ways_to_choose[i] = BinomialModLargePrime(total_dice, i, modulus, factorials);
 	//for (int i = 0; i <= number_top_dice; i++) std::cout << total_dice << "! / " << i << "!" << total_dice - i << "! = " << ways_to_choose[i] << std::endl << std::endl;
 	//for (int i = 0; i <= number_top_dice; i++) ways_to_choose[i] = (factorials[total_dice] / (factorials[i] * factorials[total_dice - i]));
 
-	for (int least_top_die_value = minimum_minimum; least_top_die_value <= maximum_minimum; least_top_die_value++)
+	for (long long least_top_die_value = minimum_minimum; least_top_die_value <= maximum_minimum; least_top_die_value++)
 	//for (int least_top_die_value = minimum_minimum; least_top_die_value < minimum_minimum + 1; least_top_die_value++)
 	{
 		//calculate both the most and least number of least valued top die we can have
@@ -76,32 +76,42 @@ std::pair<std::string, double> q240()
 		if (fewest <= 0) fewest = 1;
 		if (most > dice_sides) most = number_top_dice;
 
-		for (int amount_of_least_top_dice = fewest; amount_of_least_top_dice <= most; amount_of_least_top_dice++)
+		for (long long amount_of_least_top_dice = fewest; amount_of_least_top_dice <= most; amount_of_least_top_dice++)
 		//for (int amount_of_least_top_dice = fewest; amount_of_least_top_dice < fewest + 1; amount_of_least_top_dice++)
 		{
 			//std::cout << "Smallest top die = " << least_top_die_value << ", amount = " << amount_of_least_top_dice << std::endl;
 			//First we calculate the total ways to shuffle the dice that are less than or equal to the least valued top die
-			int number_lower_dice = total_dice - number_top_dice + amount_of_least_top_dice;
+			long long number_lower_dice = total_dice - number_top_dice + amount_of_least_top_dice;
 			long long small_shuffle = (ModPow(least_top_die_value, number_lower_dice, modulus, 1) - ModPow(least_top_die_value - 1, number_lower_dice, modulus, 1)) % modulus;
 
 			//factorials[number_lower_dice] / (factorials[i] * factorials[number_lower_dice - i])
-			for (int i = 1; i < amount_of_least_top_dice; i++)
-				small_shuffle = (small_shuffle - (BinomialModLargePrime(number_lower_dice, i, modulus, factorials) * ModPow(least_top_die_value - 1, number_lower_dice - i, modulus, 1) % modulus)) % modulus;
-
-			std::cout << "small shuffle = " << small_shuffle << std::endl;
+			for (long long i = 1; i < amount_of_least_top_dice; i++)
+			{
+				
+				/*if (least_top_die_value == 4 && amount_of_least_top_dice == 5)
+				{
+					long long b = BinomialModLargePrime(number_lower_dice, i, modulus, factorials) * ModPow(least_top_die_value - 1, number_lower_dice - i, modulus, 1) % modulus;
+					std::cout << small_shuffle  -  b << " MOD 1,000,000,007 = " << (small_shuffle - b) % modulus << std::endl;
+					std::cout << -12351625 % modulus << std::endl;
+				}*/
+				//in c++ the modulus operator can give us a negative value which we don't want, so when dealing with subtraction,
+				//instead of doing: (A - B) % M === (A % M - B % M) % M we need to do: (A - B) % M === A % M - B % M + M
+				small_shuffle = (small_shuffle - (BinomialModLargePrime(number_lower_dice, i, modulus, factorials) * ModPow(least_top_die_value - 1, number_lower_dice - i, modulus, 1) % modulus)) + modulus;
+			}
+			//std::cout << "small shuffle = " << small_shuffle << std::endl;
 			//Next we calculate the total ways to shuffle the top dice that are greater than the least valued top die
 			long long large_shuffle = permutationsOfPartitionsMod(goal - amount_of_least_top_dice * least_top_die_value, number_top_dice - amount_of_least_top_dice, dice_sides, least_top_die_value + 1, modulus, factorials);
 
-			std::cout << "large shuffle = " << large_shuffle << std::endl;
+			//std::cout << "large shuffle = " << large_shuffle << std::endl;
 			//We multiply the ways to individually shuffle the upper and lower dice with the overall number of ways to shuffle
 			//the dice together
-			std::cout << "overall shuffle = " << ways_to_choose[number_top_dice - amount_of_least_top_dice] << std::endl;
+			//std::cout << "overall shuffle = " << ways_to_choose[number_top_dice - amount_of_least_top_dice] << std::endl;
 			//std::cout << ((ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle) % modulus * small_shuffle) % modulus << " ways to order them.\n" << std::endl;
 			answer = (answer + ((ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle) % modulus * small_shuffle) % modulus) % modulus;
 
-			std::cout << "MTD = " << least_top_die_value;
-			std::cout << ", # of MTD = " << amount_of_least_top_dice;
-			std::cout << ", Ways % MOD = " << ((ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle) % modulus * small_shuffle) % modulus << std::endl << std::endl;
+			//std::cout << "MTD = " << least_top_die_value;
+			//std::cout << ", # of MTD = " << amount_of_least_top_dice;
+			//std::cout << ", Ways % MOD = " << ((ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle) % modulus * small_shuffle) % modulus << std::endl << std::endl;
 		}
 	}
 	//ran in 0.000304 seconds
