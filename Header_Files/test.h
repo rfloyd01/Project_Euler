@@ -36,7 +36,7 @@ long long permutationsOfPartitionsTest(int n, int l, int maximum, int minimum)
 std::pair<std::string, double> test()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	int dice_sides = 6, number_top_dice = 5, total_dice = 10;
+	int dice_sides = 20, number_top_dice = 3, total_dice = 20;
 	long long answer;
 
 	std::cout << "Dice sides = " << dice_sides << std::endl;
@@ -52,8 +52,8 @@ std::pair<std::string, double> test()
 	long long* ways_to_choose = new long long[number_top_dice + 1]();
 	for (int i = 0; i <= number_top_dice; i++) ways_to_choose[i] = (factorials[total_dice] / (factorials[i] * factorials[total_dice - i]));
 
-	//for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
-	for (int goal = 17; goal <= 27; goal++)
+	for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
+	//for (int goal = 17; goal <= 27; goal++)
 	{
 		answer = 0; //re-zero the answer
 
