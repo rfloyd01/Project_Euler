@@ -126,19 +126,8 @@ std::pair<std::string, double> q240()
 				//std::cout << "Current minimum Top Die = " << least_top_die_value << std::endl;
 				//std::cout << "Amount of minimum Top Die = "
 				for (long long i = 1; i < amount_of_least_top_dice; i++)
-				{
-
-					/*if (least_top_die_value == 4 && amount_of_least_top_dice == 5)
-					{
-						long long b = BinomialModLargePrime(number_lower_dice, i, modulus, factorials) * ModPow(least_top_die_value - 1, number_lower_dice - i, modulus, 1) % modulus;
-						std::cout << small_shuffle  -  b << " MOD 1,000,000,007 = " << (small_shuffle - b) % modulus << std::endl;
-						std::cout << -12351625 % modulus << std::endl;
-					}*/
-					//in c++ the modulus operator can give us a negative value which we don't want, so when dealing with subtraction,
-					//instead of doing: (A - B) % M === (A % M - B % M) % M we need to do: (A - B) % M === A % M - B % M + M
-					std::cout << "Small shuffle = " << small_shuffle << std::endl;
-					small_shuffle = ((small_shuffle - (BinomialModLargePrime(number_lower_dice, i, modulus, factorials) * ModPow(least_top_die_value - 1, number_lower_dice - i, modulus, 1) % modulus)) + modulus) % modulus;
-				}
+					small_shuffle = (small_shuffle - (BinomialModLargePrime(number_lower_dice, i, modulus, factorials) * ModPow(least_top_die_value - 1, number_lower_dice - i, modulus, 1) % modulus)) + modulus;
+				
 				std::cout << "small shuffle = " << small_shuffle << std::endl;
 				//Next we calculate the total ways to shuffle the top dice that are greater than the least valued top die
 				long long large_shuffle = permutationsOfPartitionsMod(goal - amount_of_least_top_dice * least_top_die_value, number_top_dice - amount_of_least_top_dice, dice_sides, least_top_die_value + 1, modulus, factorials);

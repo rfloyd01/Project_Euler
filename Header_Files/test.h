@@ -36,7 +36,7 @@ long long permutationsOfPartitionsTest(int n, int l, int maximum, int minimum)
 std::pair<std::string, double> test()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	int dice_sides = 20, number_top_dice = 3, total_dice = 20;
+	int dice_sides = 4, number_top_dice = 1, total_dice = 1;
 	long long answer;
 
 	std::cout << "Dice sides = " << dice_sides << std::endl;
@@ -55,6 +55,7 @@ std::pair<std::string, double> test()
 	for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
 	//for (int goal = 17; goal <= 27; goal++)
 	{
+		std::cout << "Goal is: " << goal << std::endl;
 		answer = 0; //re-zero the answer
 
 		//int goal = 25, dice_sides = 6, number_top_dice = 5, total_dice = 10;
@@ -116,15 +117,18 @@ std::pair<std::string, double> test()
 
 					//std::cout << "overall shuffle = " << ways_to_choose[number_top_dice - amount_of_least_top_dice] << std::endl;
 					answer += ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle * small_shuffle;
-					/*std::cout << "MTD = " << least_top_die_value;
-					std::cout << ", # of MTD = " << amount_of_least_top_dice;
-					std::cout << ", Ways % MOD = " << (ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle * small_shuffle) % 1000000007 << std::endl << std::endl;*/
+					std::cout << "MTD = " << least_top_die_value;
+					std::cout << ", # of MTD = " << amount_of_least_top_dice << std::endl;
+					//std::cout << ", Ways % MOD = " << (ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle * small_shuffle) % 1000000007 << std::endl << std::endl;
 				}
 			}
 		}
 
-		std::cout << "Top dice goal = " << goal << std::endl;
-		std::cout << "Ways to shuffle MOD 1,000,000,007 = " << answer % 1000000007 << std::endl << std::endl;
+		//std::vector<std::vector<std::vector<int> > > parts;
+		//std::cout << "There should be " << getPartitions(goal, parts, dice_sides, )
+		std::cout << std::endl;
+		/*std::cout << "Top dice goal = " << goal << std::endl;
+		std::cout << "Ways to shuffle MOD 1,000,000,007 = " << answer % 1000000007 << std::endl << std::endl;*/
 	}
 
 	//ran in 0.000304 seconds

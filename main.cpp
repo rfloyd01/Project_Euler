@@ -1,6 +1,7 @@
 #include <Header_Files/pch.h>
 #include <Questions/Q201-Q250/q240.h>
 #include <Header_Files/test.h>
+#include <Header_Files/test2.h>
 
 int main()
 {
@@ -8,7 +9,8 @@ int main()
 	//The question number is stored in the question_number variable automatically for ease of reading
 
 	//auto answer = test();
-	auto answer = q240();
+	auto answer = test2();
+	//auto answer = q240();
 
 	std::cout << "The answer is " << answer.first << std::endl;
 	std::cout << "Program ran in " << answer.second << " seconds" << std::endl;
