@@ -529,37 +529,24 @@ int_64x& int_64x::operator*=(const int_64x& num)
 		}
 	}
 
-	//if *this or num was negative, but not both, then ans needs to be inverted to a negative number
-	if (negative[0] ^ negative[1])
-	{
-		int k = num.digits.size() + this->digits.size() - 2; //although ans is 100 elements long, this is the amount that we've actually changed
-		for (; k >= 0; k--) ans[k] = ~ans[k];
-		k++; //set k back to 0 after loop
-		while (ans[k] == 0xFFFFFFFFFFFFFFFF)
-		{
-			ans[k] = 0;
-			k++;
-		}
-
-		ans[k] += 1;
-		negative[1] = true;
-	}
-
-	//now we copy over all of the useful digits from num and put them into *this, num is bigger than *this so digits will need to be added to *this
+	//The multiplication is done, but there may be some cleanup to do. First, copy our result into the existing digit
+	//vector for *this
 	for (int i = 0; i < this->digits.size(); i++) this->digits[i] = ans[i];
 	int stop = this->digits.size() + num.digits.size();
 	for (int i = this->digits.size(); i < stop; i++) this->digits.push_back(ans[i]);
 
-	//with the multiplication complete, do a final check to make sure there are no unnecessary leading words
-	for (int i = this->digits.size() - 1; i > 0; i--)
+	//check to see if we ended up with a negative number by mistake, if so then add an empty word to the front of the 
+	//answer
+	if (this->digits.back() >> 63) this->digits.push_back(0);
+	else
 	{
-		if ((this->digits[i] == 0) || (this->digits[i] == -1))
-		{
-			if ((this->digits[i - 1] >> 63) ^ (this->digits[i] >> 63)) break;
-			this->digits.erase(this->digits.end() - 1);
-		}
-		else break;
+		//An m-bit number multiplied by an n-bit number will either be (m*n) bits in length or (m*n-1) bits in length. Make
+		//sure that we don't have a word of all 0's as the most significant word after the multiplication.
+		if ((this->digits.back() == 0) && (!(this->digits[this->digits.size() - 2] >> 63))) this->digits.pop_back();
 	}
+
+	//if *this or num was negative, but not both, then this needs to be inverted
+	if (negative[0] ^ negative[1]) twosComplement(*this);
 
 	//delete the copy arrays before exiting to avoid any kind of memory leaks
 	delete[] this_copy;
@@ -700,37 +687,24 @@ void int_64x::FastMultiplication(const int_64x& num)
 		}
 	}
 
-	//if *this or num was negative, but not both, then ans needs to be inverted to a negative number
-	if (negative[0] ^ negative[1])
-	{
-		int k = num.digits.size() + this->digits.size() - 2; //although ans is 100 elements long, this is the amount that we've actually changed
-		for (; k >= 0; k--) ans[k] = ~ans[k];
-		k++; //set k back to 0 after loop
-		while (ans[k] == 0xFFFFFFFFFFFFFFFF)
-		{
-			ans[k] = 0;
-			k++;
-		}
-
-		ans[k] += 1;
-		negative[1] = true;
-	}
-
-	//now we copy over all of the useful digits from num and put them into *this, num is bigger than *this so digits will need to be added to *this
+	//The multiplication is done, but there may be some cleanup to do. First, copy our result into the existing digit
+	//vector for *this
 	for (int i = 0; i < this->digits.size(); i++) this->digits[i] = ans[i];
 	int stop = this->digits.size() + num.digits.size();
 	for (int i = this->digits.size(); i < stop; i++) this->digits.push_back(ans[i]);
 
-	//with the multiplication complete, do a final check to make sure there are no unnecessary leading words
-	for (int i = this->digits.size() - 1; i > 0; i--)
+	//check to see if we ended up with a negative number by mistake, if so then add an empty word to the front of the 
+	//answer
+	if (this->digits.back() >> 63) this->digits.push_back(0);
+	else
 	{
-		if ((this->digits[i] == 0) || (this->digits[i] == -1))
-		{
-			if ((this->digits[i - 1] >> 63) ^ (this->digits[i] >> 63)) break;
-			this->digits.erase(this->digits.end() - 1);
-		}
-		else break;
+		//An m-bit number multiplied by an n-bit number will either be (m*n) bits in length or (m*n-1) bits in length. Make
+	    //sure that we don't have a word of all 0's as the most significant word after the multiplication.
+		if ((this->digits.back() == 0) && (!(this->digits[this->digits.size() - 2] >> 63))) this->digits.pop_back();
 	}
+
+	//if *this or num was negative, but not both, then this needs to be inverted
+	if (negative[0] ^ negative[1]) twosComplement(*this);
 }
 
 //Division Operators
