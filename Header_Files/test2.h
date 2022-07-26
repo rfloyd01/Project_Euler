@@ -24,17 +24,15 @@ int_64x BigPermutationsOfPartitions(int n, int l, int maximum, int minimum)
 	//we get an equation of the form: [x^target]: (1 - x^primary)^l * (1 - x)^-l
 	//for which we solve using binomial expansion
 	for (int i = 0; i <= target / primary; i++)
-	{
 		answer += BigChoose(l, i) * BigChoose((secondaryNumerator -= primary), (secondaryDenominator -= primary)) * (flip *= -1);
-		std::cout << "Choose(" << secondaryNumerator << ", " << secondaryDenominator << ") = " << BigChoose(secondaryNumerator, secondaryDenominator) << std::endl;
-	}
+
 	return answer;
 }
 
 std::pair<std::string, double> test2()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	int dice_sides = 6, number_top_dice = 3, total_dice = 5;
+	int dice_sides = 12, number_top_dice = 10, total_dice = 20;
 	int_64x answer = 0;
 
 	std::cout << "Dice sides = " << dice_sides << std::endl;
@@ -54,8 +52,8 @@ std::pair<std::string, double> test2()
 	int_64x* ways_to_choose = new int_64x[number_top_dice + 1]();
 	for (int i = 0; i <= number_top_dice; i++) ways_to_choose[i] = BigChoose(total_dice, i);
 
-	//for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
-	for (int goal = 10; goal <= number_top_dice * dice_sides; goal++)
+	for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
+	//for (int goal = 10; goal <= number_top_dice * dice_sides; goal++)
 	{
 		std::cout << "Goal is: " << goal << std::endl;
 		answer = 0; //re-zero the answer
@@ -112,14 +110,14 @@ std::pair<std::string, double> test2()
 					//Next we calculate the total ways to shuffle the top dice that are greater than the least valued top die
 					int_64x large_shuffle = BigPermutationsOfPartitions(goal - amount_of_least_top_dice * least_top_die_value, number_top_dice - amount_of_least_top_dice, dice_sides, least_top_die_value + 1);
 
-					std::cout << "large shuffle = " << large_shuffle << std::endl;
+					//std::cout << "large shuffle = " << large_shuffle << std::endl;
 					//We multiply the ways to individually shuffle the upper and lower dice with the overall number of ways to shuffle
 					//the dice together
 
 					//std::cout << "overall shuffle = " << ways_to_choose[number_top_dice - amount_of_least_top_dice] << std::endl;
 					answer += ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle * small_shuffle;
-					std::cout << "MTD = " << least_top_die_value;
-					std::cout << ", # of MTD = " << amount_of_least_top_dice << std::endl;
+					//std::cout << "MTD = " << least_top_die_value;
+					//std::cout << ", # of MTD = " << amount_of_least_top_dice << std::endl;
 					//std::cout << ", Ways % MOD = " << (ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle * small_shuffle) % 1000000007 << std::endl << std::endl;
 				}
 			}
