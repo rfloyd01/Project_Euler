@@ -30,6 +30,7 @@ int char_to_int(char a);
 char int_to_char(int a);
 long long choose(int m, int n);
 int_64x BigChoose(int m, int n);
+int_64x BigPow(int_64x n, int p);
 long long factorial(int n);
 int gcd(int a, int b);
 long long gcd(long long a, long long b);

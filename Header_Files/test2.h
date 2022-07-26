@@ -57,7 +57,9 @@ std::pair<std::string, double> test2()
 	int_64x* ways_to_choose = new int_64x[number_top_dice + 1]();
 	for (int i = 0; i <= number_top_dice; i++) ways_to_choose[i] = BigChoose(total_dice, i);
 
-	//for (int i = 0; i <= number_top_dice; i++) std::cout << total_dice << "! / (" << i << "!" << total_dice - i << "!) = " << ways_to_choose[i] << std::endl;
+	int_64x yeetypipes = BigPow(5, 10000);
+	std::cout << "Calculated in " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 << " seconds. " << std::endl;
+	std::cout << yeetypipes << std::endl;
 
 	//for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
 	////for (int goal = 17; goal <= 27; goal++)
@@ -67,20 +69,19 @@ std::pair<std::string, double> test2()
 
 	//	//int goal = 25, dice_sides = 6, number_top_dice = 5, total_dice = 10;
 	//	int larger_than_lowest, lowest, lower_than_lowest;
-	//	long long modulus = 1000000007;
 
 	//	//minimum_minimum represents the smallest possible value for the minimum top die
 	//	int minimum_minimum = goal - (number_top_dice - 1) * dice_sides;
 	//	if (minimum_minimum <= 0) minimum_minimum = 1;
+
 	//	//maximum_minimum represents the largest possible value for the minimum top die
 	//	int maximum_minimum = goal / number_top_dice;
 
 	//	if (minimum_minimum <= dice_sides)
 	//	{
-	//		//if the lowest possiblevalue for our minimum value top die is greater than the number of sides 
+	//		//if the lowest possible value for our minimum value top die is greater than the number of sides 
 	//		//on the dice, then it won't be possible to reach the goal so we skip all of the below logic
 	//		for (int least_top_die_value = minimum_minimum; least_top_die_value <= maximum_minimum; least_top_die_value++)
-	//			//for (int least_top_die_value = minimum_minimum; least_top_die_value < minimum_minimum + 1; least_top_die_value++)
 	//		{
 	//			//calculate both the most and least number of least valued top die we can have
 	//			//for the current least top die value
@@ -108,7 +109,7 @@ std::pair<std::string, double> test2()
 	//			{
 	//				//First we calculate the total ways to shuffle the dice that are less than or equal to the least valued top die
 	//				int number_lower_dice = total_dice - number_top_dice + amount_of_least_top_dice;
-	//				long long small_shuffle = MyPow(least_top_die_value, number_lower_dice) - MyPow(least_top_die_value - 1, number_lower_dice);
+	//				int_64x small_shuffle = MyPow(least_top_die_value, number_lower_dice) - MyPow(least_top_die_value - 1, number_lower_dice);
 
 	//				for (int i = 1; i < amount_of_least_top_dice; i++)
 	//					small_shuffle -= factorials[number_lower_dice] / (factorials[i] * factorials[number_lower_dice - i]) * (long long)pow(least_top_die_value - 1, number_lower_dice - i);

@@ -411,8 +411,8 @@ int_64x& int_64x::operator*=(const int_64x& num)
 		return *this;
 	}
 
-	unsigned long long z2, z0, a, b, c, d; //these variables hold the value of the partial multiplications at each iteration
-	long long z1; //z1 has the potential to become negative so make it a signed long long
+	unsigned long long z2, z1, z0, a, b, c, d; //these variables hold the value of the partial multiplications at each iteration
+	bool z1_negative = false; //z1 has the potential to be negative so we need to keep track
 
 	//first we need to see if *this or num are negative, if so, flip them and keep track of it
 	bool negative[2] = { false, false };
@@ -460,20 +460,67 @@ int_64x& int_64x::operator*=(const int_64x& num)
 
 			z2 = a * c;
 			z0 = b * d;
-			z1 = (b - a) * (c - d) + z2 + z0; //z1 is a signed variable so there should be no issue dealing with negative numbers
+			z1 = (b - a) * (c - d);
 
-			//since we're only dealing with positive numbers then every partial multiplication should be positive so we should do unsigned additions.
-			//TODO: It may actually be possible for z1 to be negative, if things start acting funny see if this is happening and add a signed addition for it
+			//Using the normal Karatsuba algorithm it's possible for z1 to overflow. For example, if a = c = 0x00000000FFFFFFFF
+			//and b = d = 0x00000000FFFFFFFE we get -1 + 0xFFFFFFFE00000001 + 0xFFFFFFFC00000000 = 0x1FFFFFFFA00000004 which is 65 bits instead
+			//of 64. To make up for this, we split z1 into two separate numbers and add them to the running total separately.
 
-			//when adding z2 and z0 to their respective totals an unsigned addition takes place because there are only positive numbers.
-			//z1 will be added normally as it may be positive or negative
+			//The way in which we calculate z1 depends on two things. First, is (b - a) * (c - d) a negative number? If not then we
+			//need to do our addition in three parts, as adding z0 or z2 to this partial sum could cause overflow. If (b - a) * (c - d)
+			//is negative, then we add it to whichever number is larger, z0 or z2 to make sure that we get a positive number. A little
+			//thought that either z0 (b * d) or z2 (a * c) MUST be larger than (b - a) * (c - d) so we can safely add to z0 or z2 and
+			//get a positive number.
+			if (a > b)
+			{
+				if (d > c) z1_negative = false;
+				else z1_negative = true;
+			}
+			else
+			{
+				if (d > c) z1_negative = true;
+				else z1_negative = false;
+			}
+
+			//Add z2 to total
 			this->partialAddition(z2, i + j + 1);
+
+			//Add z1 to total
 			this->partialAddition(z1 >> 32, i + j + 1);
 
 			//If *this is going to overwrite itself then set the word equal to z1 << 32 instead of add z1 << 32
 			if (j == 0) this->digits[i] = z1 << 32;
 			else this->partialAddition(z1 << 32, i + j);
 
+			////Add z1 to total
+			//if (z1_negative)
+			//{
+			//	if (z0 > z2)
+			//	{
+			//		z1 += z0;
+			//		partialAddition(z2 >> 32, i + j + 1);
+			//		unsignedAddition(ans, z2 << 32, 100, i + j);
+			//	}
+			//	else
+			//	{
+			//		z1 += z2;
+			//		unsignedAddition(ans, z0 >> 32, 100, i + j + 1);
+			//		unsignedAddition(ans, z0 << 32, 100, i + j);
+			//	}
+			//	unsignedAddition(ans, z1 >> 32, 100, i + j + 1);
+			//	unsignedAddition(ans, z1 << 32, 100, i + j);
+			//}
+			//else
+			//{
+			//	unsignedAddition(ans, z0 >> 32, 100, i + j + 1);
+			//	unsignedAddition(ans, z0 << 32, 100, i + j);
+			//	unsignedAddition(ans, z1 >> 32, 100, i + j + 1);
+			//	unsignedAddition(ans, z1 << 32, 100, i + j);
+			//	unsignedAddition(ans, z2 >> 32, 100, i + j + 1);
+			//	unsignedAddition(ans, z2 << 32, 100, i + j);
+			//}
+
+			//Add z0 to total
 			this->partialAddition(z0, i + j);
 		}
 	}
@@ -511,8 +558,8 @@ void int_64x::FastMultiplication(const int_64x& num)
 	//memory is freed up as soon as the multiplication is complete so this function can be called any number of times in
 	//the same application.
 
-	unsigned long long z2, z0, a, b, c, d; //these variables hold the value of the partial multiplications at each iteration
-	long long z1; //z1 has the potential to become negative so make it a signed long long
+	unsigned long long z2, z1, z0, a, b, c, d; //these variables hold the value of the partial multiplications at each iteration
+	bool z1_negative = false; //z1 has the potential to be negative so we need to keep track
 
 	//first we create copies of *this and num on the stack in fixed arrays of 50 elements and we create a container for their
 	//multiplication which is 100 elements
@@ -520,7 +567,8 @@ void int_64x::FastMultiplication(const int_64x& num)
 	for (int i = 0; i < this->digits.size(); i++) this_copy[i] = this->digits[i];
 	for (int i = 0; i < num.digits.size(); i++) num_copy[i] = num.digits[i];
 
-	//if *this or num are negative flip them and keep track of it
+	//if *this or num are negative flip them and keep track of it, it's much easier to multiply
+	//positive numbers and then make it negative at the end
 	bool negative[2] = { false, false };
 
 	if (this->digits.back() >> 63)
@@ -568,18 +616,60 @@ void int_64x::FastMultiplication(const int_64x& num)
 
 			z2 = a * c;
 			z0 = b * d;
-			z1 = (b - a) * (c - d) + z2 + z0; //z1 is a signed variable so there should be no issue dealing with negative numbers
+			z1 = (b - a) * (c - d);
+			
+			//Z1 will always be a positive number, however, it's possible for it to overflow. For example, if a = c = 0x00000000FFFFFFFF
+			//and b = d = 0x00000000FFFFFFFE we get -1 + 0xFFFFFFFE00000001 + 0xFFFFFFFC00000000 = 0x1FFFFFFFA00000004 which is 65 bits instead
+			//of 64. To make up for this, we split z1 into two separate numbers and add them to the running total separately.
 
-			//since we're only dealing with positive numbers then every partial multiplication should be positive so we should do unsigned additions.
-			//TODO: It may actually be possible for z1 to be negative, if things start acting funny see if this is happening and add a signed addition for it
+			//The way in which we calculate z1 depends on two things. First, is (b - a) * (c - d) a negative number? If not then we
+			//need to do our addition in three parts, as adding z0 or z2 to this partial sum could cause overflow. If (b - a) * (c - d)
+			//is negative, then we add it to whichever number is larger, z0 or z2 to make sure that we get a positive number. A little
+			//thought that either z0 (b * d) or z2 (a * c) MUST be larger than (b - a) * (c - d) so we can safely add to z0 or z2 and
+			//get a positive number.
+			if (a > b)
+			{
+				if (d > c) z1_negative = false;
+				else z1_negative = true;
+			}
+			else
+			{
+				if (d > c) z1_negative = true;
+				else z1_negative = false;
+			}
 
-			//when adding z2 and z0 to their respective totals an unsigned addition takes place because there are only positive numbers.
-			//z1 will be added normally as it may be positive or negative
+			//Add z2 to total
 			unsignedAddition(ans, z2, 100, i + j + 1);
 
-			unsignedAddition(ans, z1 >> 32, 100, i + j + 1);
-			unsignedAddition(ans, z1 << 32, 100, i + j);
+			//Add z1 to total
+			if (z1_negative)
+			{
+				if (z0 > z2)
+				{
+					z1 += z0;
+					unsignedAddition(ans, z2>> 32, 100, i + j + 1);
+					unsignedAddition(ans, z2 << 32, 100, i + j);
+				}
+				else
+				{
+					z1 += z2;
+					unsignedAddition(ans, z0 >> 32, 100, i + j + 1);
+					unsignedAddition(ans, z0 << 32, 100, i + j);
+				}
+				unsignedAddition(ans, z1 >> 32, 100, i + j + 1);
+				unsignedAddition(ans, z1 << 32, 100, i + j);
+			}
+			else
+			{
+				unsignedAddition(ans, z0 >> 32, 100, i + j + 1);
+				unsignedAddition(ans, z0 << 32, 100, i + j);
+				unsignedAddition(ans, z1 >> 32, 100, i + j + 1);
+				unsignedAddition(ans, z1 << 32, 100, i + j);
+				unsignedAddition(ans, z2 >> 32, 100, i + j + 1);
+				unsignedAddition(ans, z2 << 32, 100, i + j);
+			}
 
+			//Add z0 to total
 			unsignedAddition(ans, z0, 100, i + j);
 		}
 	}
@@ -1551,10 +1641,10 @@ void int_64x::partialAddition(unsigned long long num, int word)
 	//this function is necessary to correctly carry out partial multiplication. Since we're adding bits from the middle
 	//of the overall multiplication it's possible to have words where the MSB is a 1 (indicating a negative number) in
 	//the middle of a positive number and vice versa. Adding this perceived negative number when it should really be
-	//positve will mess up the addition. What we do instead is just ignore any kind of polarity until the very end of
+	//positive will mess up the addition. What we do instead is just ignore any kind of polarity until the very end of
 	//all the partial additions.
 
-	//the unsigned long long "num" is added to word int *this specified by "word". If "word" is larger than the length of
+	//the unsigned long long "num" is added to the word in *this specified by "word". If "word" is larger than the length of
 	//*this then an error is thrown
 
 	if (word > this->digits.size())
