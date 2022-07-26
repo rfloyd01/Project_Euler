@@ -40,13 +40,6 @@ std::pair<std::string, double> test2()
 	int dice_sides = 12, number_top_dice = 10, total_dice = 500;
 	int_64x answer = 0;
 
-	int_64x tester = 0x7FFFFFFFFFFFFFFF;
-	int_64x tester2(9, 188);
-	tester <<= 128;
-
-	//tester += tester2;
-	tester.partialAddition(0x9000000000000000, 2);
-
 	std::cout << "Dice sides = " << dice_sides << std::endl;
 	std::cout << "Top dice = " << number_top_dice << std::endl;
 	std::cout << "Total dice = " << total_dice << std::endl << std::endl;
@@ -63,10 +56,6 @@ std::pair<std::string, double> test2()
 	//top_dice = number_top_dice)
 	int_64x* ways_to_choose = new int_64x[number_top_dice + 1]();
 	for (int i = 0; i <= number_top_dice; i++) ways_to_choose[i] = BigChoose(total_dice, i);
-
-	int_64x yeetypipes = BigPow(5, 10000);
-	std::cout << "Calculated in " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 << " seconds. " << std::endl;
-	std::cout << yeetypipes << std::endl;
 
 	//for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
 	////for (int goal = 17; goal <= 27; goal++)

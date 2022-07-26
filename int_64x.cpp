@@ -416,11 +416,30 @@ int_64x& int_64x::operator*=(const int_64x& num)
 
 	//first we need to see if *this or num are negative, if so, flip them and keep track of it
 	bool negative[2] = { false, false };
-	unsigned long long* num_copy = new unsigned long long[num.digits.size()](); //create a copy of num in case it's polarity needs to be reversed
+	int combinedSize = this->digits.size() + num.digits.size();
+
+	//first we create copies for the digit arrays of *this and num on the heap, we create a container another array for their
+	//multiplication which is long enough to fit the whole multiplication
+	unsigned long long* this_copy = new unsigned long long[this->digits.size()]();
+	unsigned long long* num_copy = new unsigned long long[num.digits.size()]();
+	unsigned long long* ans = new unsigned long long[combinedSize]();
+	for (int i = 0; i < this->digits.size(); i++) this_copy[i] = this->digits[i];
 	for (int i = 0; i < num.digits.size(); i++) num_copy[i] = num.digits[i];
+
+	//reverse the polarity of any negative numbers
 	if (this->digits.back() >> 63)
 	{
-		twosComplement(*this); //flip the negative number to positive
+		//twosComplement(*this); //flip the negative number to positive
+		int k = this->digits.size() - 1;
+		for (; k >= 0; k--) this_copy[k] = ~this_copy[k];
+		k++; //set k back to 0 after loop
+		while (this_copy[k] == 0xFFFFFFFFFFFFFFFF)
+		{
+			this_copy[k] = 0;
+			k++;
+		}
+
+		this_copy[k] += 1;
 		negative[0] = true;
 	}
 	if (num.digits.back() >> 63)
@@ -438,15 +457,7 @@ int_64x& int_64x::operator*=(const int_64x& num)
 		negative[1] = true;
 	}
 
-	//we need to resize *this so that the multiplication will fit into it, the new size will be equal to the number of 64-bit words in
-	//*this added to the number of 64-bit words in num
 	int start = this->digits.size() - 1;
-	for (int i = 0; i < num.digits.size(); i++) this->digits.push_back(0);
-
-	//were eventually going to be overwriting the existing words in *this with our partial multiplications, so we need to work backwards from the
-	//end of *this and multiply all 32-bit sub numbers with all 32-bit sub numbers of num. The last multiplication from a word in *this will end up
-	//overwriting itself which is ok
-
 	for (int i = start; i >= 0; i--)
 	{
 		for (int j = num.digits.size() - 1; j >= 0; j--)
@@ -483,52 +494,63 @@ int_64x& int_64x::operator*=(const int_64x& num)
 			}
 
 			//Add z2 to total
-			this->partialAddition(z2, i + j + 1);
+			unsignedAddition(ans, z2, combinedSize, i + j + 1);
 
 			//Add z1 to total
-			this->partialAddition(z1 >> 32, i + j + 1);
-
-			//If *this is going to overwrite itself then set the word equal to z1 << 32 instead of add z1 << 32
-			if (j == 0) this->digits[i] = z1 << 32;
-			else this->partialAddition(z1 << 32, i + j);
-
-			////Add z1 to total
-			//if (z1_negative)
-			//{
-			//	if (z0 > z2)
-			//	{
-			//		z1 += z0;
-			//		partialAddition(z2 >> 32, i + j + 1);
-			//		unsignedAddition(ans, z2 << 32, 100, i + j);
-			//	}
-			//	else
-			//	{
-			//		z1 += z2;
-			//		unsignedAddition(ans, z0 >> 32, 100, i + j + 1);
-			//		unsignedAddition(ans, z0 << 32, 100, i + j);
-			//	}
-			//	unsignedAddition(ans, z1 >> 32, 100, i + j + 1);
-			//	unsignedAddition(ans, z1 << 32, 100, i + j);
-			//}
-			//else
-			//{
-			//	unsignedAddition(ans, z0 >> 32, 100, i + j + 1);
-			//	unsignedAddition(ans, z0 << 32, 100, i + j);
-			//	unsignedAddition(ans, z1 >> 32, 100, i + j + 1);
-			//	unsignedAddition(ans, z1 << 32, 100, i + j);
-			//	unsignedAddition(ans, z2 >> 32, 100, i + j + 1);
-			//	unsignedAddition(ans, z2 << 32, 100, i + j);
-			//}
+			if (z1_negative)
+			{
+				if (z0 > z2)
+				{
+					z1 += z0;
+					unsignedAddition(ans, z2 >> 32, combinedSize, i + j + 1);
+					unsignedAddition(ans, z2 << 32, combinedSize, i + j);
+				}
+				else
+				{
+					z1 += z2;
+					unsignedAddition(ans, z0 >> 32, combinedSize, i + j + 1);
+					unsignedAddition(ans, z0 << 32, combinedSize, i + j);
+				}
+				unsignedAddition(ans, z1 >> 32, combinedSize, i + j + 1);
+				unsignedAddition(ans, z1 << 32, combinedSize, i + j);
+			}
+			else
+			{
+				unsignedAddition(ans, z0 >> 32, combinedSize, i + j + 1);
+				unsignedAddition(ans, z0 << 32, combinedSize, i + j);
+				unsignedAddition(ans, z1 >> 32, combinedSize, i + j + 1);
+				unsignedAddition(ans, z1 << 32, combinedSize, i + j);
+				unsignedAddition(ans, z2 >> 32, combinedSize, i + j + 1);
+				unsignedAddition(ans, z2 << 32, combinedSize, i + j);
+			}
 
 			//Add z0 to total
-			this->partialAddition(z0, i + j);
+			unsignedAddition(ans, z0, combinedSize, i + j);
 		}
 	}
 
-	//if *this or num was negative, but not both, then *this needs to be inverted
-	if (negative[0] ^ negative[1]) twosComplement(*this);
+	//if *this or num was negative, but not both, then ans needs to be inverted to a negative number
+	if (negative[0] ^ negative[1])
+	{
+		int k = num.digits.size() + this->digits.size() - 2; //although ans is 100 elements long, this is the amount that we've actually changed
+		for (; k >= 0; k--) ans[k] = ~ans[k];
+		k++; //set k back to 0 after loop
+		while (ans[k] == 0xFFFFFFFFFFFFFFFF)
+		{
+			ans[k] = 0;
+			k++;
+		}
 
-	//add a loop here about removing leading zeros and then multiplication is done. Since we're only multiplying positive numbers just need to look for 0
+		ans[k] += 1;
+		negative[1] = true;
+	}
+
+	//now we copy over all of the useful digits from num and put them into *this, num is bigger than *this so digits will need to be added to *this
+	for (int i = 0; i < this->digits.size(); i++) this->digits[i] = ans[i];
+	int stop = this->digits.size() + num.digits.size();
+	for (int i = this->digits.size(); i < stop; i++) this->digits.push_back(ans[i]);
+
+	//with the multiplication complete, do a final check to make sure there are no unnecessary leading words
 	for (int i = this->digits.size() - 1; i > 0; i--)
 	{
 		if ((this->digits[i] == 0) || (this->digits[i] == -1))
@@ -538,8 +560,6 @@ int_64x& int_64x::operator*=(const int_64x& num)
 		}
 		else break;
 	}
-
-	delete[] num_copy;
 	return *this;
 }
 int_64x operator*(const int_64x& num1, const int_64x& num2)

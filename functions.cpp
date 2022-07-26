@@ -357,16 +357,9 @@ int_64x BigChoose(int m, int n)
 
 int_64x BigPow(int_64x n, int p)
 {
-	//returns n^p
-	//TODO: I'm just doing a bunch of multiplications here, come back at some point and
-	//make a proper power function.
-
+	//returns n^p but utilizes the int_64x class
 	if (p <= 0) return 1; //this function doesn't currently handle negative exponents
 	int_64x res = 1, n_copy = n;
-
-	//for (int i = 1; i <= p; i++) res *= n;
-	std::cout << "Calculating " << n << "^" << p << std::endl;
-	//int counter = 1;
 	
 	while (p)
 	{
@@ -374,9 +367,6 @@ int_64x BigPow(int_64x n, int p)
 		p >>= 1;
 
 		n_copy *= n_copy;
-		//std::cout << "p = " << p << std::endl;
-		//std::cout << "n^" << (counter *= 2) << " = " << n_copy << std::endl;
-		//std::cout << "result = " << res << std::endl << std::endl;
 	}
 	return res;
 }
