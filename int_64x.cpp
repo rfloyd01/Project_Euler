@@ -1662,6 +1662,14 @@ void int_64x::partialAddition(unsigned long long num, int word)
 		int i = 1;
 		while (true)
 		{
+			if (word + i >= this->digits.size())
+			{
+				//we've overflowed our int_64x with this addition so we need to add another 64-bit word
+				//to the front. This partialAddition() method only get's called during multiplication,
+				//and we only every multiply positive numbers together. Because of this we don't need to 
+				//worry about keep track of the polarity here.
+				this->digits.push_back(0);
+			}
 			//carry over as many carry bits as necessary. the way the overall multiplication algorithm has been set up it shouldn't
 			//be possible to overflow past the end of *this
 			this->digits[word + i] += 1;

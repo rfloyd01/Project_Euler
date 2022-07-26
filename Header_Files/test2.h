@@ -40,6 +40,13 @@ std::pair<std::string, double> test2()
 	int dice_sides = 12, number_top_dice = 10, total_dice = 500;
 	int_64x answer = 0;
 
+	int_64x tester = 0x7FFFFFFFFFFFFFFF;
+	int_64x tester2(9, 188);
+	tester <<= 128;
+
+	//tester += tester2;
+	tester.partialAddition(0x9000000000000000, 2);
+
 	std::cout << "Dice sides = " << dice_sides << std::endl;
 	std::cout << "Top dice = " << number_top_dice << std::endl;
 	std::cout << "Total dice = " << total_dice << std::endl << std::endl;
