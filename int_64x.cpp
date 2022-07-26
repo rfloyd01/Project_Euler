@@ -560,6 +560,12 @@ int_64x& int_64x::operator*=(const int_64x& num)
 		}
 		else break;
 	}
+
+	//delete the copy arrays before exiting to avoid any kind of memory leaks
+	delete[] this_copy;
+	delete[] num_copy;
+	delete[] ans;
+
 	return *this;
 }
 int_64x operator*(const int_64x& num1, const int_64x& num2)
