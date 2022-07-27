@@ -32,11 +32,8 @@ int_64x BigPermutationsOfPartitions(int n, int l, int maximum, int minimum)
 std::pair<std::string, double> test2()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	int dice_sides = 2, number_top_dice = 3, total_dice = 129;
+	int dice_sides = 6, number_top_dice = 10, total_dice = 200;
 	int_64x answer = 0;
-
-	int_64x tester(2, 129);
-	tester -= 1;
 
 	std::cout << "Dice sides = " << dice_sides << std::endl;
 	std::cout << "Top dice = " << number_top_dice << std::endl;
@@ -96,7 +93,7 @@ std::pair<std::string, double> test2()
 					fewest = (number_top_dice * (least_top_die_value + 1)) - goal;
 					most = ((number_top_dice * dice_sides) - goal) / (dice_sides - least_top_die_value);
 					if (fewest <= 0) fewest = 1;
-					if (most > dice_sides) most = number_top_dice;
+					if (most > number_top_dice) most = number_top_dice;
 				}
 
 				for (int amount_of_least_top_dice = fewest; amount_of_least_top_dice <= most; amount_of_least_top_dice++)
@@ -108,14 +105,14 @@ std::pair<std::string, double> test2()
 					//TODO: I have an error somewhere in my subtraction algorithm (I think it's just forgetting to check for necessary leading
 					//0's that should happen at the end of the algorithm). Currently getting that 2^129 - 1 = -1. This number would be all F's in
 					//hexadecimal which is where I think the issue comes in, adding a leading word of 0's would prevent this.
-					std::cout << "small shuffle start = " << BigPow(least_top_die_value, number_lower_dice) << " - " << BigPow(least_top_die_value - 1, number_lower_dice) << " =" << small_shuffle << std::endl;
+					//std::cout << "small shuffle start = " << BigPow(least_top_die_value, number_lower_dice) << " - " << BigPow(least_top_die_value - 1, number_lower_dice) << " =" << small_shuffle << std::endl;
 					for (int i = 1; i < amount_of_least_top_dice; i++)
 					{
 						small_shuffle -= BigChoose(number_lower_dice, i) * BigPow(least_top_die_value - 1, number_lower_dice - i);
-						std::cout << BigChoose(number_lower_dice, i) << " * " << BigPow(least_top_die_value - 1, number_lower_dice - i) << " = " <<
-							BigChoose(number_lower_dice, i) * BigPow(least_top_die_value - 1, number_lower_dice - i) << std::endl;
+						/*std::cout << BigChoose(number_lower_dice, i) << " * " << BigPow(least_top_die_value - 1, number_lower_dice - i) << " = " <<
+							BigChoose(number_lower_dice, i) * BigPow(least_top_die_value - 1, number_lower_dice - i) << std::endl;*/
 					}
-					std::cout << "small shuffle = " << small_shuffle << std::endl;
+					//std::cout << "small shuffle = " << small_shuffle << std::endl;
 
 					//Next we calculate the total ways to shuffle the top dice that are greater than the least valued top die
 					int_64x large_shuffle = BigPermutationsOfPartitions(goal - amount_of_least_top_dice * least_top_die_value, number_top_dice - amount_of_least_top_dice, dice_sides, least_top_die_value + 1);
@@ -133,7 +130,7 @@ std::pair<std::string, double> test2()
 			}
 		}
 
-		std::cout << answer % 1000000007 << std::endl << std::endl ;
+		std::cout << answer % 1000000007 << std::endl;
 	}
 
 	//ran in 0.000304 seconds
