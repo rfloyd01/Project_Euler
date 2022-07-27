@@ -24,7 +24,10 @@ int_64x BigPermutationsOfPartitions(int n, int l, int maximum, int minimum)
 	//we get an equation of the form: [x^target]: (1 - x^primary)^l * (1 - x)^-l
 	//for which we solve using binomial expansion
 	for (int i = 0; i <= target / primary; i++)
+	{
+		//std::cout << answer % 1000000007 << std::endl;
 		answer += BigChoose(l, i) * BigChoose((secondaryNumerator -= primary), (secondaryDenominator -= primary)) * (flip *= -1);
+	}
 
 	return answer;
 }
@@ -32,8 +35,11 @@ int_64x BigPermutationsOfPartitions(int n, int l, int maximum, int minimum)
 std::pair<std::string, double> test2()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	int dice_sides = 6, number_top_dice = 10, total_dice = 200;
+	int dice_sides = 50, number_top_dice = 50, total_dice = 10000;
 	int_64x answer = 0;
+
+	int_64x tester = BigPermutationsOfPartitions(1274, 46, 50, 2);
+	std::cout << tester % 1000000007 << std::endl;
 
 	std::cout << "Dice sides = " << dice_sides << std::endl;
 	std::cout << "Top dice = " << number_top_dice << std::endl;
@@ -52,8 +58,8 @@ std::pair<std::string, double> test2()
 	int_64x* ways_to_choose = new int_64x[number_top_dice + 1]();
 	for (int i = 0; i <= number_top_dice; i++) ways_to_choose[i] = BigChoose(total_dice, i);
 
-	for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
-	//for (int goal = 10; goal <= number_top_dice * dice_sides; goal++)
+	//for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
+	for (int goal = 1270; goal <= 1280; goal++)
 	{
 		//std::cout << "Goal: " << goal;
 		answer = 0; //re-zero the answer
