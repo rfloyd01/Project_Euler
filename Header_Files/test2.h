@@ -20,13 +20,21 @@ int_64x BigPermutationsOfPartitions(int n, int l, int maximum, int minimum)
 	int target = n - minimum * l, primary = maximum - minimum + 1, flip = -1;
 	int secondaryDenominator = target + primary, secondaryNumerator = l + secondaryDenominator - 1;
 	int_64x answer = 0;
+	long long mod = 1000000007;
 
 	//we get an equation of the form: [x^target]: (1 - x^primary)^l * (1 - x)^-l
 	//for which we solve using binomial expansion
 	for (int i = 0; i <= target / primary; i++)
 	{
 		//std::cout << answer % 1000000007 << std::endl;
+		//int_64x old_answer = answer;
 		answer += BigChoose(l, i) * BigChoose((secondaryNumerator -= primary), (secondaryDenominator -= primary)) * (flip *= -1);
+		//std::cout << ((answer % 1000000007) + 1000000007) % 1000000007 << " = ((" << ((old_answer % 1000000007) + 1000000007) % 1000000007 << " + ";
+		//if (flip == -1) std::cout << "-(";
+		//std::cout << "(" << BigChoose(l, i) % 1000000007 << " * " << BigChoose(secondaryNumerator, secondaryDenominator) % 1000000007 << ") mod " << mod << ") + " << mod << ") mod " << mod << ")";
+		//if (flip == -1) std::cout << ")";
+
+		std::cout << answer << " mod 1000000007 = " << ((answer % mod) + mod) % mod << std::endl;
 	}
 
 	return answer;
@@ -38,17 +46,38 @@ std::pair<std::string, double> test2()
 	int dice_sides = 50, number_top_dice = 50, total_dice = 10000;
 	int_64x answer = 0;
 
-	int_64x tester = BigPermutationsOfPartitions(1274, 46, 50, 2);
-	std::cout << tester % 1000000007 << std::endl;
+	/*int_64x tester = BigPermutationsOfPartitions(1274, 46, 50, 2);
+	std::cout << tester % 1000000007 << std::endl;*/
 
 	std::cout << "Dice sides = " << dice_sides << std::endl;
 	std::cout << "Top dice = " << number_top_dice << std::endl;
 	std::cout << "Total dice = " << total_dice << std::endl << std::endl;
 
+	//Addition Test
+	int_64x tester("-4187140462091790736303896102315638890816514739403796189976115105239566091768");
+	int_64x  tester2("999408184395018569217831475929300859479646291431738800212265094589631004979200");
+	int_64x actually("995221043932926778481527579826985220588829776692335004022288979484391438887432");
+
+	//PrintBinary(tester2);
+	//PrintBinary(tester);
+	//tester2 += tester;
+	PrintBinary(tester2);
+	PrintBinary(actually);
+
+	std::cout << tester2 + tester << std::endl;
+	//tester *= 280121209;
+	//tester %= 1000000007;
+	//tester += 695731269;
+	//tester += 1000000007;
+	//tester %= 1000000007;
+
+	//std::cout << tester << std::endl;
+
 	//initialize an array for factorials % 1,000,000,007
 	//the maximum factorial we will need depends on which number is bigger, total_dice or
 	//top_dice_sum. is equal to n + the number of top dice
 	int max_factorial = (total_dice > number_top_dice * dice_sides) ? total_dice : number_top_dice * dice_sides;
+	long long mod = 1000000007;
 	int_64x* factorials = new int_64x[max_factorial + 1]();
 	factorials[0] = 1;
 	for (int i = 1; i <= max_factorial; i++) factorials[i] = factorials[i - 1] * i;
@@ -59,9 +88,9 @@ std::pair<std::string, double> test2()
 	for (int i = 0; i <= number_top_dice; i++) ways_to_choose[i] = BigChoose(total_dice, i);
 
 	//for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
-	for (int goal = 1270; goal <= 1280; goal++)
+	for (int goal = 1000; goal <= 1000; goal++)
 	{
-		//std::cout << "Goal: " << goal;
+		std::cout << "Goal: " << goal << std::endl;
 		answer = 0; //re-zero the answer
 
 		//int goal = 25, dice_sides = 6, number_top_dice = 5, total_dice = 10;
@@ -129,8 +158,10 @@ std::pair<std::string, double> test2()
 
 					//std::cout << "overall shuffle = " << ways_to_choose[number_top_dice - amount_of_least_top_dice] << std::endl;
 					answer += ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle * small_shuffle;
-					//std::cout << "MTD = " << least_top_die_value;
-					//std::cout << ", # of MTD = " << amount_of_least_top_dice << std::endl;
+					std::cout << ways_to_choose[number_top_dice - amount_of_least_top_dice] % mod << ", " << large_shuffle % mod << ", " << small_shuffle % mod << std::endl;
+
+					/*std::cout << "MTD = " << least_top_die_value;
+					std::cout << ", # of MTD = " << amount_of_least_top_dice << std::endl;*/
 					//std::cout << ", Ways % MOD = " << (ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle * small_shuffle) % 1000000007 << std::endl << std::endl;
 				}
 			}

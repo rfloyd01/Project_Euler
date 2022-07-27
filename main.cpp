@@ -9,8 +9,8 @@ int main()
 	//The question number is stored in the question_number variable automatically for ease of reading
 
 	//auto answer = test();
-	//auto answer = test2();
-	auto answer = q240();
+	auto answer = test2();
+	//auto answer = q240();
 
 	std::cout << "The answer is " << answer.first << std::endl;
 	std::cout << "Program ran in " << answer.second << " seconds" << std::endl;

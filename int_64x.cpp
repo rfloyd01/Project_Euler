@@ -260,6 +260,7 @@ int_64x& int_64x::operator+=(const int_64x& num)
 				}
 				else break;
 			}
+			else break;
 		}
 		return *this;
 	}
