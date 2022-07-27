@@ -290,7 +290,8 @@ int_64x& int_64x::operator-=(const int_64x& num)
 	//on par with each other.
 
 	//The first thing we need to do is compare the polarities of the two numbers, this will let us know if the sum should be larger or smaller than
-	//the original number
+	//the original number ('different_polarity can be right shifted by 63 to tell us if the polarities are the same or different for the
+	//two numbers)
 	unsigned long long different_polarity = this->digits.back() ^ num.digits.back();
 	int diff = num.digits.size() - this->digits.size(), carry = 0; //carry keeps track of overflow between addition of individual 64-bit words
 
@@ -364,11 +365,16 @@ int_64x& int_64x::operator-=(const int_64x& num)
 	}
 	else
 	{
-		//the original numbers had the same polarity, we need to either remove a word or keep the answer the same. We only need to remove a
-		//redundant word if the most significant word is 0 or 0xFFFFFFFFFFFFFFFF.
+		//The original numbers had the same polarity, we need to either remove a word or keep the answer the same. We only need to remove a
+		//redundant word if the most significant word is 0 or 0xFFFFFFFFFFFFFFFF. With subtraction, it's possible to get multiple un-neccessary
+		//words at the front of our number. Looking at a 4-bit example, [0111 1101 1111 0001] - [0111 1101 1000 0000] = [0000 0000 0111 0001].
+		//In this scenario you could safely get rid of both leading words as they're don't contain any relevent information. If we were instead
+		//to do [0111 1101 1111 0001] - [0111 1101 0010 0000] would get a result of [0000 0000 1101 0001]. In this case, we would only want to 
+		//remove the first word of all zero's as the second word would be needed to maintain our number as positive. So it can be seen that we 
+		//only remove an all zero word if the word right after it also has a 0 as it's MSB. The opposite holds true for negative numbers.
 
-		//we need to remove the most significant word under two conditions. First, the length of *this is greater than 1
-		//and second, the polarity of the most significant word matches that of the second most significant word
+		//We need to remove most significant words under two conditions. First, the length of *this.digits is greater than 1
+		//and second, the polarity of the most significant word matches that of the second most significant word, and so on.
 		int start = this->digits.size() - 1;
 		for (int i = start; i >= 1; i--)
 		{
@@ -382,6 +388,7 @@ int_64x& int_64x::operator-=(const int_64x& num)
 				}
 				else break;
 			}
+			else break; //Didn't find an all zero word so no reason to keep going
 		}
 		return *this;
 	}

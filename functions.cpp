@@ -359,6 +359,9 @@ int_64x BigPow(int_64x n, int p)
 {
 	//returns n^p but utilizes the int_64x class
 	if (p <= 0) return 1; //this function doesn't currently handle negative exponents
+	if (n == 0) return 0;
+	if (n == 1) return 1;
+
 	int_64x res = 1, n_copy = n;
 	
 	while (p)
