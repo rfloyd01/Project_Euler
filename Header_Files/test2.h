@@ -28,13 +28,26 @@ int_64x BigPermutationsOfPartitions(int n, int l, int maximum, int minimum)
 	{
 		//std::cout << answer % 1000000007 << std::endl;
 		//int_64x old_answer = answer;
-		answer += BigChoose(l, i) * BigChoose((secondaryNumerator -= primary), (secondaryDenominator -= primary)) * (flip *= -1);
+
+		if ((flip *= -1) == 1)
+		{
+			std::cout << answer << " + " << BigChoose(l, i) * BigChoose((secondaryNumerator - primary), (secondaryDenominator - primary));
+			answer = answer + (BigChoose(l, i) * BigChoose((secondaryNumerator -= primary), (secondaryDenominator -= primary)));
+		}
+		else
+		{
+			std::cout << answer << " - " << BigChoose(l, i) * BigChoose((secondaryNumerator - primary), (secondaryDenominator - primary));
+			answer -= BigChoose(l, i) * BigChoose((secondaryNumerator -= primary), (secondaryDenominator -= primary));
+		}
+	
+
+		std::cout << " = " << answer << std::endl;
 		//std::cout << ((answer % 1000000007) + 1000000007) % 1000000007 << " = ((" << ((old_answer % 1000000007) + 1000000007) % 1000000007 << " + ";
 		//if (flip == -1) std::cout << "-(";
 		//std::cout << "(" << BigChoose(l, i) % 1000000007 << " * " << BigChoose(secondaryNumerator, secondaryDenominator) % 1000000007 << ") mod " << mod << ") + " << mod << ") mod " << mod << ")";
 		//if (flip == -1) std::cout << ")";
 
-		std::cout << answer << " mod 1000000007 = " << ((answer % mod) + mod) % mod << std::endl;
+		//std::cout << answer << " mod 1000000007 = " << ((answer % mod) + mod) % mod << std::endl;
 	}
 
 	return answer;
@@ -55,23 +68,12 @@ std::pair<std::string, double> test2()
 
 	//Addition Test
 	int_64x tester("-4187140462091790736303896102315638890816514739403796189976115105239566091768");
-	int_64x  tester2("999408184395018569217831475929300859479646291431738800212265094589631004979200");
-	int_64x actually("995221043932926778481527579826985220588829776692335004022288979484391438887432");
+	int_64x  tester2("224866841488879178074012082084092693382920415572141230047759646282666976120320");
+	int_64x actually("220679701026787387337708185981777054492103900832737433857783531177427410028552");
+	int_64x wrong("336471790264103582761279170990464962345373885498377997897241115185340539668488");
 
-	//PrintBinary(tester2);
-	//PrintBinary(tester);
-	//tester2 += tester;
-	PrintBinary(tester2);
-	PrintBinary(actually);
-
+	std::cout << tester + tester2 << std::endl;
 	std::cout << tester2 + tester << std::endl;
-	//tester *= 280121209;
-	//tester %= 1000000007;
-	//tester += 695731269;
-	//tester += 1000000007;
-	//tester %= 1000000007;
-
-	//std::cout << tester << std::endl;
 
 	//initialize an array for factorials % 1,000,000,007
 	//the maximum factorial we will need depends on which number is bigger, total_dice or

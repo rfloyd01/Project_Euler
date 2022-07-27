@@ -180,8 +180,8 @@ int_64x& int_64x::operator+=(const int_64x& num)
 	int diff = num.digits.size() - this->digits.size(), carry = 0; //carry keeps track of overflow between addition of individual 64-bit words
 
 	//if num has more words than *this we need to add empty words so that the lenghts are the same. The below loop will only execute if num
-	//has more words than *this
-	for (int i = 0; i < diff; i++) this->digits.push_back(0);
+	//has more words than *this. If the number is positive we add the word 0x0 to the front and if it's negative we add 0xFFFFFFFFFFFFFFFF.
+	for (int i = 0; i < diff; i++) this->digits.push_back(0 - (this->digits.back() >> 63));
 
 	unsigned long long this_temp, num_temp; //temporary variables are created on stack to reduce calls to heap memory
 	//add all of the 64-bit words from num to the 64-bit words from *this
