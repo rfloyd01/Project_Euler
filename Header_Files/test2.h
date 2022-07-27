@@ -26,28 +26,9 @@ int_64x BigPermutationsOfPartitions(int n, int l, int maximum, int minimum)
 	//for which we solve using binomial expansion
 	for (int i = 0; i <= target / primary; i++)
 	{
-		//std::cout << answer % 1000000007 << std::endl;
-		//int_64x old_answer = answer;
 
-		if ((flip *= -1) == 1)
-		{
-			std::cout << answer << " + " << BigChoose(l, i) * BigChoose((secondaryNumerator - primary), (secondaryDenominator - primary));
-			answer = answer + (BigChoose(l, i) * BigChoose((secondaryNumerator -= primary), (secondaryDenominator -= primary)));
-		}
-		else
-		{
-			std::cout << answer << " - " << BigChoose(l, i) * BigChoose((secondaryNumerator - primary), (secondaryDenominator - primary));
-			answer -= BigChoose(l, i) * BigChoose((secondaryNumerator -= primary), (secondaryDenominator -= primary));
-		}
-	
-
-		std::cout << " = " << answer << std::endl;
-		//std::cout << ((answer % 1000000007) + 1000000007) % 1000000007 << " = ((" << ((old_answer % 1000000007) + 1000000007) % 1000000007 << " + ";
-		//if (flip == -1) std::cout << "-(";
-		//std::cout << "(" << BigChoose(l, i) % 1000000007 << " * " << BigChoose(secondaryNumerator, secondaryDenominator) % 1000000007 << ") mod " << mod << ") + " << mod << ") mod " << mod << ")";
-		//if (flip == -1) std::cout << ")";
-
-		//std::cout << answer << " mod 1000000007 = " << ((answer % mod) + mod) % mod << std::endl;
+		if ((flip *= -1) == 1) answer = answer + (BigChoose(l, i) * BigChoose((secondaryNumerator -= primary), (secondaryDenominator -= primary)));
+		else answer -= BigChoose(l, i) * BigChoose((secondaryNumerator -= primary), (secondaryDenominator -= primary));
 	}
 
 	return answer;
@@ -56,24 +37,12 @@ int_64x BigPermutationsOfPartitions(int n, int l, int maximum, int minimum)
 std::pair<std::string, double> test2()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	int dice_sides = 50, number_top_dice = 50, total_dice = 10000;
+	int dice_sides = 12, number_top_dice = 10, total_dice = 20;
 	int_64x answer = 0;
-
-	/*int_64x tester = BigPermutationsOfPartitions(1274, 46, 50, 2);
-	std::cout << tester % 1000000007 << std::endl;*/
 
 	std::cout << "Dice sides = " << dice_sides << std::endl;
 	std::cout << "Top dice = " << number_top_dice << std::endl;
 	std::cout << "Total dice = " << total_dice << std::endl << std::endl;
-
-	//Addition Test
-	int_64x tester("-4187140462091790736303896102315638890816514739403796189976115105239566091768");
-	int_64x  tester2("224866841488879178074012082084092693382920415572141230047759646282666976120320");
-	int_64x actually("220679701026787387337708185981777054492103900832737433857783531177427410028552");
-	int_64x wrong("336471790264103582761279170990464962345373885498377997897241115185340539668488");
-
-	std::cout << tester + tester2 << std::endl;
-	std::cout << tester2 + tester << std::endl;
 
 	//initialize an array for factorials % 1,000,000,007
 	//the maximum factorial we will need depends on which number is bigger, total_dice or
@@ -84,92 +53,76 @@ std::pair<std::string, double> test2()
 	factorials[0] = 1;
 	for (int i = 1; i <= max_factorial; i++) factorials[i] = factorials[i - 1] * i;
 
+	//Memoize ways to split total dice into three sections
+	/*std::vector<std::vector<int_64x> > ways_to_choose;
+	for (int first_digit = 0; first_digit <= total_dice; first_digit++)
+	{
+		std::vector<int_64x> chose;
+		for (int second_digit = 0; second_digit <= total_dice - first_digit; second_digit++)
+		{
+			chose.push_back(factorials[total_dice] / (factorials[first_digit] * factorials[second_digit] * factorials[total_dice - first_digit - second_digit]));
+		}
+		ways_to_choose.push_back(chose);
+	}*/
+
 	//Memoize ways to split total dice into two sections dice into two sections (top_dice = 0 through
 	//top_dice = number_top_dice)
 	int_64x* ways_to_choose = new int_64x[number_top_dice + 1]();
 	for (int i = 0; i <= number_top_dice; i++) ways_to_choose[i] = BigChoose(total_dice, i);
 
 	//for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
-	for (int goal = 1000; goal <= 1000; goal++)
+	for (int goal = 70; goal <= 70; goal++)
 	{
-		std::cout << "Goal: " << goal << std::endl;
+		std::cout << "Goal: " << goal << " = ";
 		answer = 0; //re-zero the answer
+		std::vector<std::vector<std::vector<int > > > partitions;
+		
+		getPartitions(goal, partitions, dice_sides, number_top_dice);
 
-		//int goal = 25, dice_sides = 6, number_top_dice = 5, total_dice = 10;
-		int larger_than_lowest, lowest, lower_than_lowest;
-
-		//minimum_minimum represents the smallest possible value for the minimum top die
-		int minimum_minimum = goal - (number_top_dice - 1) * dice_sides;
-		if (minimum_minimum <= 0) minimum_minimum = 1;
-
-		//maximum_minimum represents the largest possible value for the minimum top die
-		int maximum_minimum = goal / number_top_dice;
-
-		if (minimum_minimum <= dice_sides)
+		for (int i = 0; i < partitions[number_top_dice].size(); i++)
 		{
-			//if the lowest possible value for our minimum value top die is greater than the number of sides 
-			//on the dice, then it won't be possible to reach the goal so we skip all of the below logic
-			for (int least_top_die_value = minimum_minimum; least_top_die_value <= maximum_minimum; least_top_die_value++)
-			{
-				//calculate both the most and least number of least valued top die we can have
-				//for the current least top die value
-				int fewest;
-				int most;
+			int minimalTopDice = 0;
+			int minimalTopDieValue = partitions[number_top_dice][i].back();
 
-				if (least_top_die_value * number_top_dice == goal)
-				{
-					//the equation for setting the fewest and most possible top dice for the current least top die value
-					//breaks down if our goal number can only be reached by having all the top dice be the maximum number.
-					//For example if the goal was 120, we could only get there if every Top Die was 12.
-					fewest = number_top_dice;
-					most = number_top_dice;
-				}
+			//First count the number of minimal top dice
+			for (int j = number_top_dice - 1; j >= 0; j--)
+			{
+				if (partitions[number_top_dice][i][j] > minimalTopDieValue) break;
+				minimalTopDice++;
+			}
+
+			//Then calculate the number of permutations of non-minimal top dice
+			int_64x maximalTopDicePermutations = factorials[number_top_dice - minimalTopDice];
+			int currentNumber = partitions[number_top_dice][i][0], sameNumberCount = 0;
+			for (int j = 0; j < (number_top_dice - minimalTopDice); j++)
+			{
+				if (partitions[number_top_dice][i][j] == currentNumber) sameNumberCount++;
 				else
 				{
-					//these equations should work in all other cases
-					fewest = (number_top_dice * (least_top_die_value + 1)) - goal;
-					most = ((number_top_dice * dice_sides) - goal) / (dice_sides - least_top_die_value);
-					if (fewest <= 0) fewest = 1;
-					if (most > number_top_dice) most = number_top_dice;
-				}
-
-				for (int amount_of_least_top_dice = fewest; amount_of_least_top_dice <= most; amount_of_least_top_dice++)
-				{
-					//First we calculate the total ways to shuffle the dice that are less than or equal to the least valued top die
-					int number_lower_dice = total_dice - number_top_dice + amount_of_least_top_dice;
-					int_64x small_shuffle = BigPow(least_top_die_value, number_lower_dice) - BigPow(least_top_die_value - 1, number_lower_dice);
-
-					//TODO: I have an error somewhere in my subtraction algorithm (I think it's just forgetting to check for necessary leading
-					//0's that should happen at the end of the algorithm). Currently getting that 2^129 - 1 = -1. This number would be all F's in
-					//hexadecimal which is where I think the issue comes in, adding a leading word of 0's would prevent this.
-					//std::cout << "small shuffle start = " << BigPow(least_top_die_value, number_lower_dice) << " - " << BigPow(least_top_die_value - 1, number_lower_dice) << " =" << small_shuffle << std::endl;
-					for (int i = 1; i < amount_of_least_top_dice; i++)
-					{
-						small_shuffle -= BigChoose(number_lower_dice, i) * BigPow(least_top_die_value - 1, number_lower_dice - i);
-						/*std::cout << BigChoose(number_lower_dice, i) << " * " << BigPow(least_top_die_value - 1, number_lower_dice - i) << " = " <<
-							BigChoose(number_lower_dice, i) * BigPow(least_top_die_value - 1, number_lower_dice - i) << std::endl;*/
-					}
-					//std::cout << "small shuffle = " << small_shuffle << std::endl;
-
-					//Next we calculate the total ways to shuffle the top dice that are greater than the least valued top die
-					int_64x large_shuffle = BigPermutationsOfPartitions(goal - amount_of_least_top_dice * least_top_die_value, number_top_dice - amount_of_least_top_dice, dice_sides, least_top_die_value + 1);
-
-					//std::cout << "large shuffle = " << large_shuffle << std::endl;
-					//We multiply the ways to individually shuffle the upper and lower dice with the overall number of ways to shuffle
-					//the dice together
-
-					//std::cout << "overall shuffle = " << ways_to_choose[number_top_dice - amount_of_least_top_dice] << std::endl;
-					answer += ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle * small_shuffle;
-					std::cout << ways_to_choose[number_top_dice - amount_of_least_top_dice] % mod << ", " << large_shuffle % mod << ", " << small_shuffle % mod << std::endl;
-
-					/*std::cout << "MTD = " << least_top_die_value;
-					std::cout << ", # of MTD = " << amount_of_least_top_dice << std::endl;*/
-					//std::cout << ", Ways % MOD = " << (ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle * small_shuffle) % 1000000007 << std::endl << std::endl;
+					maximalTopDicePermutations /= factorials[sameNumberCount];
+					sameNumberCount = 1;
+					currentNumber = partitions[number_top_dice][i][j];
 				}
 			}
+			maximalTopDicePermutations /= factorials[sameNumberCount]; //make sure to divide out the last number
+
+			int_64x minimalDicePermutations = BigPow(minimalTopDieValue, total_dice - number_top_dice + minimalTopDice) - BigPow(minimalTopDieValue - 1, total_dice - number_top_dice + minimalTopDice);
+			for (long long i = 1; i < minimalTopDice; i++)
+				minimalDicePermutations -= BigChoose(total_dice - number_top_dice + minimalTopDice, i) * BigPow(minimalTopDieValue - 1, total_dice - number_top_dice + minimalTopDice - i);
+
+			//int_64x commonFact = factorials[number_top_dice - minimalTopDice];
+
+			//Now that we have the permutations for the maximal top dice, loop through the (number_bottom_dice) different
+			//possibilities for the total number of additional minimal Top Dice we can add
+			//for (int j = 0; j <= (total_dice - number_top_dice); j++)
+			//{
+			//	//std::cout << ways_to_choose[minimalTopDice + j][number_top_dice - minimalTopDice] << " vs. " << factorials[total_dice] / (factorials[minimalTopDice + j] * factorials[number_top_dice - minimalTopDice] * factorials[total_dice - number_top_dice - j]) << std::endl;
+			//	totalDicePermutations += ways_to_choose[minimalTopDice + j][number_top_dice - minimalTopDice] * BigPow(minimalTopDieValue - 1, total_dice - number_top_dice - j);
+			//}
+			answer += maximalTopDicePermutations * minimalDicePermutations * ways_to_choose[number_top_dice - minimalTopDice];
 		}
 
-		std::cout << answer % 1000000007 << std::endl;
+		std::cout << answer << std::endl;
 	}
 
 	//ran in 0.000304 seconds
@@ -178,7 +131,83 @@ std::pair<std::string, double> test2()
 	//Second attempt:
 
 	delete[] factorials;
-	delete[] ways_to_choose;
+	//delete[] ways_to_choose;
 
 	return { answer.getNumberString(), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 }
+
+//Generating Function Version:
+//for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
+	////for (int goal = 1250; goal <= 1250; goal++)
+	//{
+	//	std::cout << "Goal: " << goal << std::endl;
+	//	answer = 0; //re-zero the answer
+
+	//	int larger_than_lowest, lowest, lower_than_lowest;
+
+	//	//minimum_minimum represents the smallest possible value for the minimum top die
+	//	int minimum_minimum = goal - (number_top_dice - 1) * dice_sides;
+	//	if (minimum_minimum <= 0) minimum_minimum = 1;
+
+	//	//maximum_minimum represents the largest possible value for the minimum top die
+	//	int maximum_minimum = goal / number_top_dice;
+
+	//	if (minimum_minimum <= dice_sides)
+	//	{
+	//		//if the lowest possible value for our minimum value top die is greater than the number of sides 
+	//		//on the dice, then it won't be possible to reach the goal so we skip all of the below logic
+	//		for (int least_top_die_value = minimum_minimum; least_top_die_value <= maximum_minimum; least_top_die_value++)
+	//		{
+	//			//calculate both the most and least number of least valued top die we can have
+	//			//for the current least top die value
+	//			int fewest;
+	//			int most;
+
+	//			if (least_top_die_value * number_top_dice == goal)
+	//			{
+	//				//the equation for setting the fewest and most possible top dice for the current least top die value
+	//				//breaks down if our goal number can only be reached by having all the top dice be the maximum number.
+	//				//For example if the goal was 120, we could only get there if every Top Die was 12.
+	//				fewest = number_top_dice;
+	//				most = number_top_dice;
+	//			}
+	//			else
+	//			{
+	//				//these equations should work in all other cases
+	//				fewest = (number_top_dice * (least_top_die_value + 1)) - goal;
+	//				most = ((number_top_dice * dice_sides) - goal) / (dice_sides - least_top_die_value);
+	//				if (fewest <= 0) fewest = 1;
+	//				if (most > number_top_dice) most = number_top_dice;
+	//			}
+
+	//			for (int amount_of_least_top_dice = fewest; amount_of_least_top_dice <= most; amount_of_least_top_dice++)
+	//			{
+	//				//First we calculate the total ways to shuffle the dice that are less than or equal to the least valued top die
+	//				int number_lower_dice = total_dice - number_top_dice + amount_of_least_top_dice;
+	//				int_64x small_shuffle = BigPow(least_top_die_value, number_lower_dice) - BigPow(least_top_die_value - 1, number_lower_dice);
+
+	//				for (int i = 1; i < amount_of_least_top_dice; i++)
+	//					small_shuffle -= BigChoose(number_lower_dice, i) * BigPow(least_top_die_value - 1, number_lower_dice - i);
+
+	//				//std::cout << "small shuffle = " << small_shuffle << std::endl;
+
+	//				//Next we calculate the total ways to shuffle the top dice that are greater than the least valued top die
+	//				int_64x large_shuffle = BigPermutationsOfPartitions(goal - amount_of_least_top_dice * least_top_die_value, number_top_dice - amount_of_least_top_dice, dice_sides, least_top_die_value + 1);
+
+	//				//std::cout << "large shuffle = " << large_shuffle << std::endl;
+	//				//We multiply the ways to individually shuffle the upper and lower dice with the overall number of ways to shuffle
+	//				//the dice together
+
+	//				//std::cout << "overall shuffle = " << ways_to_choose[number_top_dice - amount_of_least_top_dice] << std::endl;
+	//				answer += ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle * small_shuffle;
+	//				//std::cout << ways_to_choose[number_top_dice - amount_of_least_top_dice] % mod << ", " << large_shuffle % mod << ", " << small_shuffle % mod << std::endl;
+
+	//				std::cout << "MTD = " << least_top_die_value;
+	//				std::cout << ", # of MTD = " << amount_of_least_top_dice << std::endl;
+	//				//std::cout << ", Ways % MOD = " << (ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle * small_shuffle) % 1000000007 << std::endl << std::endl;
+	//			}
+	//		}
+	//	}
+
+	//	std::cout << answer % 1000000007 << std::endl;
+	//}

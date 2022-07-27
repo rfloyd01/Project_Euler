@@ -67,7 +67,7 @@ std::pair<std::string, double> q240()
 	for (long long i = 0; i <= total_dice; i++) ways_to_choose[i] = BinomialModLargePrime(total_dice, i, modulus, factorials);
 
 	//for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
-	for (int goal = 1000; goal <= 1000; goal++)
+	for (int goal = 1250; goal <= 1250; goal++)
 	{
 		//std::cout << "Goal: " << goal << std::endl;
 		answer = 0; //re-zero the answer
@@ -123,7 +123,7 @@ std::pair<std::string, double> q240()
 				//if (ways_to_choose[number_top_dice - amount_of_least_top_dice] < 0) std::cout << "overall shuffle = " << ways_to_choose[number_top_dice - amount_of_least_top_dice] << std::endl;
 				//std::cout << ((ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle) % modulus * small_shuffle) % modulus << " ways to order them.\n" << std::endl << std::endl;
 				answer = (answer + ((ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle) % modulus * small_shuffle) % modulus) % modulus;
-				std::cout << ways_to_choose[number_top_dice - amount_of_least_top_dice] << ", " << large_shuffle << ", " << small_shuffle << std::endl;
+				//std::cout << ways_to_choose[number_top_dice - amount_of_least_top_dice] << ", " << large_shuffle << ", " << small_shuffle << std::endl;
 				
 				//std::cout << ", Ways % MOD = " << ((ways_to_choose[number_top_dice - amount_of_least_top_dice] * large_shuffle) % modulus * small_shuffle) % modulus << std::endl << std::endl;
 			}
