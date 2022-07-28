@@ -62,7 +62,7 @@ std::vector<long long> test2(long long dice_sides, long long number_top_dice, lo
 	for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
 	//for (int goal = 72; goal <= 72; goal++)
 	{
-		std::cout << "Goal: " << goal << std::endl;
+		//std::cout << "Goal: " << goal << std::endl;
 		answer = 0; //re-zero the answer
 		std::vector<std::vector<std::vector<int > > > partitions;
 		//std::pair<int, int>* minimumTopDieCounter = new std::pair<int, int>[dice_sides + 1]();
@@ -115,7 +115,8 @@ std::vector<long long> test2(long long dice_sides, long long number_top_dice, lo
 		/*for (int i = 0; i <= dice_sides; i++)
 			if (minimumTopDieCounter[i].first) std::cout << i << ": [" << minimumTopDieCounter[i].first << ", " << minimumTopDieCounter[i].second << "]" << std::endl;*/
 
-		std::cout << answer % 1000000007 << std::endl << std::endl;
+		//std::cout << answer % 1000000007 << std::endl << std::endl;
+		//std::cout << answer << std::endl;
 		answer %= mod;
 		all_answers.push_back(answer.digits[0]);
 

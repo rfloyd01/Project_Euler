@@ -458,6 +458,9 @@
     <ClInclude Include="Header_Files\test2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Questions\Hackerrank\Top_Dice.h">
+      <Filter>Header Files\Hackerrank</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Resources\q11.txt">

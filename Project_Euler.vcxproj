@@ -170,6 +170,7 @@
     <ClInclude Include="q247.h" />
     <ClInclude Include="Questions\Hackerrank\Picking_Numbers.h" />
     <ClInclude Include="Questions\Hackerrank\StringReverseMerge.h" />
+    <ClInclude Include="Questions\Hackerrank\Top_Dice.h" />
     <ClInclude Include="Questions\q1-q50\master1-50.h" />
     <ClInclude Include="Questions\q1-q50\q1.h" />
     <ClInclude Include="Questions\q1-q50\q10.h" />
