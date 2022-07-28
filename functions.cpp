@@ -570,7 +570,7 @@ void getPartitions(int n, std::vector<std::vector<std::vector<int> > >& all_part
 		if (currentValue == n)
 		{
 			//If the value of our current partition equals n then there's no need to continue, add the partition
-		    //and go back up a level
+			//and go back up a level
 			all_partitions[currentLength].push_back(*currentPartition);
 			return;
 		}
@@ -585,6 +585,7 @@ void getPartitions(int n, std::vector<std::vector<std::vector<int> > >& all_part
 			}
 			return;
 		}
+		else if (currentLength == maxLength) return; //if we've used all allowed digits and haven't reached n yet, return
 
 		//otherwise add all numbers possible via a loop. We can only add numbers that are less than or equal to
 		//the number at the end of the current partition to maintain distinctiveness. For a little more efficiency

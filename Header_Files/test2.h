@@ -37,7 +37,7 @@ int_64x BigPermutationsOfPartitions(int n, int l, int maximum, int minimum)
 std::pair<std::string, double> test2()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	int dice_sides = 12, number_top_dice = 10, total_dice = 20;
+	int dice_sides = 4, number_top_dice = 1, total_dice = 1;
 	int_64x answer = 0;
 
 	std::cout << "Dice sides = " << dice_sides << std::endl;
@@ -53,27 +53,15 @@ std::pair<std::string, double> test2()
 	factorials[0] = 1;
 	for (int i = 1; i <= max_factorial; i++) factorials[i] = factorials[i - 1] * i;
 
-	//Memoize ways to split total dice into three sections
-	/*std::vector<std::vector<int_64x> > ways_to_choose;
-	for (int first_digit = 0; first_digit <= total_dice; first_digit++)
-	{
-		std::vector<int_64x> chose;
-		for (int second_digit = 0; second_digit <= total_dice - first_digit; second_digit++)
-		{
-			chose.push_back(factorials[total_dice] / (factorials[first_digit] * factorials[second_digit] * factorials[total_dice - first_digit - second_digit]));
-		}
-		ways_to_choose.push_back(chose);
-	}*/
-
 	//Memoize ways to split total dice into two sections dice into two sections (top_dice = 0 through
 	//top_dice = number_top_dice)
 	int_64x* ways_to_choose = new int_64x[number_top_dice + 1]();
 	for (int i = 0; i <= number_top_dice; i++) ways_to_choose[i] = BigChoose(total_dice, i);
 
-	//for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
-	for (int goal = 70; goal <= 70; goal++)
+	for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
+	//for (int goal = 1000; goal <= 1000; goal++)
 	{
-		std::cout << "Goal: " << goal << " = ";
+		//std::cout << "Goal: " << goal << " = ";
 		answer = 0; //re-zero the answer
 		std::vector<std::vector<std::vector<int > > > partitions;
 		
@@ -81,6 +69,7 @@ std::pair<std::string, double> test2()
 
 		for (int i = 0; i < partitions[number_top_dice].size(); i++)
 		{
+			std::cout << "Partition " << i + 1 << " of " << partitions[number_top_dice].size() << std::endl;
 			int minimalTopDice = 0;
 			int minimalTopDieValue = partitions[number_top_dice][i].back();
 
@@ -110,19 +99,10 @@ std::pair<std::string, double> test2()
 			for (long long i = 1; i < minimalTopDice; i++)
 				minimalDicePermutations -= BigChoose(total_dice - number_top_dice + minimalTopDice, i) * BigPow(minimalTopDieValue - 1, total_dice - number_top_dice + minimalTopDice - i);
 
-			//int_64x commonFact = factorials[number_top_dice - minimalTopDice];
-
-			//Now that we have the permutations for the maximal top dice, loop through the (number_bottom_dice) different
-			//possibilities for the total number of additional minimal Top Dice we can add
-			//for (int j = 0; j <= (total_dice - number_top_dice); j++)
-			//{
-			//	//std::cout << ways_to_choose[minimalTopDice + j][number_top_dice - minimalTopDice] << " vs. " << factorials[total_dice] / (factorials[minimalTopDice + j] * factorials[number_top_dice - minimalTopDice] * factorials[total_dice - number_top_dice - j]) << std::endl;
-			//	totalDicePermutations += ways_to_choose[minimalTopDice + j][number_top_dice - minimalTopDice] * BigPow(minimalTopDieValue - 1, total_dice - number_top_dice - j);
-			//}
 			answer += maximalTopDicePermutations * minimalDicePermutations * ways_to_choose[number_top_dice - minimalTopDice];
 		}
 
-		std::cout << answer << std::endl;
+		std::cout << answer % 1000000007 << std::endl;
 	}
 
 	//ran in 0.000304 seconds
