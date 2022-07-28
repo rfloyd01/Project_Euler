@@ -29,6 +29,7 @@ int NumberOfFactors(int n);
 int char_to_int(char a);
 char int_to_char(int a);
 long long choose(int m, int n);
+long long recursiveChoose(int m, int n);
 int_64x BigChoose(int m, int n);
 int_64x BigPow(int_64x n, int p);
 long long factorial(int n);
@@ -45,7 +46,7 @@ long long polcoeff(std::vector<std::vector<long long> >& polynomials, int order)
 int polcoeff(std::vector<std::vector<int> >& polynomials, int order, int mod);
 void getPartitions(int n, std::vector<std::vector<std::vector<int> > > &all_partitions, int maxNumber = 0, int maxLength = 0, 
 	int currentLength = 0, int currentValue = 0, std::vector<int>* currentPartition = nullptr, bool recursive = false);
-long long permutationsOfPartitions(int n, int l, int maximum = 0, int minimum = 0);
+long long permutationsOfPartitions(int n, int l, int maximum = 0, int minimum = 0, bool quick_choose = true);
 
 //Template Functions
 template <typename T>

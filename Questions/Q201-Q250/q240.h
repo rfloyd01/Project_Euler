@@ -13,7 +13,7 @@ std::pair<std::string, double> q240()
 	//Memoize ways to split dice into two sections. This depends on both the
 	//total number of dice and number of non-minimal Top Dice
 	long long* ways_to_choose = new long long[number_top_dice + 1]();
-	for (long long i = 0; i <= number_top_dice; i++) ways_to_choose[i] = choose(total_dice, i);
+	for (long long i = 0; i <= number_top_dice; i++) ways_to_choose[i] = recursiveChoose(total_dice, i);
 
 	//minimum_minimum represents the smallest possible value for the minimum top die
 	int minimum_minimum = goal - (number_top_dice - 1) * dice_sides;
@@ -26,8 +26,7 @@ std::pair<std::string, double> q240()
 	{
 		//calculate both the most and least number of least valued top die we can have
 		//for the current least top die value
-		int fewest;
-		int most;
+		int fewest, most;
 
 		if (least_top_die_value * number_top_dice == goal)
 		{
@@ -53,10 +52,11 @@ std::pair<std::string, double> q240()
 			long long small_shuffle = MyPow(least_top_die_value, number_lower_dice) - MyPow(least_top_die_value - 1, number_lower_dice);
 
 			for (long long i = 1; i < amount_of_least_top_dice; i++)
-				small_shuffle -= choose(number_lower_dice, i) * MyPow(least_top_die_value - 1, number_lower_dice - i);
+				small_shuffle -= recursiveChoose(number_lower_dice, i) * MyPow(least_top_die_value - 1, number_lower_dice - i);
 
 			//Next we calculate the total ways to shuffle the top dice that are greater than the least valued top die
-			long long large_shuffle = permutationsOfPartitions(goal - amount_of_least_top_dice * least_top_die_value, number_top_dice - amount_of_least_top_dice, dice_sides, least_top_die_value + 1);
+			long long large_shuffle = permutationsOfPartitions(goal - amount_of_least_top_dice * least_top_die_value,
+				number_top_dice - amount_of_least_top_dice, dice_sides, least_top_die_value + 1);
 
 			//We multiply the ways to individually shuffle the upper and lower dice with the overall number of ways to shuffle
 			//the dice together
@@ -68,7 +68,7 @@ std::pair<std::string, double> q240()
     return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
     //the answer is 7448717393364181966
-    //ran in 0.0004609 seconds
+    //ran in 0.0000223 seconds
 }
 
 //NOTES

@@ -343,6 +343,13 @@ long long choose(int m, int n)
 	return answer;
 }
 
+long long recursiveChoose(int m, int n)
+{
+	//a recursive approach to the choose function
+	if (!n) return 1;
+	return (m * recursiveChoose(m - 1, n - 1)) / n;
+}
+
 int_64x BigChoose(int m, int n)
 {
 	//implements the int_64x class to allow the choose function to be used on numbers of any size
@@ -601,7 +608,7 @@ void getPartitions(int n, std::vector<std::vector<std::vector<int> > >& all_part
 		}
 	}
 }
-long long permutationsOfPartitions(int n, int l, int maximum, int minimum)
+long long permutationsOfPartitions(int n, int l, int maximum, int minimum, bool quick_choose)
 {
 	//returns the number of distinct permutations for the partitions of n that have a length of l, 
 	//where the maximum integer allowed is maximum and the least integer allowed is minimum. Maximum must be
@@ -622,8 +629,11 @@ long long permutationsOfPartitions(int n, int l, int maximum, int minimum)
 	//we get an equation of the form: [x^target]: (1 - x^primary)^l * (1 - x)^-l
 	//for which we solve using binomial expansion
 	for (int i = 0; i <= target / primary; i++)
-		answer += choose(l, i) * choose((secondaryNumerator -= primary), (secondaryDenominator -= primary)) * (flip *= -1);
-
+	{
+		if(quick_choose) answer += recursiveChoose(l, i) * recursiveChoose((secondaryNumerator -= primary), (secondaryDenominator -= primary)) * (flip *= -1);
+		else answer += choose(l, i) * choose((secondaryNumerator -= primary), (secondaryDenominator -= primary)) * (flip *= -1);
+	}
+		
 	return answer;
 }
 
