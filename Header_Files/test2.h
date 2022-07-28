@@ -34,15 +34,16 @@ int_64x BigPermutationsOfPartitions(int n, int l, int maximum, int minimum)
 	return answer;
 }
 
-std::pair<std::string, double> test2()
+std::vector<long long> test2(long long dice_sides, long long number_top_dice, long long total_dice)
 {
 	auto run_time = std::chrono::steady_clock::now();
-	int dice_sides = 4, number_top_dice = 1, total_dice = 1;
+	//int dice_sides = 15, number_top_dice = 10, total_dice = 12;
 	int_64x answer = 0;
+	std::vector<long long> all_answers;
 
-	std::cout << "Dice sides = " << dice_sides << std::endl;
-	std::cout << "Top dice = " << number_top_dice << std::endl;
-	std::cout << "Total dice = " << total_dice << std::endl << std::endl;
+	//std::cout << "Dice sides = " << dice_sides << std::endl;
+	//std::cout << "Top dice = " << number_top_dice << std::endl;
+	//std::cout << "Total dice = " << total_dice << std::endl << std::endl;
 
 	//initialize an array for factorials % 1,000,000,007
 	//the maximum factorial we will need depends on which number is bigger, total_dice or
@@ -59,19 +60,21 @@ std::pair<std::string, double> test2()
 	for (int i = 0; i <= number_top_dice; i++) ways_to_choose[i] = BigChoose(total_dice, i);
 
 	for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
-	//for (int goal = 1000; goal <= 1000; goal++)
+	//for (int goal = 72; goal <= 72; goal++)
 	{
-		//std::cout << "Goal: " << goal << " = ";
+		std::cout << "Goal: " << goal << std::endl;
 		answer = 0; //re-zero the answer
 		std::vector<std::vector<std::vector<int > > > partitions;
+		//std::pair<int, int>* minimumTopDieCounter = new std::pair<int, int>[dice_sides + 1]();
 		
 		getPartitions(goal, partitions, dice_sides, number_top_dice);
 
 		for (int i = 0; i < partitions[number_top_dice].size(); i++)
 		{
-			std::cout << "Partition " << i + 1 << " of " << partitions[number_top_dice].size() << std::endl;
+			//std::cout << "Partition " << i + 1 << " of " << partitions[number_top_dice].size() << std::endl;
 			int minimalTopDice = 0;
 			int minimalTopDieValue = partitions[number_top_dice][i].back();
+			//vprint(partitions[number_top_dice][i]);
 
 			//First count the number of minimal top dice
 			for (int j = number_top_dice - 1; j >= 0; j--)
@@ -79,6 +82,13 @@ std::pair<std::string, double> test2()
 				if (partitions[number_top_dice][i][j] > minimalTopDieValue) break;
 				minimalTopDice++;
 			}
+
+			//FOR DEBUGGING:
+			/*if (minimumTopDieCounter[minimalTopDieValue].first == 0 || minimalTopDice < minimumTopDieCounter[minimalTopDieValue].first)
+				minimumTopDieCounter[minimalTopDieValue].first = minimalTopDice;
+			if (minimumTopDieCounter[minimalTopDieValue].second == 0 || minimalTopDice > minimumTopDieCounter[minimalTopDieValue].second)
+				minimumTopDieCounter[minimalTopDieValue].second = minimalTopDice;
+			continue;*/
 
 			//Then calculate the number of permutations of non-minimal top dice
 			int_64x maximalTopDicePermutations = factorials[number_top_dice - minimalTopDice];
@@ -102,7 +112,14 @@ std::pair<std::string, double> test2()
 			answer += maximalTopDicePermutations * minimalDicePermutations * ways_to_choose[number_top_dice - minimalTopDice];
 		}
 
-		std::cout << answer % 1000000007 << std::endl;
+		/*for (int i = 0; i <= dice_sides; i++)
+			if (minimumTopDieCounter[i].first) std::cout << i << ": [" << minimumTopDieCounter[i].first << ", " << minimumTopDieCounter[i].second << "]" << std::endl;*/
+
+		std::cout << answer % 1000000007 << std::endl << std::endl;
+		answer %= mod;
+		all_answers.push_back(answer.digits[0]);
+
+		//delete[] minimumTopDieCounter;
 	}
 
 	//ran in 0.000304 seconds
@@ -113,7 +130,8 @@ std::pair<std::string, double> test2()
 	delete[] factorials;
 	//delete[] ways_to_choose;
 
-	return { answer.getNumberString(), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
+	return all_answers;
+	//return { answer.getNumberString(), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 }
 
 //Generating Function Version:

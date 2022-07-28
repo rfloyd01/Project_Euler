@@ -44,7 +44,7 @@ std::pair<std::string, double> q240()
     auto run_time = std::chrono::steady_clock::now();
 	long long answer;
 
-	long long dice_sides = 4, number_top_dice = 1, total_dice = 1;
+	long long dice_sides = 15, number_top_dice = 10, total_dice = 12;
 	long long modulus = 1000000007;
 
 	std::cout << "Dice sides = " << dice_sides << std::endl;
@@ -66,8 +66,8 @@ std::pair<std::string, double> q240()
 	long long* ways_to_choose = new long long[total_dice + 1]();
 	for (long long i = 0; i <= total_dice; i++) ways_to_choose[i] = BinomialModLargePrime(total_dice, i, modulus, factorials);
 
-	for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
-	//for (int goal = 1250; goal <= 1250; goal++)
+	//for (int goal = number_top_dice; goal <= number_top_dice * dice_sides; goal++)
+	for (int goal = 72; goal <= 72; goal++)
 	{
 		//std::cout << "Goal: " << goal << std::endl;
 		answer = 0; //re-zero the answer
@@ -102,6 +102,8 @@ std::pair<std::string, double> q240()
 				if (fewest <= 0) fewest = 1;
 				if (most > number_top_dice) most = number_top_dice;
 			}
+
+			std::cout << least_top_die_value << ": [" << fewest << ", " << most << "]" << std::endl;
 
 			for (long long amount_of_least_top_dice = fewest; amount_of_least_top_dice <= most; amount_of_least_top_dice++)
 			{

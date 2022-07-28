@@ -539,8 +539,8 @@ void getPartitions(int n, std::vector<std::vector<std::vector<int> > >& all_part
 	if (!recursive)
 	{
 		//The non-recursive part of the function is just used for setting everything up
-		if (maxNumber == 0) maxNumber = n;
-		if (maxLength == 0) maxLength = n;
+		if (maxNumber <= 0 || maxNumber > n) maxNumber = n;
+		if (maxLength <= 0 || maxLength > n) maxLength = n;
 
 		//std::vector<std::vector<std::vector<int> > > all_partitions;
 		std::vector<std::vector<int> > partition_length;
