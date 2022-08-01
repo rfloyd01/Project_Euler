@@ -7,12 +7,12 @@
 
 std::vector<std::string> blockwords = { "for", "while", "if", "else" };
 std::vector<std::string> keywords = { "continue", "break", "return" };
-std::vector<std::string> types = { "short", "int", "long", "float", "double", "void", "char"};
+std::vector<std::string> types = { "short", "int", "long", "float", "double", "void", "char", "bool"};
 std::vector<std::string> classes = { "vector", "pair", "string", "ifstream"};
 std::vector<std::string> objects = { "class", "struct", "enum" };
 std::vector<std::string> scopes = { "private:", "public:", "protected:" };
 
-bool debugPrint = true;
+bool debugPrint = false;
 
 /*
 Code Block types are:
@@ -271,7 +271,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
         //character.
         if (firstWord == "else")
         {
-            if (getFirstWord(allCodeLines[currentLine], location + 2) == "if")
+            if (allCodeLines[currentLine][location + 1] != '\n' && getFirstWord(allCodeLines[currentLine], location + 2) == "if")
             {
                 findClosingParenthese(allCodeLines, currentLine, placeInLine);
                 location = placeInLine;
