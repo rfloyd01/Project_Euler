@@ -12,7 +12,7 @@ std::vector<std::string> classes = { "vector", "pair", "string", "ifstream"};
 std::vector<std::string> objects = { "class", "struct", "enum" };
 std::vector<std::string> scopes = { "private:", "public:", "protected:" };
 
-bool debugPrint = false;
+bool debugPrint = true;
 
 /*
 Code Block types are:
@@ -288,16 +288,17 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
         //'{' character then we have a curly brace block, if it's anything else then
         //we have a non-curlybrace block.
         char currentCharacter;
+        int scannedLine = currentLine;
         while (true)
         {
             location++;
-            if (location == allCodeLines[currentLine].size())
+            if (location == allCodeLines[scannedLine].size())
             {
                 location = 0;
-                currentLine++;
+                scannedLine++;
             }
             
-            currentCharacter = allCodeLines[currentLine][location];
+            currentCharacter = allCodeLines[scannedLine][location];
             if (currentCharacter == ' ' || currentCharacter == '\t' || currentCharacter == '\n' || currentCharacter == '\r') continue;
             
             if (currentCharacter == '{')
