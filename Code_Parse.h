@@ -12,6 +12,8 @@ std::vector<std::string> classes = { "vector", "pair", "string", "ifstream"};
 std::vector<std::string> objects = { "class", "struct", "enum" };
 std::vector<std::string> scopes = { "private:", "public:", "protected:" };
 
+bool debugPrint = true;
+
 /*
 Code Block types are:
 0 - Preprocessor command
@@ -93,6 +95,42 @@ std::string getFirstWord(std::string line, int start = 0)
     //return firstWord;
 }
 
+void findQuoteEnd(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine)
+{
+    //This function advances us to the end of a quote. A quote can either start with " or ',
+    //whatever is starts with it will also have to end with. While still inside the quote, make
+    //sure that any potential end characters aren't preceeded by the '\' escape character
+    char endCharacter = allCodeLines[currentLine][placeInLine++];
+    bool lastCharacterEscape = false;
+
+    while (true)
+    {
+        if (placeInLine >= allCodeLines[currentLine].size())
+        {
+            //go to the next line
+            currentLine++;
+            placeInLine = 0;
+        }
+
+        if (allCodeLines[currentLine][placeInLine] == '\\')
+        {
+            lastCharacterEscape ^= 1; //if we hit two escape characters in a row then we actually break the escape
+            placeInLine++;
+        }
+        else if (allCodeLines[currentLine][placeInLine] == endCharacter && !lastCharacterEscape)
+        {
+            //placeInLine++; //advance one spot further so we don't accidentally call this function again
+            return; //we've reached the end of the quote
+        }
+        else
+        {
+            //found a non-escape character, set lastCharacterEscape to false and increment
+            lastCharacterEscape = false;
+            placeInLine++;
+        }
+    }
+}
+
 void findClosingParenthese(std::vector<std::string>& allCodeLines, int &currentLine, int &placeInLine)
 {
     //this function is used to find the closing parentheses of a for, if, or else block. This function
@@ -129,6 +167,12 @@ void findClosingParenthese(std::vector<std::string>& allCodeLines, int &currentL
             if (parenthesesLevel > 1) parenthesesLevel--;
             else return;
         }
+        else if (allCodeLines[currentLine][placeInLine] == '\'' || allCodeLines[currentLine][placeInLine] == '\"')
+        {
+            //There's a quotation, skip to the end of the quote in case it has any parentheses in it
+            //which shouldn't be counted.
+            findQuoteEnd(allCodeLines, currentLine, placeInLine);
+        }
 
         if (placeInLine >= allCodeLines[currentLine].size())
         {
@@ -160,7 +204,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
         {
             //this is a line with only white space on it, which for now will just
             //be considered as a preprocessor command
-            std::cout << "Found a blank line" << std::endl;
+            if (debugPrint) std::cout << "Found a blank line" << std::endl;
             this->blockType = 0;
             this->beginningCharacter = '\n';
             this->endingCharacter = ' ';
@@ -179,7 +223,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
         {
             //We're dealing with a single line comment. The block extends until we find 
             //the first line of code that doesn't start with //
-            std::cout << "Found a single line comment" << std::endl;
+            if (debugPrint) std::cout << "Found a single line comment" << std::endl;
             this->blockType = 1;
             this->beginningCharacter = '\n';
             this->endingCharacter = ' ';
@@ -189,7 +233,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
         {
             //We're dealing with a multi line comment (although it's possible to have this all
             //on a single line). The block extends until we find the "*/" character combo
-            std::cout << "Found a multi line comment" << std::endl;
+            if (debugPrint) std::cout << "Found a multi line comment" << std::endl;
             this->blockType = 2;
             this->beginningCharacter = '*';
             this->endingCharacter = ' ';
@@ -200,7 +244,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
     //Check to see if the block is a pre-processor command
     if (allCodeLines[currentLine][placeInLine] == '#')
     {
-        std::cout << "Found a pre-processor command" << std::endl;
+        if (debugPrint) std::cout << "Found a pre-processor command" << std::endl;
         this->blockType = 0;
         this->beginningCharacter = '\n';
         this->endingCharacter = ' ';
@@ -258,7 +302,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
             
             if (currentCharacter == '{')
             {
-                std::cout << "Found a curly brace block" << std::endl;
+                if (debugPrint) std::cout << "Found a curly brace block" << std::endl;
                 this->blockType = 5;
                 this->beginningCharacter = '{';
                 this->endingCharacter = '}';
@@ -266,7 +310,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
             }
             else 
             {
-                std::cout << "Found a non-curly brace block" << std::endl;
+                if (debugPrint) std::cout << "Found a non-curly brace block" << std::endl;
                 this->blockType = 4;
                 if (firstWord == "else")
                 {
@@ -305,7 +349,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
             {
                 if (allCodeLines[currentLine][location] == '=' || allCodeLines[currentLine][location] == ';')
                 {
-                    std::cout << "Found a variable definition block" << std::endl;
+                    if (debugPrint) std::cout << "Found a variable definition block" << std::endl;
                     this->blockType = 3;
                     this->beginningCharacter = ';';
                     this->endingCharacter = ' ';
@@ -318,7 +362,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
                 //we've either found a function definition, or a function declaration
                 if (allCodeLines[currentLine][location] == '{')
                 {
-                    std::cout << "Found a function definition block" << std::endl;
+                    if (debugPrint) std::cout << "Found a function definition block" << std::endl;
                     this->blockType = 6;
                     this->beginningCharacter = '{';
                     this->endingCharacter = '}';
@@ -326,7 +370,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
                 }
                 else if (allCodeLines[currentLine][location] == ';')
                 {
-                    std::cout << "Found a function declaration block" << std::endl;
+                    if (debugPrint) std::cout << "Found a function declaration block" << std::endl;
                     this->blockType = 3;
                     this->beginningCharacter = ';';
                     this->endingCharacter = ' ';
@@ -337,7 +381,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
     }
     else if (contains(objects, firstWord))
     {
-        std::cout << "Found a class/struct/enum definition block" << std::endl;
+        if (debugPrint) std::cout << "Found a class/struct/enum definition block" << std::endl;
         this->blockType = 6;
         this->beginningCharacter = '{';
         this->endingCharacter = '}';
@@ -347,7 +391,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
     {
         //For my purposes I don't need to actually make this a block, treat it as a standard line
         //but have it end with the \n character instead of the ; character
-        std::cout << "Found a scope block" << std::endl;
+        if (debugPrint) std::cout << "Found a scope block" << std::endl;
         this->blockType = 3;
         this->beginningCharacter = '\n';
         this->endingCharacter = ' ';
@@ -356,7 +400,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
     else if (contains(keywords, firstWord))
     {
         //we've found a word like return
-        std::cout << "Found a keyword block of code" << std::endl;
+        if (debugPrint) std::cout << "Found a keyword block of code" << std::endl;
         this->blockType = 3;
         this->beginningCharacter = ';';
         this->endingCharacter = ' ';
@@ -367,10 +411,13 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
     //i.e. x += 10; where x is an already predefined variable. It's also possible
     //that we've found a plain semi-colon. For debugging sake I'll treat that 
     //as separate for now
-    if (firstWord == ";") {
-        std::cout << "Found a standalone semi-colon" << std::endl;
+    if (debugPrint) {
+        if (firstWord == ";") {
+            std::cout << "Found a standalone semi-colon" << std::endl;
+        }
+        else std::cout << "Found a standard block of code" << std::endl;
     }
-    else std::cout << "Found a standard block of code" << std::endl;
+
     this->blockType = 3;
     this->beginningCharacter = ';';
     this->endingCharacter = ' ';
@@ -509,18 +556,28 @@ void recursiveCodeBlockCreation(std::vector<CodeBlock*>& blockArray, std::vector
                         //we recursively call this function with the sub-block array of the current code
                         //block at the current location.
                         endingCharacter = codeBlock->getEndingEndCharacter();
+                        currentLine = "";
                         
                         while (currentCharacter != endingCharacter)
                         {
                             //the recursive function will automatically increment the currentLineNumber and
                             //placeInLine variables for us, we just need to reassign currentCharacter each 
                             //time
-                            currentLine = ""; //need to reset this until we find our ending charcter
                             recursiveCodeBlockCreation(codeBlock->subBlocks, allCodeLines, currentLineNumber, placeInLine);
+
+                            if (currentLine != "") //we have some indentation to add to the front of the sub-block
+                            {
+                                codeBlock->subBlocks.back()->begginingLines.insert(codeBlock->subBlocks.back()->begginingLines.begin(), currentLine);
+                                currentLine = ""; //reset the current line
+                            }
                             currentCharacter = allCodeLines[currentLineNumber][placeInLine];
 
-                            //a non-curly brace line of code has at most one sub-block
-                            if (codeBlock->blockType == 4) return;
+                            //a non-curly brace line of code has at most one sub-block, so add the block and move on
+                            if (codeBlock->blockType == 4)
+                            {
+                                blockArray.push_back(codeBlock);
+                                return;
+                            }
 
                             //if the recursive call above has dumped us on a new line that begins with leading spaces,
                             //iterate until we hit the first non-white space character
@@ -608,9 +665,13 @@ void codeParse()
 
     //for (int i = 0; i < linesOfCode.size(); i++) std::cout << linesOfCode[i];
 
-    while (currentLineNumber < linesOfCode.size()) recursiveCodeBlockCreation(outermostBlocks, linesOfCode, currentLineNumber, placeInLine);
+    while (currentLineNumber < linesOfCode.size())
+    {
+        recursiveCodeBlockCreation(outermostBlocks, linesOfCode, currentLineNumber, placeInLine);
+        outermostBlocks.back()->printBlock();
+    }
 
-    for (int i = 0; i < outermostBlocks.size(); i++) outermostBlocks[i]->printBlock();
+    //for (int i = 0; i < outermostBlocks.size(); i++) outermostBlocks[i]->printBlock();
     //after getting all of the blocks, search for any adjacent single line comment blocks as they 
     //can be combined into a single block for ease.
 }
