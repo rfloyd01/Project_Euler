@@ -1,0 +1,26 @@
+void codeParse()
+{
+    //First, get the test code from .txt file
+    std::string sampleCode = "", reader = "";
+    std::ifstream myFile;
+    std::vector<std::string> linesOfCode;
+    myFile.open("testParse.txt");
+    while (std::getline(myFile, reader))
+    {
+        reader += '\n'; //add in newline characters that are removed from getLine()
+        linesOfCode.push_back(reader);
+    }
+    linesOfCode.back().pop_back(); //remove the final \n as it isn't needed
+    myFile.close();
+
+    std::vector<CodeBlock*> outermostBlocks;
+    int currentLineNumber = 0, placeInLine = 0;
+
+    //for (int i = 0; i < linesOfCode.size(); i++) std::cout << linesOfCode[i];
+
+    while (currentLineNumber < linesOfCode.size()) recursiveCodeBlockCreation(outermostBlocks, linesOfCode, currentLineNumber, placeInLine);
+
+    for (int i = 0; i < outermostBlocks.size(); i++) outermostBlocks[i]->printBlock();
+    //after getting all of the blocks, search for any adjacent single line comment blocks as they 
+    //can be combined into a single block for ease.
+}
