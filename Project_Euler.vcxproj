@@ -154,6 +154,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="array_arrays.h" />
+    <ClInclude Include="Code_Parse.h" />
     <ClInclude Include="Header_Files\bigint.h" />
     <ClInclude Include="Header_Files\BigInt_128.h" />
     <ClInclude Include="Header_Files\big_number.h" />

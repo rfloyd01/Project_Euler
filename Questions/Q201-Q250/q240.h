@@ -65,6 +65,8 @@ std::pair<std::string, double> q240()
 	}
 
 	delete[] ways_to_choose;
+	//ran in 0.0000223 seconds
+
     return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
     //the answer is 7448717393364181966
