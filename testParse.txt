@@ -1,8 +1,125 @@
-bool contains(std::vector<std::string>& vec, std::string item)
-{
-    //checks to see if the given item is contained in the given vector
-    for (int i = 0; i < vec.size(); i++)
-        if (vec[i] == item) return true;
+void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int currentLine, int placeInLine)
+{          
+            if (currentCharacter == '{')
+            {
+                if (debugPrint) std::cout << "Found a curly brace block" << std::endl;
+                this->blockType = 5;
+                this->beginningCharacter = '{';
+                this->endingCharacter = '}';
+                return;
+            }
+            else 
+            {
+                if (debugPrint) std::cout << "Found a non-curly brace block" << std::endl;
+                this->blockType = 4;
+                if (firstWord == "else")
+                {
+                    this->beginningCharacter = ' '; //the space after else ends the block
+                    this->beginningCharacterLocation = { currentLine, location - 1 }; //location of the space
+                }
+                else
+                {
+                    this->beginningCharacter = ')'; //the end of the parentheses ends the block
+                    this->beginningCharacterLocation = { currentLine, placeInLine };
+                }
+                this->endingCharacter = ' ';
+                return;
+            }
+        }
+    }
+    else if (contains(types, firstWord) || contains(classes, firstWord))
+    {
+        //If the first word of the line is a class or built-in type it means one of two things.
+        //Either we're about to define a function, i.e. void func() {}, or we're about to define
+        //some variables, i.e. int x = 5, y = 6; It will depend on whether we first find an '=',
+        //a ';', or a '(' character. If we encounter an '=' of ';' first then the line is for defining variables.
 
-    return false;
+        bool functionFound = false;
+        //iterate until we hit one of these characters
+        while (true)
+        {
+            location++;
+            if (location == allCodeLines[currentLine].size())
+            {
+                location = 0;
+                currentLine++;
+            }
+
+            if (!functionFound)
+            {
+                if (allCodeLines[currentLine][location] == '=' || allCodeLines[currentLine][location] == ';')
+                {
+                    if (debugPrint) std::cout << "Found a variable definition block" << std::endl;
+                    this->blockType = 3;
+                    this->beginningCharacter = ';';
+                    this->endingCharacter = ' ';
+                    return; //this is considered a standard line of code
+                }
+                else if (allCodeLines[currentLine][location] == '(') functionFound = true;
+            }
+            else
+            {
+                //we've either found a function definition, or a function declaration
+                if (allCodeLines[currentLine][location] == '{')
+                {
+                    if (debugPrint) std::cout << "Found a function definition block" << std::endl;
+                    this->blockType = 6;
+                    this->beginningCharacter = '{';
+                    this->endingCharacter = '}';
+                    return;
+                }
+                else if (allCodeLines[currentLine][location] == ';')
+                {
+                    if (debugPrint) std::cout << "Found a function declaration block" << std::endl;
+                    this->blockType = 3;
+                    this->beginningCharacter = ';';
+                    this->endingCharacter = ' ';
+                    return;
+                }
+            }
+        }
+    }
+    else if (contains(objects, firstWord))
+    {
+        if (debugPrint) std::cout << "Found a class/struct/enum definition block" << std::endl;
+        this->blockType = 6;
+        this->beginningCharacter = '{';
+        this->endingCharacter = '}';
+        return;
+    }
+    else if (contains(scopes, firstWord))
+    {
+        //For my purposes I don't need to actually make this a block, treat it as a standard line
+        //but have it end with the \n character instead of the ; character
+        if (debugPrint) std::cout << "Found a scope block" << std::endl;
+        this->blockType = 3;
+        this->beginningCharacter = '\n';
+        this->endingCharacter = ' ';
+        return;
+    }
+    else if (contains(keywords, firstWord))
+    {
+        //we've found a word like return
+        if (debugPrint) std::cout << "Found a keyword block of code" << std::endl;
+        this->blockType = 3;
+        this->beginningCharacter = ';';
+        this->endingCharacter = ' ';
+        return;
+    }
+
+    //If we can't determine what the block is then it must just be a standard block
+    //i.e. x += 10; where x is an already predefined variable. It's also possible
+    //that we've found a plain semi-colon. For debugging sake I'll treat that 
+    //as separate for now
+    if (debugPrint) {
+        if (firstWord == ";") {
+            std::cout << "Found a standalone semi-colon" << std::endl;
+        }
+        else std::cout << "Found a standard block of code" << std::endl;
+    }
+
+    this->blockType = 3;
+    this->beginningCharacter = ';';
+    this->endingCharacter = ' ';
+    return;
 }

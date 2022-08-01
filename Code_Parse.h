@@ -80,6 +80,9 @@ std::string getFirstWord(std::string line, int start = 0)
         else firstWord += line[i];
     }
 
+    //see if the last character of the found word is a semi-colon, if so remove it
+    if (firstWord[firstWord.size() - 1] == ';') firstWord.pop_back();
+
     //before returning the word, see if there are any namespaces before the name and truncate them
     int startPoint = 0;
     for (int j = firstWord.length() - 1; j--; j >= 0)
@@ -128,6 +131,23 @@ void findQuoteEnd(std::vector<std::string>& allCodeLines, int& currentLine, int&
             lastCharacterEscape = false;
             placeInLine++;
         }
+    }
+}
+
+void findFirstNonQuoteCharacter(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine, char c)
+{
+    //finds the first instance of the given character that isn't inside of a quote string
+    while (true)
+    {
+        if (allCodeLines[currentLine][placeInLine] == c) break;
+        else if (allCodeLines[currentLine][placeInLine] == '\'' || allCodeLines[currentLine][placeInLine] == '\"') findQuoteEnd(allCodeLines, currentLine, placeInLine);
+
+        if (placeInLine >= allCodeLines[currentLine].size())
+        {
+            currentLine++;
+            placeInLine = 0;
+        }
+        else placeInLine++;
     }
 }
 
@@ -183,6 +203,29 @@ void findClosingParenthese(std::vector<std::string>& allCodeLines, int &currentL
     }
 }
 
+void findEndOfMultiLineQuote(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine)
+{
+    //a multi line quote depends on two consecutive characters to terminate instead of just one. This is
+    //out of the ordinary so it get's its own dedicated function to do this. We pass the location of the 
+    //start of the quote to this function, so we need to skip the first two characters
+
+    placeInLine += 2;
+    while (true)
+    {
+        if (placeInLine >= allCodeLines[currentLine].size())
+        {
+            currentLine++;
+            placeInLine = 0;
+        }
+
+        if (allCodeLines[currentLine][placeInLine] == '*')
+        {
+            if (allCodeLines[currentLine][++placeInLine] == '/') return;
+        }
+        else placeInLine++;
+    }
+}
+
 bool contains(std::vector<std::string>& vec, std::string item)
 {
     //checks to see if the given item is contained in the given vector
@@ -200,7 +243,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
     while (currentCharacter == ' ' || currentCharacter == '\t' || currentCharacter == '\n' || currentCharacter == '\r')
     {
         placeInLine++;
-        if (placeInLine == allCodeLines[currentLine].size())
+        if (placeInLine >= allCodeLines[currentLine].size())
         {
             //this is a line with only white space on it, which for now will just
             //be considered as a preprocessor command
@@ -208,6 +251,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
             this->blockType = 0;
             this->beginningCharacter = '\n';
             this->endingCharacter = ' ';
+            this->beginningCharacterLocation = { currentLine, placeInLine };
             return;
         }
         currentCharacter = allCodeLines[currentLine][placeInLine];
@@ -215,18 +259,18 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
 
     //Check to see if current block type is a comment, whether it's a single or multi-line comment
     //at least two characters are needed to initiate the comment
-    if ((allCodeLines[currentLine].size() - (placeInLine + 1)) >= 2)
+    if (((allCodeLines[currentLine].size() - 1) - placeInLine) >= 2)
     {
         //std::string twoString = std::to_string((allCodeLines[currentLine][placeInLine] + allCodeLines[currentLine][placeInLine + 1]));
         std::string twoString({ allCodeLines[currentLine][placeInLine], allCodeLines[currentLine][placeInLine + 1] });
         if (twoString == "//")
         {
-            //We're dealing with a single line comment. The block extends until we find 
-            //the first line of code that doesn't start with //
+            //We're dealing with a single line comment. The block extends until the end of the current line
             if (debugPrint) std::cout << "Found a single line comment" << std::endl;
             this->blockType = 1;
             this->beginningCharacter = '\n';
             this->endingCharacter = ' ';
+            this->beginningCharacterLocation = { currentLine, allCodeLines[currentLine].size() - 1 };
             return;
         }
         else if (twoString == "/*")
@@ -237,6 +281,8 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
             this->blockType = 2;
             this->beginningCharacter = '*';
             this->endingCharacter = ' ';
+            findEndOfMultiLineQuote(allCodeLines, currentLine, placeInLine);
+            this->beginningCharacterLocation = { currentLine, placeInLine };
             return;
         }
     }
@@ -248,6 +294,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
         this->blockType = 0;
         this->beginningCharacter = '\n';
         this->endingCharacter = ' ';
+        this->beginningCharacterLocation = { currentLine, allCodeLines[currentLine].size() - 1 }; //extends to end of line
         return;
     }
 
@@ -307,6 +354,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
                 this->blockType = 5;
                 this->beginningCharacter = '{';
                 this->endingCharacter = '}';
+                this->beginningCharacterLocation = { scannedLine, location };
                 return;
             }
             else 
@@ -354,6 +402,8 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
                     this->blockType = 3;
                     this->beginningCharacter = ';';
                     this->endingCharacter = ' ';
+                    findFirstNonQuoteCharacter(allCodeLines, currentLine, location, ';');
+                    this->endingCharacterLocation = { currentLine, location };
                     return; //this is considered a standard line of code
                 }
                 else if (allCodeLines[currentLine][location] == '(') functionFound = true;
@@ -367,6 +417,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
                     this->blockType = 6;
                     this->beginningCharacter = '{';
                     this->endingCharacter = '}';
+                    this->beginningCharacterLocation = { currentLine, location };
                     return;
                 }
                 else if (allCodeLines[currentLine][location] == ';')
@@ -375,6 +426,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
                     this->blockType = 3;
                     this->beginningCharacter = ';';
                     this->endingCharacter = ' ';
+                    this->beginningCharacterLocation = { currentLine, location };
                     return;
                 }
             }
@@ -386,6 +438,8 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
         this->blockType = 6;
         this->beginningCharacter = '{';
         this->endingCharacter = '}';
+        findFirstNonQuoteCharacter(allCodeLines, currentLine, location, '{');
+        this->endingCharacterLocation = { currentLine, location };
         return;
     }
     else if (contains(scopes, firstWord))
@@ -396,6 +450,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
         this->blockType = 3;
         this->beginningCharacter = '\n';
         this->endingCharacter = ' ';
+        this->beginningCharacterLocation = { currentLine, location };
         return;
     }
     else if (contains(keywords, firstWord))
@@ -405,6 +460,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
         this->blockType = 3;
         this->beginningCharacter = ';';
         this->endingCharacter = ' ';
+        this->beginningCharacterLocation = { currentLine, location };
         return;
     }
 
@@ -422,6 +478,8 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
     this->blockType = 3;
     this->beginningCharacter = ';';
     this->endingCharacter = ' ';
+    findFirstNonQuoteCharacter(allCodeLines, currentLine, location, ';');
+    this->endingCharacterLocation = { currentLine, location };
     return;
 }
 
@@ -431,6 +489,7 @@ void recursiveCodeBlockCreation(std::vector<CodeBlock*>& blockArray, std::vector
     //what kind of block it is.
     CodeBlock* codeBlock = new CodeBlock();
     codeBlock->determineBlockType(allCodeLines, currentLineNumber, placeInLine);
+    //if (debugPrint) std::cout << allCodeLines[currentLineNumber] << std::endl;
 
     //No matter what kind of code block we're looking at here, it will have something that signifies the end of the beginning
     //of the block. For an example, a function definition will have the form returnType functionName(parameters) { internal code }.
@@ -585,7 +644,7 @@ void recursiveCodeBlockCreation(std::vector<CodeBlock*>& blockArray, std::vector
                             while (placeInLine < allCodeLines[currentLineNumber].size())
                             {
                                 currentCharacter = allCodeLines[currentLineNumber][placeInLine];
-                                if (currentCharacter == ' ' || currentCharacter == '\n' || currentCharacter == '\r' || currentCharacter == '\t')
+                                if (currentCharacter == ' ' || currentCharacter == '\r' || currentCharacter == '\t') //omit the \n character here as we want to keep it
                                 {
                                     if (allCodeLines[currentLineNumber].size() == 1) break; //this is a blank line so we're ok to move on
                                     currentLine += currentCharacter;
