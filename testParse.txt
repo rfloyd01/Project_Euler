@@ -1,11 +1,113 @@
 void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int currentLine, int placeInLine)
-{          
+{
+
+    //Check to see if current block type is a comment, whether it's a single or multi-line comment
+    //at least two characters are needed to initiate the comment
+    if (((allCodeLines[currentLine].size() - 1) - placeInLine) >= 2)
+    {
+        //std::string twoString = std::to_string((allCodeLines[currentLine][placeInLine] + allCodeLines[currentLine][placeInLine + 1]));
+        std::string twoString({ allCodeLines[currentLine][placeInLine], allCodeLines[currentLine][placeInLine + 1] });
+        if (twoString == "//")
+        {
+            //We're dealing with a single line comment. The block extends until the end of the current line
+            if (debugPrint) std::cout << "Found a single line comment" << std::endl;
+            this->blockType = 1;
+            this->beginningCharacter = '\n';
+            this->endingCharacter = ' ';
+            this->beginningCharacterLocation = { currentLine, allCodeLines[currentLine].size() - 1 };
+            return;
+        }
+        else if (twoString == "/*")
+        {
+            //We're dealing with a multi line comment (although it's possible to have this all
+            //on a single line). The block extends until we find the "*/" character combo
+            if (debugPrint) std::cout << "Found a multi line comment" << std::endl;
+            this->blockType = 2;
+            this->beginningCharacter = '*';
+            this->endingCharacter = ' ';
+            findEndOfMultiLineQuote(allCodeLines, currentLine, placeInLine);
+            this->beginningCharacterLocation = { currentLine, placeInLine };
+            return;
+        }
+    }
+
+    //Check to see if the block is a pre-processor command
+    if (allCodeLines[currentLine][placeInLine] == '#')
+    {
+        if (debugPrint) std::cout << "Found a pre-processor command" << std::endl;
+        this->blockType = 0;
+        this->beginningCharacter = '\n';
+        this->endingCharacter = ' ';
+        this->beginningCharacterLocation = { currentLine, allCodeLines[currentLine].size() - 1 }; //extends to end of line
+        return;
+    }
+    else if (allCodeLines[currentLine][placeInLine] == ';')
+    {
+        if (debugPrint) std::cout << "Found a standalone semi-colon" << std::endl;
+        this->blockType = 3;
+        this->beginningCharacter = ';';
+        this->endingCharacter = ' ';
+        this->beginningCharacterLocation = { currentLine, placeInLine }; //extends to end of line
+        return;
+    }
+
+    std::string firstWord = getFirstWord(allCodeLines[currentLine], placeInLine);
+    int location = firstWord.size() - 1 + placeInLine; //The location of the charcter at end of the first word
+
+    //Check to see if the block is a loop, if statement, or something similar
+    if (contains(blockwords, firstWord)) {
+        //**note: an else if block can't be separated between lines, otherwise the else and 
+        //the if will be recognized as different. i.e. else if (something) is ok but
+        //else
+        //   if (something), isn't. It is possible though, to have the part in parentheses 
+        //start on another line, i.e.
+        //if
+        //   (something) would be allowed. Need to make sure that this is taken into account while
+        //iterating through the code below
+
+        //need to find out if this is a block with curly braces or without curly braces.
+        //If firstWord is "else", we need to check and see if the word "if" comes after it.
+        //I so, or, if the word isn't "else" we increment location until we find the appropriate ')'
+        //character.
+        if (firstWord == "else")
+        {
+            if (allCodeLines[currentLine][location + 1] != '\n' && getFirstWord(allCodeLines[currentLine], location + 2) == "if")
+            {
+                findClosingParenthese(allCodeLines, currentLine, placeInLine);
+                location = placeInLine;
+            }
+        }
+        else
+        {
+            findClosingParenthese(allCodeLines, currentLine, placeInLine);
+            location = placeInLine;
+        }
+
+        //At this point, the location variable will be on a ')' character, or 
+        //an 'e' character. In both cases, if the next non-whitespace character is a
+        //'{' character then we have a curly brace block, if it's anything else then
+        //we have a non-curlybrace block.
+        char currentCharacter;
+        int scannedLine = currentLine;
+        while (true)
+        {
+            location++;
+            if (location == allCodeLines[scannedLine].size())
+            {
+                location = 0;
+                scannedLine++;
+            }
+            
+            currentCharacter = allCodeLines[scannedLine][location];
+            if (currentCharacter == ' ' || currentCharacter == '\t' || currentCharacter == '\n' || currentCharacter == '\r') continue;
+            
             if (currentCharacter == '{')
             {
                 if (debugPrint) std::cout << "Found a curly brace block" << std::endl;
                 this->blockType = 5;
                 this->beginningCharacter = '{';
                 this->endingCharacter = '}';
+                this->beginningCharacterLocation = { scannedLine, location };
                 return;
             }
             else 
@@ -53,6 +155,8 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
                     this->blockType = 3;
                     this->beginningCharacter = ';';
                     this->endingCharacter = ' ';
+                    findFirstNonQuoteCharacter(allCodeLines, currentLine, location, ';');
+                    this->beginningCharacterLocation = { currentLine, location };
                     return; //this is considered a standard line of code
                 }
                 else if (allCodeLines[currentLine][location] == '(') functionFound = true;
@@ -66,6 +170,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
                     this->blockType = 6;
                     this->beginningCharacter = '{';
                     this->endingCharacter = '}';
+                    this->beginningCharacterLocation = { currentLine, location };
                     return;
                 }
                 else if (allCodeLines[currentLine][location] == ';')
@@ -74,6 +179,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
                     this->blockType = 3;
                     this->beginningCharacter = ';';
                     this->endingCharacter = ' ';
+                    this->beginningCharacterLocation = { currentLine, location };
                     return;
                 }
             }
@@ -85,6 +191,8 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
         this->blockType = 6;
         this->beginningCharacter = '{';
         this->endingCharacter = '}';
+        findFirstNonQuoteCharacter(allCodeLines, currentLine, location, '{');
+        this->beginningCharacterLocation = { currentLine, location };
         return;
     }
     else if (contains(scopes, firstWord))
@@ -95,6 +203,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
         this->blockType = 3;
         this->beginningCharacter = '\n';
         this->endingCharacter = ' ';
+        this->beginningCharacterLocation = { currentLine, location };
         return;
     }
     else if (contains(keywords, firstWord))
@@ -104,6 +213,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
         this->blockType = 3;
         this->beginningCharacter = ';';
         this->endingCharacter = ' ';
+        this->beginningCharacterLocation = { currentLine, location };
         return;
     }
 
@@ -111,15 +221,12 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
     //i.e. x += 10; where x is an already predefined variable. It's also possible
     //that we've found a plain semi-colon. For debugging sake I'll treat that 
     //as separate for now
-    if (debugPrint) {
-        if (firstWord == ";") {
-            std::cout << "Found a standalone semi-colon" << std::endl;
-        }
-        else std::cout << "Found a standard block of code" << std::endl;
-    }
+    if (debugPrint) std::cout << "Found a standard block of code" << std::endl;
 
     this->blockType = 3;
     this->beginningCharacter = ';';
     this->endingCharacter = ' ';
+    findFirstNonQuoteCharacter(allCodeLines, currentLine, location, ';');
+    this->beginningCharacterLocation = { currentLine, location };
     return;
 }
