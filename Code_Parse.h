@@ -51,7 +51,7 @@ public:
     //void determineBlockType(std::vector<std::string>& allCodeLines, int currentLine, int placeInLine);
     void advanceToNextCharacter(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine);
     void advanceToEndOfComment(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine, char startChar);
-
+    void findClosingParenthese(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine);
     //std::pair<int, int> endingCharacterLocation; //keeps track of location the terminates the 'beginning' of the block
 
     /*char getBeginningEndCharacter()
@@ -369,56 +369,34 @@ void findFirstNonQuoteCharacter(std::vector<std::string>& allCodeLines, int& cur
     }
 }
 
-void findClosingParenthese(std::vector<std::string>& allCodeLines, int &currentLine, int &placeInLine)
+void CodeBlock::findClosingParenthese(std::vector<std::string>& allCodeLines, int &currentLine, int &placeInLine)
 {
-    //this function is used to find the closing parentheses of a for, if, or else block. This function
-    //is necessary because there can be multiple parentheses to sort through, for example:
-    //for (int i = 0; i < vector.size(); i++) {..logic..}. If we were to just search this line for the
-    //first ')' character it wouldn't actually be the character that closes the for statement.
+    //this function is used to iterate to the appropriate closing parentheses of our current
+    //block. This function is needed because there can be multiple parentheses nested inside of
+    //each other like in loops [for (int i = 0; i < vec.size(); i++)] or nested functions 
+    //[choose(floor(5/2), 2)]
 
-    //Scan until we find the first parentheses
-    while (true)
+    //Scan until we find the first parentheses (any white space should be automatically added to current block)
+    this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+    this->blockLine += '(';
+    placeInLine++;
+
+    int parenthesesLevel = 1;
+    //we're now located just after the opening '(' character. We keep scanning and every time we find a '('
+    //character we inncrease the value of the parentheses level variable by one and every ')' character will
+    //decrease the level by 1. We keep scanning until the value of the variable drops to 0. Any parentheses
+    //that are part of strings will be automatically ignored by the advanceToNextCharacter() method.
+    while (parenthesesLevel)
     {
-        if (allCodeLines[currentLine][placeInLine] == '(') break;
-
-        if (placeInLine >= allCodeLines[currentLine].size())
-        {
-            currentLine++;
-            placeInLine = 0;
-        }
-        else placeInLine++;
+        if (allCodeLines[currentLine][placeInLine] == '(') parenthesesLevel++;
+        else if (allCodeLines[currentLine][placeInLine] == ')') parenthesesLevel--;
+        
+        //Add whatever character was found and then keep advancing
+        this->blockLine += allCodeLines[currentLine][placeInLine];
+        this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
     }
 
-    int parenthesesLevel = 0;
-
-    //scan again until we find more parentheses, if we find a '(' character the parentheses level
-    //goes up by 1 and if we find a ')' character, we check to see if the current level is at 1, if
-    //so we're done, otherwise the level goes down one.
-    while (true)
-    {
-        if (allCodeLines[currentLine][placeInLine] == '(')
-        {
-            parenthesesLevel++;
-        }
-        else if (allCodeLines[currentLine][placeInLine] == ')')
-        {
-            if (parenthesesLevel > 1) parenthesesLevel--;
-            else return;
-        }
-        else if (allCodeLines[currentLine][placeInLine] == '\'' || allCodeLines[currentLine][placeInLine] == '\"')
-        {
-            //There's a quotation, skip to the end of the quote in case it has any parentheses in it
-            //which shouldn't be counted.
-            findQuoteEnd(allCodeLines, currentLine, placeInLine);
-        }
-
-        if (placeInLine >= allCodeLines[currentLine].size())
-        {
-            currentLine++;
-            placeInLine = 0;
-        }
-        else placeInLine++;
-    }
+    return; //we return without advancing again, so the placeInLine index will still be on the closing parentheses
 }
 
 void findEndOfMultiLineQuote(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine)
@@ -511,7 +489,8 @@ CodeBlock::CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, i
     //Our block type couldn't be determined from the first character, instead it will be 
     //determined by the first word.
     std::string firstWord = getFirstWord(allCodeLines[currentLine], placeInLine);
-    int location = firstWord.size() - 1 + placeInLine; //The location of the charcter at end of the first word
+    this->blockLine += firstWord;
+    placeInLine += firstWord.size(); //advance to the position just after the end of the first word
 
     //Check to see if the block is a loop, if statement, or something similar
     if (contains(blockwords, firstWord)) {
@@ -520,26 +499,33 @@ CodeBlock::CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, i
         //else
         //   if (something), isn't. It is possible though, to have the part in parentheses 
         //start on another line, i.e.
-        //if
+        //else if
         //   (something) would be allowed. Need to make sure that this is taken into account while
         //iterating through the code below
 
-        //need to find out if this is a block with curly braces or without curly braces.
-        //If firstWord is "else", we need to check and see if the word "if" comes after it.
-        //I so, or, if the word isn't "else" we increment location until we find the appropriate ')'
-        //character.
+        //First we need to figure out if this block will have a set of '()', i.e.
+        //like in for (int i = ...), while(), if (). The only way that parentheses won't
+        //be included is if the word is else, however, if the phrase is 'else if' then it
+        //will have parentheses. We need a separate function to scan through the parentheses
+        //as there could be other paretheses embedded inside (i.e. for (int i = 0; i < vector.size(); i++))
+        //so we need to make sure we find the right closing parentheses character
+        
         if (firstWord == "else")
         {
-            if (allCodeLines[currentLine][location + 1] != '\n' && getFirstWord(allCodeLines[currentLine], location + 2) == "if")
+            //check to see if the word if comes right after the else
+            if (allCodeLines[currentLine][placeInLine] != '\n' && getFirstWord(allCodeLines[currentLine], placeInLine + 1) == "if")
             {
+                //"if" was the second word, which means there are parentheses
+                this->blockLine += " if";
+                placeInLine += 3; //we're currently on the space between else and if, advance to first char after "if"
                 findClosingParenthese(allCodeLines, currentLine, placeInLine);
-                location = placeInLine;
+                //location = placeInLine;
             }
         }
         else
         {
             findClosingParenthese(allCodeLines, currentLine, placeInLine);
-            location = placeInLine;
+            //location = placeInLine;
         }
 
         //At this point, the location variable will be on a ')' character, or 
