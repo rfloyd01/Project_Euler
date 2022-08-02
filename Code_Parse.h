@@ -605,11 +605,11 @@ CodeBlock::CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, i
             {
                 //remove everything after the last character in this->blockLine, and then call the
                 //addClosingWhiteSpace() method to add the space back properly
+                placeInLine = lastNonSpaceCharacterLocation;
                 this->blockLine.erase(this->blockLine.begin() + lastNonSpaceCharacterLocation + 1, this->blockLine.end());
                 this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
             }
             
-            placeInLine = lastNonSpaceCharacterLocation;
             this->blockType = 6;
             return;
         }
