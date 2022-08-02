@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Header_Files/pch.h>
 #include <vector>
 #include <iostream>
 #include <string>
@@ -11,46 +12,56 @@ std::vector<std::string> types = { "short", "int", "long", "float", "double", "v
 std::vector<std::string> classes = { "vector", "pair", "string", "ifstream"};
 std::vector<std::string> objects = { "class", "struct", "enum" };
 std::vector<std::string> scopes = { "private:", "public:", "protected:" };
+std::vector<char> whiteSpaceCharacters = { ' ', '\t' };
+std::vector<char> newLineCharacters = { '\n', '\r' };
 
 bool debugPrint = false;
 
 /*
 Code Block types are:
-0 - Preprocessor command
-1 - Single line comment
-2 - Multi-line comment
+("blocks without sub-blocks")
+0 - Blank line
+1 - Preprocessor command
+2 - Comment
 3 - Standard code line
-3a. Function declaration block
-4 - Loop/If/Block without curly braces
-5 - Loop/If/Block with curly braces
-6 - Function/Class/Struct definition
+4 - Function declaration block
+5 - Quotation/String literal
+
+("blocks with sub-blocks")
+6 - Loop/If/Block without curly braces
+7 - Loop/If/Block with curly braces
+8 - Function/Class/Struct definition
 */
 
 class CodeBlock
 {
 public:
     //CodeBlock(int blockType) { this->blockType = blockType; }
+    CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine);
 
     std::vector<std::string> begginingLines;
     std::vector<std::string> endingLines;
     std::vector<CodeBlock*> subBlocks;
     int blockType;
-    char beginningCharacter, endingCharacter;
+    std::string blockLine = "";
+    //char beginningCharacter, endingCharacter;
 
-    void addBeginningLine(std::string line) { this->begginingLines.push_back(line); }
-    void addEndingLine(std::string line) { this->endingLines.push_back(line); }
-    void determineBlockType(std::vector<std::string>& allCodeLines, int currentLine, int placeInLine);
+    //void addBeginningLine(std::string line) { this->begginingLines.push_back(line); }
+    //void addEndingLine(std::string line) { this->endingLines.push_back(line); }
+    //void determineBlockType(std::vector<std::string>& allCodeLines, int currentLine, int placeInLine);
+    void advanceToNextCharacter(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine);
+    void advanceToEndOfComment(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine, char startChar);
 
-    std::pair<int, int> beginningCharacterLocation, endingCharacterLocation; //line and character position
+    //std::pair<int, int> endingCharacterLocation; //keeps track of location the terminates the 'beginning' of the block
 
-    char getBeginningEndCharacter()
+    /*char getBeginningEndCharacter()
     {
         return this->beginningCharacter;
     }
     char getEndingEndCharacter()
     {
         return this->endingCharacter;
-    }
+    }*/
 
     void printBlock()
     {
@@ -59,6 +70,210 @@ public:
         for (int i = 0; i < this->endingLines.size(); i++) std::cout << this->endingLines[i];
     }
 };
+
+void CodeBlock::advanceToNextCharacter(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine)
+{
+    //This function gets used a lot. It iterates the currentLine and placeInLine variables to the next
+    //non-white space character. If a quote is encountered then the function scans through the entire quote and adds
+    //it as a separate line to the current block.
+
+    char currentCharacter;
+    bool inQuote = false;
+    bool escapeCharacter = false;
+
+    while (true)
+    {
+        placeInLine++;
+        if (placeInLine >= allCodeLines[currentLine].size())
+        {
+            currentLine++;
+            placeInLine = 0;
+        }
+        if (currentLine >= allCodeLines.size())
+        {
+            //we've reached the end of the code, whatever we're currently looking at
+            //should be added to the
+            return;
+        }
+        currentCharacter = allCodeLines[currentLine][placeInLine];
+
+        //Regardless of whether we're in a comment, a quote, or just normal code, white space gets added just the same
+        if (std::count(whiteSpaceCharacters.begin(), whiteSpaceCharacters.end(), currentCharacter))
+        {
+            this->blockLine += currentCharacter; //white space is added
+            continue;
+        }
+        else if (std::count(newLineCharacters.begin(), newLineCharacters.end(), currentCharacter))
+        {
+            //If we encounter a new line character then we add the current block line to the array of beginning lines
+            //and then reset blockLine to handle characters from the next line of code
+            this->begginingLines.push_back(this->blockLine + currentCharacter);
+            this->blockLine = "";
+            continue;
+        }
+
+        //we aren't inside of a comment so we proceed normally
+        if (!inQuote)
+        {
+            if (currentCharacter == '\'' || currentCharacter == '\"')
+            {
+                //Since we aren't currently inside of a comment block, we've found the start of a quotation. Add
+                //The current block line to the beggining lines array and then start a new one for the quote.
+                this->begginingLines.push_back(this->blockLine);
+                this->blockLine = std::to_string(currentCharacter);
+                inQuote = true;
+            }
+            else
+            {
+                //Any other character encountered will break us out of this function. We don't add the character
+                //to the current block line as we're not sure of what the character means yet.
+                return;
+            }
+        }
+        else
+        {
+            //The only thing that will break us out is a non-escaped version of the character that started the quote.
+            //The character that started the quote will be at the very beginning of the current blockLine string. We use
+            //the escapeCharacter boolean to keep track of whether or not the previous character was a '\' as it helps
+            //for keeping track across different lines
+
+            this->blockLine += currentCharacter; //the current character get's added regardless of what it is
+            if (currentCharacter == '\\')
+            {
+                //We use XOR on the boolean so that if we have two escape characters in a row it will un-escape
+                //the third character (i.e. '\'' is an escaped apostraphe but '\\' is en escaped backslash)
+                escapeCharacter ^= 1;
+                continue;
+            }
+            else if (currentCharacter == this->blockLine[0])
+            {
+                if (!escapeCharacter)
+                {
+                    //There's no escape character before this so we've reached the end of the quote.
+                    //Add the quote to the current code block as a separate entity
+                    this->begginingLines.push_back(this->blockLine);
+                    this->blockLine = "";
+                    inQuote = false;
+                    continue;
+                }
+            }
+            escapeCharacter = false; //didn't encounter a '\' so this variable becomes false
+        }
+    }
+}
+
+void CodeBlock::advanceToEndOfComment(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine, char startChar)
+{
+    //If we're find comment block, then this function will keep advancing until the end of the comment is reached.
+    //When in a single line comment, we can add whole lines as there's no way to break out of one other than
+    //by going to a new line. If we're in a multi-line comment, ironically, it's possible for the comment to
+    //end on the same line so we must scan one character at a time.
+
+    char currentCharacter;
+    bool nonSpaceEncountered = true;
+
+    while (true)
+    {
+        placeInLine++;
+        if (placeInLine >= allCodeLines[currentLine].size())
+        {
+            currentLine++;
+            placeInLine = 0;
+        }
+        if (currentLine >= allCodeLines.size()) return; //we've reached the end of the code
+        currentCharacter = allCodeLines[currentLine][placeInLine];
+
+        //First, check to see if we're dealing with a white space or newline character
+        if (std::count(whiteSpaceCharacters.begin(), whiteSpaceCharacters.end(), currentCharacter))
+        {
+            this->blockLine += currentCharacter; //white space is added
+            continue;
+        }
+        else if (std::count(newLineCharacters.begin(), newLineCharacters.end(), currentCharacter))
+        {
+            //If we encounter a new line character then we add the current block line to the array of beginning lines
+            //and then reset blockLine to handle characters from the next line of code
+            this->begginingLines.push_back(this->blockLine + currentCharacter);
+            this->blockLine = "";
+            nonSpaceEncountered = false; //this needs to reset for each new line (used for single line comments)
+            continue;
+        }
+
+        if (startChar == '/')
+        {
+            //--Single line comment--
+            //White space is handled at the beginning of this function so we're going to be looking at an actual
+            //character here. We need to figure out if we're at the very beginning of the line or not. If we are
+            //and the current character is anything but a '/' symbol then we're out of the current comment.
+            if (!nonSpaceEncountered)
+            {
+                if (currentCharacter == '/')
+                {
+                    //we've encountered the start of another comment, see if it's another single line comment
+                    //or if a multi-line comment has been started.
+                    if (allCodeLines[currentLine][placeInLine + 1] == '*')
+                    {
+                        //There's a multi-line comment after a single line comment. These should be considered 
+                        //as separate blocks. Any leading spaces gathered should belong to the next block, so 
+                        //we reset our place in line to 0
+                        placeInLine = 0;
+                        return;
+                    }
+
+                    //It's another single line comment. This line will be added to the existing block
+                    nonSpaceEncountered = true;
+                }
+                else
+                {
+                    //We didn't start another single line comment block so the current block is done. Drop the final
+                    //line of this current block (as it contains white space needed for the next block) and reset the 
+                    //line position to the start of the line so appropriate amount of white space can be added to 
+                    //the front of the next block
+                    this->begginingLines.pop_back();
+                    placeInLine = 0;
+                    return;
+                }
+            }
+
+            this->blockLine += currentCharacter; //if we didn't return already in the above if-statement then it's safe to add character
+        }
+        else
+        {
+            //--Multi-line Comment--
+            //In a multi-line comment, the only thing that can break us out are the consecutive "*/" characters
+            if (currentCharacter == '*')
+            {
+                if (allCodeLines[currentLine][placeInLine + 1] == '/')
+                {
+                    //the comment is complete, add the final two characters and then advance to the start of the next block.
+                    //Advance via the advanceToNextCharacter() method so and trailing white space can be added to this comment's
+                    //block
+                    this->blockLine += "*/";
+                    placeInLine++;
+                    int lineNumber = currentLine;
+                    advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+                    if (currentLine == lineNumber)
+                    {
+                        //the next block starts on the same line so we need to manuall add our current
+                        //blockLine
+                        this->begginingLines.push_back(blockLine);
+                    }
+                    else
+                    {
+                        //if we've gone to a new line, reset the placeInLine variable so
+                        //white space can be added to the front of the next block
+                        placeInLine = 0;
+                    }
+                    return;
+                }
+            }
+
+            //If we make it here, either we encountered a '*' character that didn't end the quote, or we encountered
+            //any other character. Either way, add the character and then continue
+            this->blockLine += currentCharacter;
+        }
+    }
+}
 
 std::string getFirstWord(std::string line, int start = 0)
 {
@@ -238,78 +453,63 @@ bool contains(std::vector<std::string>& vec, std::string item)
     return false;
 }
 
-void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int currentLine, int placeInLine)
+CodeBlock::CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine)
 {
-    //If we're starting on a new line that's indented we need to skip ahead until we get to a non-white space
-    //character
+    //The constructor for a new block of code. As inputs we give the vector containing all of our lines
+    //of code, as well as a current location in this vector
     char currentCharacter = allCodeLines[currentLine][placeInLine];
-    while (currentCharacter == ' ' || currentCharacter == '\t' || currentCharacter == '\n' || currentCharacter == '\r')
+
+    //If the current block of code starts on a white space, advance to the next non-white space
+    if (currentCharacter == ' ' || currentCharacter == '\t')
     {
-        if (placeInLine >= (allCodeLines[currentLine].size() - 1))
-        {
-            //this is a line with only white space on it, which for now will just
-            //be considered as a preprocessor command
-            if (debugPrint) std::cout << "Found a blank line" << std::endl;
-            this->blockType = 0;
-            this->beginningCharacter = '\n';
-            this->endingCharacter = ' ';
-            this->beginningCharacterLocation = { currentLine, placeInLine };
-            return;
-        }
-        placeInLine++;
+        advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
         currentCharacter = allCodeLines[currentLine][placeInLine];
     }
 
-    //Check to see if current block type is a comment, whether it's a single or multi-line comment
-    //at least two characters are needed to initiate the comment
-    if (((allCodeLines[currentLine].size() - 1) - placeInLine) >= 2)
+    //First we check to see if we can figure out the current block type by looking at
+    //only the first character
+    if (currentCharacter == '#')
     {
-        //std::string twoString = std::to_string((allCodeLines[currentLine][placeInLine] + allCodeLines[currentLine][placeInLine + 1]));
-        std::string twoString({ allCodeLines[currentLine][placeInLine], allCodeLines[currentLine][placeInLine + 1] });
-        if (twoString == "//")
-        {
-            //We're dealing with a single line comment. The block extends until the end of the current line
-            if (debugPrint) std::cout << "Found a single line comment" << std::endl;
-            this->blockType = 1;
-            this->beginningCharacter = '\n';
-            this->endingCharacter = ' ';
-            this->beginningCharacterLocation = { currentLine, allCodeLines[currentLine].size() - 1 };
-            return;
-        }
-        else if (twoString == "/*")
-        {
-            //We're dealing with a multi line comment (although it's possible to have this all
-            //on a single line). The block extends until we find the "*/" character combo
-            if (debugPrint) std::cout << "Found a multi line comment" << std::endl;
-            this->blockType = 2;
-            this->beginningCharacter = '*';
-            this->endingCharacter = ' ';
-            findEndOfMultiLineQuote(allCodeLines, currentLine, placeInLine);
-            this->beginningCharacterLocation = { currentLine, placeInLine };
-            return;
-        }
-    }
-
-    //Check to see if the block is a pre-processor command
-    if (allCodeLines[currentLine][placeInLine] == '#')
-    {
+        //This is a pre-processor command, add the whole line as our block
         if (debugPrint) std::cout << "Found a pre-processor command" << std::endl;
         this->blockType = 0;
-        this->beginningCharacter = '\n';
-        this->endingCharacter = ' ';
-        this->beginningCharacterLocation = { currentLine, allCodeLines[currentLine].size() - 1 }; //extends to end of line
+        this->begginingLines.push_back(allCodeLines[currentLine]);
+        currentLine++;
+        placeInLine = 0;
         return;
     }
-    else if (allCodeLines[currentLine][placeInLine] == ';')
+    else if (currentCharacter == '/')
     {
-        if (debugPrint) std::cout << "Found a standalone semi-colon" << std::endl;
-        this->blockType = 3;
-        this->beginningCharacter = ';';
-        this->endingCharacter = ' ';
-        this->beginningCharacterLocation = { currentLine, placeInLine }; //extends to end of line
+        //We're looking at a comment, add the first two characters, advancing our place in line as well
+        this->blockLine += allCodeLines[currentLine][placeInLine++];
+        this->blockLine += allCodeLines[currentLine][placeInLine];
+        advanceToEndOfComment(allCodeLines, currentLine, placeInLine, allCodeLines[currentLine][placeInLine]); //advance to the end of the comment
+        
+        if (debugPrint) std::cout << "Found a comment block" << std::endl;
+        this->blockType = 1;
+
+        return;
+    }
+    else if (currentCharacter == ';')
+    {
+        //We've encountered a rogue semi-colon. Technically, a single semi-colon could be
+        //it's own block (i.e. int x = 3;;;;;;; would be legal)
+        this->blockLine += currentCharacter;
+        int lineLocation = currentLine;
+        advanceToNextCharacter(allCodeLines, currentLine, placeInLine); //add any trailing whitespace
+
+        if (lineLocation != currentLine)
+        {
+            //if the next viable character starts on a different line, then we need to reset the
+            //placeInLine variable so that any leading whitespace can be captured in the next block
+            placeInLine = 0;
+        }
+        this->blockType = 2;
         return;
     }
 
+    //Our block type couldn't be determined from the first character, instead it will be 
+    //determined by the first word.
     std::string firstWord = getFirstWord(allCodeLines[currentLine], placeInLine);
     int location = firstWord.size() - 1 + placeInLine; //The location of the charcter at end of the first word
 
@@ -363,7 +563,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
             if (currentCharacter == '{')
             {
                 if (debugPrint) std::cout << "Found a curly brace block" << std::endl;
-                this->blockType = 5;
+                this->blockType = 7;
                 this->beginningCharacter = '{';
                 this->endingCharacter = '}';
                 this->beginningCharacterLocation = { scannedLine, location };
@@ -405,99 +605,99 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
             }
         }
     }
-    else if (contains(types, firstWord) || contains(classes, firstWord))
-    {
-        //If the first word of the line is a class or built-in type it means one of two things.
-        //Either we're about to define a function, i.e. void func() {}, or we're about to define
-        //some variables, i.e. int x = 5, y = 6; It will depend on whether we first find an '=',
-        //a ';', or a '(' character. If we encounter an '=' of ';' first then the line is for defining variables.
+    //else if (contains(types, firstWord) || contains(classes, firstWord))
+    //{
+    //    //If the first word of the line is a class or built-in type it means one of two things.
+    //    //Either we're about to define a function, i.e. void func() {}, or we're about to define
+    //    //some variables, i.e. int x = 5, y = 6; It will depend on whether we first find an '=',
+    //    //a ';', or a '(' character. If we encounter an '=' of ';' first then the line is for defining variables.
 
-        bool functionFound = false;
-        //iterate until we hit one of these characters
-        while (true)
-        {
-            location++;
-            if (location == allCodeLines[currentLine].size())
-            {
-                location = 0;
-                currentLine++;
-            }
+    //    bool functionFound = false;
+    //    //iterate until we hit one of these characters
+    //    while (true)
+    //    {
+    //        location++;
+    //        if (location == allCodeLines[currentLine].size())
+    //        {
+    //            location = 0;
+    //            currentLine++;
+    //        }
 
-            if (!functionFound)
-            {
-                if (allCodeLines[currentLine][location] == '=' || allCodeLines[currentLine][location] == ';')
-                {
-                    if (debugPrint) std::cout << "Found a variable definition block" << std::endl;
-                    this->blockType = 3;
-                    this->beginningCharacter = ';';
-                    this->endingCharacter = ' ';
-                    findFirstNonQuoteCharacter(allCodeLines, currentLine, location, ';');
-                    this->beginningCharacterLocation = { currentLine, location };
-                    return; //this is considered a standard line of code
-                }
-                else if (allCodeLines[currentLine][location] == '(')
-                {
-                    //we've either found a function definition, or a function declaration, jump forwards
-                    //to the next ')' character
-                    functionFound = true;
-                    findFirstNonQuoteCharacter(allCodeLines, currentLine, location, ')');
-                }
-            }
-            else
-            {
-                if (allCodeLines[currentLine][location] == '{')
-                {
-                    if (debugPrint) std::cout << "Found a function definition block" << std::endl;
-                    this->blockType = 6;
-                    this->beginningCharacter = '{';
-                    this->endingCharacter = '}';
-                    this->beginningCharacterLocation = { currentLine, location };
-                    return;
-                }
-                
-                else if (allCodeLines[currentLine][location] == ';')
-                {
-                    if (debugPrint) std::cout << "Found a function declaration block" << std::endl;
-                    this->blockType = 3;
-                    this->beginningCharacter = ';';
-                    this->endingCharacter = ' ';
-                    this->beginningCharacterLocation = { currentLine, location };
-                    return;
-                }
-            }
-        }
-    }
-    else if (contains(objects, firstWord))
-    {
-        if (debugPrint) std::cout << "Found a class/struct/enum definition block" << std::endl;
-        this->blockType = 6;
-        this->beginningCharacter = '{';
-        this->endingCharacter = '}';
-        findFirstNonQuoteCharacter(allCodeLines, currentLine, location, '{');
-        this->beginningCharacterLocation = { currentLine, location };
-        return;
-    }
-    else if (contains(scopes, firstWord))
-    {
-        //For my purposes I don't need to actually make this a block, treat it as a standard line
-        //but have it end with the \n character instead of the ; character
-        if (debugPrint) std::cout << "Found a scope block" << std::endl;
-        this->blockType = 3;
-        this->beginningCharacter = '\n';
-        this->endingCharacter = ' ';
-        this->beginningCharacterLocation = { currentLine, location };
-        return;
-    }
-    else if (contains(keywords, firstWord))
-    {
-        //we've found a word like return
-        if (debugPrint) std::cout << "Found a keyword block of code" << std::endl;
-        this->blockType = 3;
-        this->beginningCharacter = ';';
-        this->endingCharacter = ' ';
-        this->beginningCharacterLocation = { currentLine, location };
-        return;
-    }
+    //        if (!functionFound)
+    //        {
+    //            if (allCodeLines[currentLine][location] == '=' || allCodeLines[currentLine][location] == ';')
+    //            {
+    //                if (debugPrint) std::cout << "Found a variable definition block" << std::endl;
+    //                this->blockType = 3;
+    //                this->beginningCharacter = ';';
+    //                this->endingCharacter = ' ';
+    //                findFirstNonQuoteCharacter(allCodeLines, currentLine, location, ';');
+    //                this->beginningCharacterLocation = { currentLine, location };
+    //                return; //this is considered a standard line of code
+    //            }
+    //            else if (allCodeLines[currentLine][location] == '(')
+    //            {
+    //                //we've either found a function definition, or a function declaration, jump forwards
+    //                //to the next ')' character
+    //                functionFound = true;
+    //                findFirstNonQuoteCharacter(allCodeLines, currentLine, location, ')');
+    //            }
+    //        }
+    //        else
+    //        {
+    //            if (allCodeLines[currentLine][location] == '{')
+    //            {
+    //                if (debugPrint) std::cout << "Found a function definition block" << std::endl;
+    //                this->blockType = 6;
+    //                this->beginningCharacter = '{';
+    //                this->endingCharacter = '}';
+    //                this->beginningCharacterLocation = { currentLine, location };
+    //                return;
+    //            }
+    //            
+    //            else if (allCodeLines[currentLine][location] == ';')
+    //            {
+    //                if (debugPrint) std::cout << "Found a function declaration block" << std::endl;
+    //                this->blockType = 3;
+    //                this->beginningCharacter = ';';
+    //                this->endingCharacter = ' ';
+    //                this->beginningCharacterLocation = { currentLine, location };
+    //                return;
+    //            }
+    //        }
+    //    }
+    //}
+    //else if (contains(objects, firstWord))
+    //{
+    //    if (debugPrint) std::cout << "Found a class/struct/enum definition block" << std::endl;
+    //    this->blockType = 6;
+    //    this->beginningCharacter = '{';
+    //    this->endingCharacter = '}';
+    //    findFirstNonQuoteCharacter(allCodeLines, currentLine, location, '{');
+    //    this->beginningCharacterLocation = { currentLine, location };
+    //    return;
+    //}
+    //else if (contains(scopes, firstWord))
+    //{
+    //    //For my purposes I don't need to actually make this a block, treat it as a standard line
+    //    //but have it end with the \n character instead of the ; character
+    //    if (debugPrint) std::cout << "Found a scope block" << std::endl;
+    //    this->blockType = 3;
+    //    this->beginningCharacter = '\n';
+    //    this->endingCharacter = ' ';
+    //    this->beginningCharacterLocation = { currentLine, location };
+    //    return;
+    //}
+    //else if (contains(keywords, firstWord))
+    //{
+    //    //we've found a word like return
+    //    if (debugPrint) std::cout << "Found a keyword block of code" << std::endl;
+    //    this->blockType = 3;
+    //    this->beginningCharacter = ';';
+    //    this->endingCharacter = ' ';
+    //    this->beginningCharacterLocation = { currentLine, location };
+    //    return;
+    //}
 
     //If we can't determine what the block is then it must just be a standard block
     //i.e. x += 10; where x is an already predefined variable. It's also possible
@@ -516,149 +716,40 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
 void recursiveCodeBlockCreation(std::vector<CodeBlock*>& blockArray, std::vector<std::string>& allCodeLines, int& currentLineNumber, int& placeInLine)
 {
     //We're always going to be starting at a new block when this function gets called, the first step is to determine
-    //what kind of block it is.
-    CodeBlock* codeBlock = new CodeBlock();
-    codeBlock->determineBlockType(allCodeLines, currentLineNumber, placeInLine);
-    //if (debugPrint) std::cout << allCodeLines[currentLineNumber] << std::endl;
+    //what kind of block it is. The below CodeBlock
+    CodeBlock* codeBlock = new CodeBlock(allCodeLines, currentLineNumber, placeInLine);
 
-    //No matter what kind of code block we're looking at here, it will have something that signifies the end of the beginning
-    //of the block. For an example, a function definition will have the form returnType functionName(parameters) { internal code }.
-    //The beggining of the block is everything up until the first "{" symbol. It's not possible for another block of code to 
-    //begin before the current code block's beginning has finshed, so we iterate character by character until the beginning is complete.
-    char endingCharacter = codeBlock->getBeginningEndCharacter();
-    char currentCharacter;
-    std::string currentLine = "";
-
-    while (currentLineNumber < allCodeLines.size())
+    if (codeBlock->blockType >= 4)
     {
-        while (placeInLine < allCodeLines[currentLineNumber].size())
+        //This code block will have some sub-blocks and potentially an ending curly brace.
+        //We recursively call this function with the sub-block array of the current code
+        //block at the current location.
+
+        while (allCodeLines[currentLineNumber][placeInLine] != '}')
         {
-            currentCharacter = allCodeLines[currentLineNumber][placeInLine]; //update the current character
-            //if (currentCharacter == endingCharacter)
-            if (currentLineNumber == codeBlock->beginningCharacterLocation.first && placeInLine == codeBlock->beginningCharacterLocation.second)
-            {
-                currentLine += currentCharacter;
-                placeInLine++;
+            //the recursive function will automatically increment the currentLineNumber and
+            //placeInLine variables for us, we just need to reassign currentCharacter each 
+            //time
+            recursiveCodeBlockCreation(codeBlock->subBlocks, allCodeLines, currentLineNumber, placeInLine);
 
-                //We want to include any white space after our ending character, which will include
-                //tabs (/t), spaces (' '), return character (\r) and new line characters (\n)
-                while (placeInLine < allCodeLines[currentLineNumber].size())
-                {
-                    currentCharacter = allCodeLines[currentLineNumber][placeInLine];
-                    if (currentCharacter == ' ' || currentCharacter == '\n' || currentCharacter == '\r' || currentCharacter == '\t')
-                    {
-                        currentLine += currentCharacter;
-                        placeInLine++;
-                    }
-                    else break; //break out of loop after finding a non-white space character
-                }
-
-                //Check to see if we're at the very end of the current line of code as we'll need to go to the next line
-                //the next time we call this function.
-                if (placeInLine >= allCodeLines[currentLineNumber].size())
-                {
-                    currentLineNumber++;
-                    placeInLine = 0;
-                }
-
-                codeBlock->addBeginningLine(currentLine);
-                //currentLine = "";
-
-                //Once we get here, we've completed the beginning of the new code block. Only function/class
-                //definitions or if/for type statements will have sub-blocks
-                if (codeBlock->blockType < 4)
-                {
-                    //This code block will only have a beginning section, since it's done we add it to the
-                    //current blockArray
-                    blockArray.push_back(codeBlock);
-                    return;
-                }
-                else
-                {
-                    //the code block will have some sub-blocks and potentially a separate end section so
-                    //we recursively call this function with the sub-block array of the current code
-                    //block at the current location.
-                    endingCharacter = codeBlock->getEndingEndCharacter();
-                    currentLine = "";
-
-                    while (currentCharacter != endingCharacter)
-                    {
-                        //the recursive function will automatically increment the currentLineNumber and
-                        //placeInLine variables for us, we just need to reassign currentCharacter each 
-                        //time
-                        recursiveCodeBlockCreation(codeBlock->subBlocks, allCodeLines, currentLineNumber, placeInLine);
-
-                        if (currentLine != "") //we have some indentation to add to the front of the sub-block
-                        {
-                            codeBlock->subBlocks.back()->begginingLines.insert(codeBlock->subBlocks.back()->begginingLines.begin(), currentLine);
-                            currentLine = ""; //reset the current line
-                        }
-                        currentCharacter = allCodeLines[currentLineNumber][placeInLine];
-
-                        //a non-curly brace line of code has at most one sub-block, so add the block and move on
-                        if (codeBlock->blockType == 4)
-                        {
-                            blockArray.push_back(codeBlock);
-                            return;
-                        }
-
-                        //if the recursive call above has dumped us on a new line that begins with leading spaces,
-                        //iterate until we hit the first non-white space character
-                        while (placeInLine < allCodeLines[currentLineNumber].size())
-                        {
-                            currentCharacter = allCodeLines[currentLineNumber][placeInLine];
-                            if (currentCharacter == ' ' || currentCharacter == '\r' || currentCharacter == '\t') //omit the \n character here as we want to keep it
-                            {
-                                if (allCodeLines[currentLineNumber].size() == 1) break; //this is a blank line so we're ok to move on
-                                currentLine += currentCharacter;
-                                placeInLine++;
-                            }
-                            else break; //break out of loop after finding a non-white space character
-                        }
-                    }
-                    //we've found our ending character. reset the current line variable, add the ending character
-                    //and then keep looping until we've run our of whitespace
-                    currentLine += endingCharacter;
-                    placeInLine++;
-
-                    while (placeInLine < allCodeLines[currentLineNumber].size())
-                    {
-                        currentCharacter = allCodeLines[currentLineNumber][placeInLine];
-                        if (currentCharacter == ' ' || currentCharacter == '\n' || currentCharacter == '\r' || currentCharacter == '\t')
-                        {
-                            currentLine += currentCharacter;
-                            placeInLine++;
-                        }
-                        else break; //break out of loop after finding a non-white space character
-                    }
-
-                    //if necessary advance to the next line
-                    if (placeInLine == allCodeLines[currentLineNumber].size())
-                    {
-                        currentLineNumber++;
-                        placeInLine = 0;
-                    }
-
-                    codeBlock->addEndingLine(currentLine);
-                    blockArray.push_back(codeBlock);
-                    return;
-                }
-                
-            }
-            else  //add the current character to our string and increment to the next character
-                currentLine += allCodeLines[currentLineNumber][placeInLine++];
+            //BlockType 6 is a block without curly braces, which means it can only have a
+            //single sub-block so there's no need to keep looping
+            if (codeBlock->blockType == 6) break;
         }
-
-        //If we've reached this point it means we're at the end of the current line. We need to add the current line
-        //to either the beginning or end portion of the current code block, reset the current line string and then 
-        //increment to the beginning of the next line.
-        //if (beginning) codeBlock->addBeginningLine(currentLine);
-        //else codeBlock->addEndingLine(currentLine);
-        codeBlock->addBeginningLine(currentLine);
-        currentLine = "";
-        currentLineNumber++;
-        placeInLine = 0;
     }
+    else
+    {
+        //It's possible that code blocks without any sub-blocks could coincide
+        //with the end of the file (like a final comment after all code for example).
+        //Check to make sure that the blockLine variable isn't blank
+        if (codeBlock->blockLine != "") codeBlock->begginingLines.push_back(codeBlock->blockLine);
+    }
+
+    //before adding the current block of code, check to see if we've reached the end of the
+    //file and need to append any last lines
+
+    blockArray.push_back(codeBlock);
+    return;
 }
 
 void codeParse()
@@ -686,9 +777,9 @@ void codeParse()
     while (currentLineNumber < linesOfCode.size())
     {
         recursiveCodeBlockCreation(outermostBlocks, linesOfCode, currentLineNumber, placeInLine);
-        //outermostBlocks.back()->printBlock();
+        outermostBlocks.back()->printBlock();
     }
-
+    std::cout << std::endl << std::endl;
     std::cout << "Parsed " << linesOfCode.size() << " lines of code in " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 << 
         " seconds." << std::endl;
 
