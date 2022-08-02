@@ -1,30 +1,5 @@
-/*
-Code Block types are:
-("blocks without sub-blocks")
-0 - Preprocessor command
-1 - Comment
-2 - Stand-alone semi-colon
-3 - Standard code line
-4 - Function declaration block
-5 - Quotation/String literal
-
-("blocks with sub-blocks")
-6 - Loop/If/Block without curly braces
-7 - Loop/If/Block with curly braces
-8 - Function/Class/Struct definition
-*/
-
-//Here are two
-    //Single line comments
-/* followed by * a single multi-line comment */
-
-
-for (int i = 0; i < 10; i++) /*Here's an embedded comment
-that extends to two lines*/
+int main()
 {
-    //just a simple for loop here
-    i += 10;
+    std::cout << "Hello, world!" << std::endl;
+    return 0;
 }
-
-for (int i = 0; i < vector.size(); i++) /*Non-curly braced for loop
-    with a wak comment*/ std::cout << "The value of i is: " << i << std::endl;

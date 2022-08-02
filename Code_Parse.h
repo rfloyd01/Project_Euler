@@ -284,12 +284,16 @@ void CodeBlock::addClosingWhiteSpace(std::vector<std::string>& allCodeLines, int
     int lineNumberCopy = currentLine;
     this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine, endOfBlock);
 
-    if (lineNumberCopy == currentLine)
+    if ((lineNumberCopy == currentLine) || (currentLine >= allCodeLines.size()))
     {
         //if lineNumberCopy equals the currentLine variable, it means that we're on the same
         //physical line, in which case the advanceToNextCharacter function will NOT have added
-        //the white space to the code block yet.
-        this->begginingLines.push_back(this->blockLine);
+        //the white space to the code block yet. Alternatively, if the current line is greater
+        //than the maximum then we've reached the end of the code and should add the current
+        //block line as well.
+        if (!endOfBlock) this->begginingLines.push_back(this->blockLine);
+        else this->endingLines.push_back(this->blockLine);
+
         blockLine = "";
         return;
     }
@@ -615,68 +619,73 @@ CodeBlock::CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, i
         }
 
     }
-    //else if (contains(types, firstWord) || contains(classes, firstWord))
-    //{
-    //    //If the first word of the line is a class or built-in type it means one of two things.
-    //    //Either we're about to define a function, i.e. void func() {}, or we're about to define
-    //    //some variables, i.e. int x = 5, y = 6; It will depend on whether we first find an '=',
-    //    //a ';', or a '(' character. If we encounter an '=' of ';' first then the line is for defining variables.
+    else if (contains(types, firstWord) || contains(classes, firstWord))
+    {
+        //If the first word of the line is a class or built-in type it means one of two things.
+        //Either we're about to define a function, i.e. void func() {}, or we're about to define
+        //some variables, i.e. int x = 5, y = 6; It will depend on whether we first find an '=',
+        //a ';', or a '(' character. If we encounter an '=' of ';' first then the line is for defining variables.
 
-    //    bool functionFound = false;
-    //    //iterate until we hit one of these characters
-    //    while (true)
-    //    {
-    //        location++;
-    //        if (location == allCodeLines[currentLine].size())
-    //        {
-    //            location = 0;
-    //            currentLine++;
-    //        }
+        bool functionFound = false;
+        while (true)
+        {
+            this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+            currentCharacter = allCodeLines[currentLine][placeInLine];
+            this->blockLine += currentCharacter;
 
-    //        if (!functionFound)
-    //        {
-    //            if (allCodeLines[currentLine][location] == '=' || allCodeLines[currentLine][location] == ';')
-    //            {
-    //                if (debugPrint) std::cout << "Found a variable definition block" << std::endl;
-    //                this->blockType = 3;
-    //                this->beginningCharacter = ';';
-    //                this->endingCharacter = ' ';
-    //                findFirstNonQuoteCharacter(allCodeLines, currentLine, location, ';');
-    //                this->beginningCharacterLocation = { currentLine, location };
-    //                return; //this is considered a standard line of code
-    //            }
-    //            else if (allCodeLines[currentLine][location] == '(')
-    //            {
-    //                //we've either found a function definition, or a function declaration, jump forwards
-    //                //to the next ')' character
-    //                functionFound = true;
-    //                findFirstNonQuoteCharacter(allCodeLines, currentLine, location, ')');
-    //            }
-    //        }
-    //        else
-    //        {
-    //            if (allCodeLines[currentLine][location] == '{')
-    //            {
-    //                if (debugPrint) std::cout << "Found a function definition block" << std::endl;
-    //                this->blockType = 6;
-    //                this->beginningCharacter = '{';
-    //                this->endingCharacter = '}';
-    //                this->beginningCharacterLocation = { currentLine, location };
-    //                return;
-    //            }
-    //            
-    //            else if (allCodeLines[currentLine][location] == ';')
-    //            {
-    //                if (debugPrint) std::cout << "Found a function declaration block" << std::endl;
-    //                this->blockType = 3;
-    //                this->beginningCharacter = ';';
-    //                this->endingCharacter = ' ';
-    //                this->beginningCharacterLocation = { currentLine, location };
-    //                return;
-    //            }
-    //        }
-    //    }
-    //}
+            if (!functionFound)
+            {
+                if (currentCharacter == '=' || currentCharacter == ';')
+                {
+                    if (debugPrint) std::cout << "Found a variable definition block" << std::endl;
+                    //We found a variable definition block. Scan the code until we hit
+                    //the first ';'. If a ';' has already been found then the below loop
+                    //won't execute
+                    while (currentCharacter != ';')
+                    {
+                        this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+                        currentCharacter = allCodeLines[currentLine][placeInLine];
+                        this->blockLine += currentCharacter;
+                    }
+                    
+                    this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
+                    this->blockType = 3;
+
+                    return; //this is considered a standard line of code
+                }
+                else if (currentCharacter == '(')
+                {
+                    //we've either found a function definition, or a function declaration, jump forwards
+                    //to the next ')' character
+                    functionFound = true;
+                    while (currentCharacter != ')')
+                    {
+                        this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+                        currentCharacter = allCodeLines[currentLine][placeInLine];
+                        this->blockLine += currentCharacter;
+                    }
+                }
+            }
+            else
+            {
+                if (currentCharacter == '{')
+                {
+                    if (debugPrint) std::cout << "Found a function definition block" << std::endl;
+                    this->blockType = 8;
+                    this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
+                    return;
+                }
+                
+                else if (currentCharacter == ';')
+                {
+                    if (debugPrint) std::cout << "Found a function declaration block" << std::endl;
+                    this->blockType = 4;
+                    this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
+                    return;
+                }
+            }
+        }
+    }
     //else if (contains(objects, firstWord))
     //{
     //    if (debugPrint) std::cout << "Found a class/struct/enum definition block" << std::endl;
