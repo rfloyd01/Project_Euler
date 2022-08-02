@@ -645,7 +645,8 @@ void recursiveCodeBlockCreation(std::vector<CodeBlock*>& blockArray, std::vector
                 }
                 
             }
-            else currentLine += allCodeLines[currentLineNumber][placeInLine++]; //add the current character to our string and increment to the next character
+            else  //add the current character to our string and increment to the next character
+                currentLine += allCodeLines[currentLineNumber][placeInLine++];
         }
 
         //If we've reached this point it means we're at the end of the current line. We need to add the current line
@@ -662,6 +663,8 @@ void recursiveCodeBlockCreation(std::vector<CodeBlock*>& blockArray, std::vector
 
 void codeParse()
 {
+    auto run_time = std::chrono::steady_clock::now();
+
     //First, get the test code from .txt file
     std::string sampleCode = "", reader = "";
     std::ifstream myFile;
@@ -683,8 +686,11 @@ void codeParse()
     while (currentLineNumber < linesOfCode.size())
     {
         recursiveCodeBlockCreation(outermostBlocks, linesOfCode, currentLineNumber, placeInLine);
-        outermostBlocks.back()->printBlock();
+        //outermostBlocks.back()->printBlock();
     }
+
+    std::cout << "Parsed " << linesOfCode.size() << " lines of code in " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 << 
+        " seconds." << std::endl;
 
     //for (int i = 0; i < outermostBlocks.size(); i++) outermostBlocks[i]->printBlock();
     //after getting all of the blocks, search for any adjacent single line comment blocks as they 

@@ -645,7 +645,8 @@ void recursiveCodeBlockCreation(std::vector<CodeBlock*>& blockArray, std::vector
                 }
                 
             }
-            else currentLine += allCodeLines[currentLineNumber][placeInLine++]; //add the current character to our string and increment to the next character
+            else  //add the current character to our string and increment to the next character
+                currentLine += allCodeLines[currentLineNumber][placeInLine++];
         }
 
         //If we've reached this point it means we're at the end of the current line. We need to add the current line
