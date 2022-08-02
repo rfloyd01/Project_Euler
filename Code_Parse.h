@@ -12,7 +12,7 @@ std::vector<std::string> classes = { "vector", "pair", "string", "ifstream"};
 std::vector<std::string> objects = { "class", "struct", "enum" };
 std::vector<std::string> scopes = { "private:", "public:", "protected:" };
 
-bool debugPrint = true;
+bool debugPrint = false;
 
 /*
 Code Block types are:
@@ -369,6 +369,23 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
                 this->beginningCharacterLocation = { scannedLine, location };
                 return;
             }
+            else if (currentCharacter == '/')
+            {
+                //It's possible for comments to be written between the end of the block definition
+                //and the start of the physical block, i.e. void function yo() //whaddup {stuff}
+
+                if (allCodeLines[scannedLine][++location] == '/')
+                {
+                    //it's a single line comment, just advance to the next line
+                    location = 0;
+                    scannedLine++;
+                }
+                else if (allCodeLines[scannedLine][location] == '*')
+                {
+                    //it's a multi-line comment, advance to the end of it
+                    findEndOfMultiLineQuote(allCodeLines, scannedLine, ++location); //must start directly after the comment
+                }
+            }
             else 
             {
                 if (debugPrint) std::cout << "Found a non-curly brace block" << std::endl;
@@ -418,11 +435,16 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
                     this->beginningCharacterLocation = { currentLine, location };
                     return; //this is considered a standard line of code
                 }
-                else if (allCodeLines[currentLine][location] == '(') functionFound = true;
+                else if (allCodeLines[currentLine][location] == '(')
+                {
+                    //we've either found a function definition, or a function declaration, jump forwards
+                    //to the next ')' character
+                    functionFound = true;
+                    findFirstNonQuoteCharacter(allCodeLines, currentLine, location, ')');
+                }
             }
             else
             {
-                //we've either found a function definition, or a function declaration
                 if (allCodeLines[currentLine][location] == '{')
                 {
                     if (debugPrint) std::cout << "Found a function definition block" << std::endl;
@@ -432,6 +454,7 @@ void CodeBlock::determineBlockType(std::vector<std::string>& allCodeLines, int c
                     this->beginningCharacterLocation = { currentLine, location };
                     return;
                 }
+                
                 else if (allCodeLines[currentLine][location] == ';')
                 {
                     if (debugPrint) std::cout << "Found a function declaration block" << std::endl;
@@ -505,15 +528,6 @@ void recursiveCodeBlockCreation(std::vector<CodeBlock*>& blockArray, std::vector
     char endingCharacter = codeBlock->getBeginningEndCharacter();
     char currentCharacter;
     std::string currentLine = "";
-    //bool beginning = true;
-
-    //multi-line comments can be a little strange so to make things easier they are initialized a little differently
-    /*if (codeBlock->blockType == 2)
-    {
-        currentLine = "/*";
-        placeInLine += 2;
-    }
-    int DEBUGGGY = 0;*/
 
     while (currentLineNumber < allCodeLines.size())
     {
@@ -538,79 +552,6 @@ void recursiveCodeBlockCreation(std::vector<CodeBlock*>& blockArray, std::vector
                     }
                     else break; //break out of loop after finding a non-white space character
                 }
-
-                ////first we add the ending character to the current string and then advance our location by 1
-                //if (codeBlock->blockType != 4)
-                //{
-                //    //the non-curly brace blocks don't include the end character as part of the block but
-                //    //everything else does
-                //    currentLine += currentCharacter;
-                //    placeInLine++;
-
-
-                //    if (codeBlock->blockType == 2)
-                //    {
-                //        //The multi-line comment is the only type of block which actually requires two characters
-                //        //for the block to end, because of this it needs to be handled separately
-
-                //        //First make sure that we're not looking at the '*' symbol that starts the comment instead
-                //        //of the one that ends it
-
-                //        //Make sure that we aren't at the very end of the line before checking the next character
-                //        if (allCodeLines[currentLineNumber].size() != placeInLine)
-                //        {
-                //            //we're not at the end of the line so regardless we add the next character to the current string
-                //            currentLine += allCodeLines[currentLineNumber][placeInLine];
-
-                //            if ((allCodeLines[currentLineNumber][placeInLine]) != '/')
-                //            {
-                //                //the character we've just added isn't enough to end the multi-line comment so we need to 
-                //                //just continue on with the current while loop
-                //                continue;
-                //            }
-                //            else placeInLine++; //this is the end of the block advance the current position
-                //        }
-                //        else break; //If we are at the end of the line then break out of the nested while loop which will auto increment to the next line
-                //    }
-
-                //    //We want to include any white space after our ending character, which will include
-                //    //tabs (/t), spaces (' '), return character (\r) and new line characters (\n)
-                //    while (placeInLine < allCodeLines[currentLineNumber].size())
-                //    {
-                //        currentCharacter = allCodeLines[currentLineNumber][placeInLine];
-                //        if (currentCharacter == ' ' || currentCharacter == '\n' || currentCharacter == '\r' || currentCharacter == '\t')
-                //        {
-                //            currentLine += currentCharacter;
-                //            placeInLine++;
-                //        }
-                //        else break; //break out of loop after finding a non-white space character
-                //    }
-                //}
-                //else
-                //{
-                //    //the non-bracket blocks are funky, to help define them we store the actual location of 
-                //    //their ending character.
-
-                //    //add the ending character
-                //    currentLine += currentCharacter;
-                //    placeInLine++;
-
-                //    //see if we're actually in the right spot or not
-                //    if (currentLineNumber != codeBlock->beginningCharacterLocation.first || placeInLine != (codeBlock->beginningCharacterLocation.second + 1)) continue;
-
-                //    //capture any white space before the next block starts
-                //    while (placeInLine < allCodeLines[currentLineNumber].size())
-                //    {
-                //        currentCharacter = allCodeLines[currentLineNumber][placeInLine];
-                //        if (currentCharacter == ' ' || currentCharacter == '\n' || currentCharacter == '\r' || currentCharacter == '\t')
-                //        {
-                //            currentLine += currentCharacter;
-                //            placeInLine++;
-                //        }
-                //        else break; //break out of loop after finding a non-white space character
-                //    }
-                //}
-                //DEBUGGGY += 1;
 
                 //Check to see if we're at the very end of the current line of code as we'll need to go to the next line
                 //the next time we call this function.
@@ -702,19 +643,6 @@ void recursiveCodeBlockCreation(std::vector<CodeBlock*>& blockArray, std::vector
                     blockArray.push_back(codeBlock);
                     return;
                 }
-
-                //if (beginning)
-                //{
-                //    
-                //}
-                //else
-                //{
-                //    //TODO: I don't think this portion of the loop will every actually happen, can probably get rid of it
-                //    
-                //    //this is the end of the current block, add it to the ending lines and then return from the function
-                //    codeBlock->addEndingLine(currentLine);
-                //    return;
-                //}
                 
             }
             else currentLine += allCodeLines[currentLineNumber][placeInLine++]; //add the current character to our string and increment to the next character
