@@ -1,10 +1,68 @@
-class CodeBlock
+void CodeBlock::advanceToNextCharacter(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine, bool endOfBlock)
 {
-public:
-    void printBlock()
+    while (true)
     {
-        for (int i = 0; i < this->begginingLines.size(); i++) std::cout << this->begginingLines[i];
-        for (int i = 0; i < this->subBlocks.size(); i++) subBlocks[i]->printBlock();
-        for (int i = 0; i < this->endingLines.size(); i++) std::cout << this->endingLines[i];
+        else if (std::count(newLineCharacters.begin(), newLineCharacters.end(), currentCharacter))
+        {
+            //If we encounter a new line character then we add the current block line to the array of beginning lines
+            //and then reset blockLine to handle characters from the next line of code
+            if (!endOfBlock) this->begginingLines.push_back(this->blockLine + currentCharacter);
+            else this->endingLines.push_back(this->blockLine + currentCharacter);
+
+            this->blockLine = "";
+            continue;
+        }
+
+        //we aren't inside of a comment so we proceed normally
+        if (!inQuote)
+        {
+            if (currentCharacter == '\'' || currentCharacter == '\"')
+            {
+                //Since we aren't currently inside of a comment block, we've found the start of a quotation. Add
+                //The current block line to the beggining lines array and then start a new one for the quote.
+                if (!endOfBlock) this->begginingLines.push_back(this->blockLine);
+                else this->endingLines.push_back(this->blockLine);
+
+                this->blockLine = currentCharacter;
+                inQuote = true;
+            }
+            else 
+            {
+                //Any other character encountered will break us out of this function. We don't add the character
+                //to the current block line as we're not sure of what the character means yet.
+                return;
+            }
+        }
+        else
+        {
+            //The only thing that will break us out is a non-escaped version of the character that started the quote.
+            //The character that started the quote will be at the very beginning of the current blockLine string. We use
+            //the escapeCharacter boolean to keep track of whether or not the previous character was a '\' as it helps
+            //for keeping track across different lines
+
+            this->blockLine += currentCharacter; //the current character get's added regardless of what it is
+            if (currentCharacter == '\\')
+            {
+                //We use XOR on the boolean so that if we have two escape characters in a row it will un-escape
+                //the third character (i.e. '\'' is an escaped apostraphe but '\\' is en escaped backslash)
+                escapeCharacter ^= 1;
+                continue;
+            }
+            else if (currentCharacter == this->blockLine[0])
+            {
+                if (!escapeCharacter)
+                {
+                    //There's no escape character before this so we've reached the end of the quote.
+                    //Add the quote to the current code block as a separate entity
+                    if (!endOfBlock) this->begginingLines.push_back(this->blockLine);
+                    else this->endingLines.push_back(this->blockLine);
+
+                    this->blockLine = "";
+                    inQuote = false;
+                    continue;
+                }
+            }
+            escapeCharacter = false; //didn't encounter a '\' so this variable becomes false
+        }
     }
-};
+}

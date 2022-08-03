@@ -15,7 +15,7 @@ std::vector<std::string> scopes = { "private:", "public:", "protected:" };
 std::vector<char> whiteSpaceCharacters = { ' ', '\t' };
 std::vector<char> newLineCharacters = { '\n', '\r' };
 
-bool debugPrint = false;
+bool debugPrint = true;
 
 /*
 Code Block types are:
@@ -428,8 +428,8 @@ void CodeBlock::findClosingParenthese(std::vector<std::string>& allCodeLines, in
     //each other like in loops [for (int i = 0; i < vec.size(); i++)] or nested functions 
     //[choose(floor(5/2), 2)]
 
-    //Scan until we find the first parentheses (any white space should be automatically added to current block)
-    this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+    //Scan until we find the first parentheses if we aren't already on it
+    if (allCodeLines[currentLine][placeInLine] != '(') this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
     this->blockLine += '(';
 
     int parenthesesLevel = 1;
@@ -528,7 +528,7 @@ CodeBlock::CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, i
         if (debugPrint) std::cout << "Found a stand alone semi-colon" << std::endl;
         this->blockType = 2;
         this->blockLine += currentCharacter;
-        advanceToNextCharacter(allCodeLines, currentLine, placeInLine); //add any trailing whitespace
+        //advanceToNextCharacter(allCodeLines, currentLine, placeInLine); //add any trailing whitespace
         this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
 
         return;
@@ -559,13 +559,31 @@ CodeBlock::CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, i
         
         if (firstWord == "else")
         {
-            //check to see if the word if comes right after the else
-            if (allCodeLines[currentLine][placeInLine] != '\n' && getFirstWord(allCodeLines, currentLine, placeInLine) == "if")
+            //check to see if the word "if" comes right after the "else"
+            if (allCodeLines[currentLine][placeInLine + 1] != '\n')
             {
-                //"if" was the second word, which means there are parentheses
-                this->blockLine += " if";
-                placeInLine ++; //advance to first char after "if"
-                findClosingParenthese(allCodeLines, currentLine, placeInLine);
+                //make a copy of our current location, beggingVector and blockLine
+                //in case the next word isn't if and we need to revert back to this
+                //state
+                std::vector<std::string> beginningLinesCopy = this->begginingLines;
+                std::string blockLineCopy = this->blockLine;
+                int currentLineCopy = currentLine;
+                int placeInLineCopy = placeInLine;
+                this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+                if (getFirstWord(allCodeLines, currentLine, placeInLine) == "if")
+                {
+                    //"if" was the second word, which means there are parentheses
+                    findClosingParenthese(allCodeLines, currentLine, placeInLine);
+                }
+                else
+                {
+                    //the second word wasn't if so revert everything to the way it was
+                    //before we searched for the second word
+                    this->begginingLines = beginningLinesCopy;
+                    this->blockLine = blockLineCopy;
+                    currentLine = currentLineCopy;
+                    placeInLine = placeInLineCopy;
+                }
             }
         }
         else findClosingParenthese(allCodeLines, currentLine, placeInLine);
