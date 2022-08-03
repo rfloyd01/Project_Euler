@@ -15,7 +15,7 @@ std::vector<std::string> scopes = { "private:", "public:", "protected:" };
 std::vector<char> whiteSpaceCharacters = { ' ', '\t' };
 std::vector<char> newLineCharacters = { '\n', '\r' };
 
-bool debugPrint = true;
+bool debugPrint = false;
 
 /*
 Code Block types are:
@@ -637,15 +637,16 @@ CodeBlock::CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, i
                 char c = this->blockLine[--lastNonSpaceCharacterLocation];
                 if (c != ' ' && c != '\t') break;
             }
+            placeInLine = lastNonSpaceCharacterLocation;
+
             if (lastNonSpaceCharacterLocation)
             {
                 //remove everything after the last character in this->blockLine, and then call the
                 //addClosingWhiteSpace() method to add the space back properly
-                placeInLine = lastNonSpaceCharacterLocation;
                 this->blockLine.erase(this->blockLine.begin() + lastNonSpaceCharacterLocation + 1, this->blockLine.end());
                 this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
             }
-            
+
             this->blockType = 7;
             return;
         }
@@ -786,7 +787,7 @@ void recursiveCodeBlockCreation(std::vector<CodeBlock*>& blockArray, std::vector
     //what kind of block it is. The below CodeBlock
     CodeBlock* codeBlock = new CodeBlock(allCodeLines, currentLineNumber, placeInLine);
 
-    if (codeBlock->blockType >= 6)
+    if (codeBlock->blockType >= 7)
     {
         //This code block will have some sub-blocks and potentially an ending curly brace.
         //We recursively call this function with the sub-block array of the current code
