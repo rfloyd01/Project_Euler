@@ -9,7 +9,7 @@
 std::vector<std::string> blockwords = { "for", "while", "if", "else" };
 std::vector<std::string> keywords = { "continue", "break", "return" };
 std::vector<std::string> types = { "short", "int", "long", "float", "double", "void", "char", "bool"};
-std::vector<std::string> classes = { "vector", "pair", "string", "ifstream"};
+std::vector<std::string> classes = { "vector", "pair", "string", "ifstream", "CodeBlock"};
 std::vector<std::string> objects = { "class", "struct", "enum" };
 std::vector<std::string> scopes = { "private:", "public:", "protected:" };
 std::vector<char> whiteSpaceCharacters = { ' ', '\t' };
@@ -352,59 +352,6 @@ std::string CodeBlock::getFirstWord(std::vector<std::string>& allCodeLines, int&
     return firstWord.substr(startPoint);
 }
 
-void findQuoteEnd(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine)
-{
-    //This function advances us to the end of a quote. A quote can either start with " or ',
-    //whatever is starts with it will also have to end with. While still inside the quote, make
-    //sure that any potential end characters aren't preceeded by the '\' escape character
-    char endCharacter = allCodeLines[currentLine][placeInLine++];
-    bool lastCharacterEscape = false;
-
-    while (true)
-    {
-        if (placeInLine >= allCodeLines[currentLine].size())
-        {
-            //go to the next line
-            currentLine++;
-            placeInLine = 0;
-        }
-
-        if (allCodeLines[currentLine][placeInLine] == '\\')
-        {
-            lastCharacterEscape ^= 1; //if we hit two escape characters in a row then we actually break the escape
-            placeInLine++;
-        }
-        else if (allCodeLines[currentLine][placeInLine] == endCharacter && !lastCharacterEscape)
-        {
-            //placeInLine++; //advance one spot further so we don't accidentally call this function again
-            return; //we've reached the end of the quote
-        }
-        else
-        {
-            //found a non-escape character, set lastCharacterEscape to false and increment
-            lastCharacterEscape = false;
-            placeInLine++;
-        }
-    }
-}
-
-void findFirstNonQuoteCharacter(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine, char c)
-{
-    //finds the first instance of the given character that isn't inside of a quote string
-    while (true)
-    {
-        if (allCodeLines[currentLine][placeInLine] == c) break;
-        else if (allCodeLines[currentLine][placeInLine] == '\'' || allCodeLines[currentLine][placeInLine] == '\"') findQuoteEnd(allCodeLines, currentLine, placeInLine);
-
-        if (placeInLine >= allCodeLines[currentLine].size())
-        {
-            currentLine++;
-            placeInLine = 0;
-        }
-        else placeInLine++;
-    }
-}
-
 void CodeBlock::findClosingParenthese(std::vector<std::string>& allCodeLines, int &currentLine, int &placeInLine)
 {
     //this function is used to iterate to the appropriate closing parentheses of our current
@@ -432,29 +379,6 @@ void CodeBlock::findClosingParenthese(std::vector<std::string>& allCodeLines, in
     }
 
     return; //we return without advancing again, so the placeInLine index will still be on the closing parentheses
-}
-
-void findEndOfMultiLineQuote(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine)
-{
-    //a multi line quote depends on two consecutive characters to terminate instead of just one. This is
-    //out of the ordinary so it get's its own dedicated function to do this. We pass the location of the 
-    //start of the quote to this function, so we need to skip the first two characters
-
-    placeInLine += 2;
-    while (true)
-    {
-        if (placeInLine >= allCodeLines[currentLine].size())
-        {
-            currentLine++;
-            placeInLine = 0;
-        }
-
-        if (allCodeLines[currentLine][placeInLine] == '*')
-        {
-            if (allCodeLines[currentLine][++placeInLine] == '/') return;
-        }
-        else placeInLine++;
-    }
 }
 
 bool contains(std::vector<std::string>& vec, std::string item)
@@ -720,7 +644,8 @@ CodeBlock::CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, i
     else if (contains(objects, firstWord))
     {
         //we've either found a class, struct or enum declaration, advance to the first
-        //curly brace
+        //curly brace. Also, add the new class/struct/enum to the list of acceptable
+        //classes for this block
         if (debugPrint) std::cout << "Found a class/struct/enum definition block" << std::endl;
         
         while (currentCharacter != '{')

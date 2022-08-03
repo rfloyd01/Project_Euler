@@ -9,7 +9,7 @@
 std::vector<std::string> blockwords = { "for", "while", "if", "else" };
 std::vector<std::string> keywords = { "continue", "break", "return" };
 std::vector<std::string> types = { "short", "int", "long", "float", "double", "void", "char", "bool"};
-std::vector<std::string> classes = { "vector", "pair", "string", "ifstream"};
+std::vector<std::string> classes = { "vector", "pair", "string", "ifstream", "CodeBlock"};
 std::vector<std::string> objects = { "class", "struct", "enum" };
 std::vector<std::string> scopes = { "private:", "public:", "protected:" };
 std::vector<char> whiteSpaceCharacters = { ' ', '\t' };
@@ -52,6 +52,7 @@ public:
     void findClosingParenthese(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine);
     void addClosingWhiteSpace(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine, bool endOfBlock = false);
     std::string getFirstWord(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine);
+    void test();
 
     void printBlock()
     {
@@ -464,4 +465,397 @@ bool contains(std::vector<std::string>& vec, std::string item)
         if (vec[i] == item) return true;
 
     return false;
+}
+
+CodeBlock::CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine)
+{
+    //The constructor for a new block of code. As inputs we give the vector containing all of our lines
+    //of code, as well as a current location in this vector
+    char currentCharacter = allCodeLines[currentLine][placeInLine];
+
+    //If the current block of code starts on a white space, advance to the next non-white space
+    if (currentCharacter == ' ' || currentCharacter == '\t')
+    {
+        this->blockLine += currentCharacter;
+        advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+        currentCharacter = allCodeLines[currentLine][placeInLine];
+    }
+
+    //First we check to see if we can figure out the current block type by looking at
+    //only the first character
+    if (currentCharacter == '#')
+    {
+        //This is a pre-processor command, add the whole line as our block
+        if (debugPrint) std::cout << "Found a pre-processor command" << std::endl;
+        this->blockType = 0;
+        this->begginingLines.push_back(allCodeLines[currentLine]); //add the whole line
+        placeInLine = allCodeLines[currentLine].size() - 1; //advance to end of the line
+        this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
+
+        return;
+    }
+    else if (currentCharacter == '/')
+    {
+        //We're looking at a comment, add the first two characters, advancing our place in line as well
+        if (debugPrint) std::cout << "Found a comment block" << std::endl;
+        this->blockType = 1;
+        this->blockLine += allCodeLines[currentLine][placeInLine++];
+        this->blockLine += allCodeLines[currentLine][placeInLine];
+        advanceToEndOfComment(allCodeLines, currentLine, placeInLine, allCodeLines[currentLine][placeInLine]); //advance to the end of the comment
+        this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
+        
+        return;
+    }
+    else if (currentCharacter == ';')
+    {
+        //We've encountered a rogue semi-colon. Technically, a single semi-colon could be
+        //it's own block (i.e. int x = 3;;;;;;; would be legal)
+        if (debugPrint) std::cout << "Found a stand alone semi-colon" << std::endl;
+        this->blockType = 2;
+        this->blockLine += currentCharacter;
+        //advanceToNextCharacter(allCodeLines, currentLine, placeInLine); //add any trailing whitespace
+        this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
+
+        return;
+    }
+    else if (currentCharacter == '}')
+    {
+        //If the first character we encounter in the black is an ending curly-brace then
+        //it means we've reached the end of a nested block (it's possible to have ending
+        //curly braces in other parts of the code that don't end a block, i.e. 
+        //std::vector<int> = {0, 1, 2}; but here the character doesn't start the block, 's' does.
+        this->blockLine += currentCharacter;
+        this->closer = true; //mark this as a closing part of a block
+        return;
+    }
+
+    //Our block type couldn't be determined from the first character, instead it will be 
+    //determined by the first word.
+    std::string firstWord = getFirstWord(allCodeLines, currentLine, placeInLine);
+
+    //Check to see if the block is a loop, if statement, or something similar
+    if (contains(blockwords, firstWord)) {
+        //First we need to figure out if this block will have a set of '()', i.e.
+        //like in for (int i = ...), while(), if (). The only way that parentheses won't
+        //be included is if the word is else, however, if the phrase is 'else if' then it
+        //will have parentheses. We need a separate function to scan through the parentheses
+        //as there could be other paretheses embedded inside (i.e. for (int i = 0; i < vector.size(); i++))
+        //so we need to make sure we find the right closing parentheses character
+        
+        if (firstWord == "else")
+        {
+            //check to see if the word "if" comes right after the "else"
+            if (allCodeLines[currentLine][placeInLine + 1] != '\n')
+            {
+                //make a copy of our current location, beggingVector and blockLine
+                //in case the next word isn't if and we need to revert back to this
+                //state
+                std::vector<std::string> beginningLinesCopy = this->begginingLines;
+                std::string blockLineCopy = this->blockLine;
+                int currentLineCopy = currentLine;
+                int placeInLineCopy = placeInLine;
+                this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+                if (getFirstWord(allCodeLines, currentLine, placeInLine) == "if")
+                {
+                    //"if" was the second word, which means there are parentheses
+                    findClosingParenthese(allCodeLines, currentLine, placeInLine);
+                }
+                else
+                {
+                    //the second word wasn't if so revert everything to the way it was
+                    //before we searched for the second word
+                    this->begginingLines = beginningLinesCopy;
+                    this->blockLine = blockLineCopy;
+                    currentLine = currentLineCopy;
+                    placeInLine = placeInLineCopy;
+                }
+            }
+        }
+        else findClosingParenthese(allCodeLines, currentLine, placeInLine);
+
+        //At this point, the location variable will be on a ')' character, or 
+        //an 'e' character. In both cases, if the next non-whitespace character is a
+        //'{' character then we have a curly brace block, if it's '/' character then
+        //we have an embedded comment to handle. Anything else then we have a non-curlybrace block.
+        this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+        currentCharacter = allCodeLines[currentLine][placeInLine];
+
+        if (currentCharacter == '/')
+        {
+            //It's possible for comments to be written between the end of the block definition
+            //and the start of the physical block, i.e. void function yo() //whaddup {stuff}.
+            //scan the comment into the current block and then proceed to the next non-space
+            //character
+            this->blockLine += allCodeLines[currentLine][placeInLine++];
+            this->blockLine += allCodeLines[currentLine][placeInLine];
+            this->advanceToEndOfComment(allCodeLines, currentLine, placeInLine, allCodeLines[currentLine][placeInLine]); //advance to the end of the comment
+            this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine); //and then go to the next non-sommented character
+            currentCharacter = allCodeLines[currentLine][placeInLine];
+        }
+
+        if (currentCharacter == '{')
+        {
+            if (debugPrint) std::cout << "Found a curly brace block" << std::endl;
+            this->blockLine += currentCharacter;
+            this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
+            this->blockType = 8;
+            return;
+        }
+        else
+        {
+            if (debugPrint) std::cout << "Found a non-curly brace block" << std::endl;
+            //At this point we're not sure if we're on the same line as the block line,
+            //i.e. we could have something like [while (a > 0) a -= 5;] or we could have
+            //while (a > 0)
+            //    a -= 5;
+            //We can determine which of these is the case be seeing if there are any 
+            //non-whitespace chracters in this->blockLine. If there are only white
+            //spaces then we've come down to the next line. If there are other characters
+            //we've either stayed on the same line, or have a multi-line comment in between
+            //the end of the blocks. If there are no non-space characters, just reset the 
+            //position to the beginning of the line and return. Otherwise, reset the position
+            //to the location of the last non-space character
+
+            //Note: The amountToSubtract variable was necessary because it's possible for the
+            //blockLine variable to get broken up by quotation marks. Using this variable
+            //allows us to find the correct amount of white space even when the current line
+            //is chopped into multiple pieces.
+            
+            int lastNonSpaceCharacterLocation = this->blockLine.size();
+            int amountToSubtract = 1;
+
+            while (lastNonSpaceCharacterLocation > 0)
+            {
+                char c = this->blockLine[--lastNonSpaceCharacterLocation];
+                if (c != ' ' && c != '\t') break;
+                amountToSubtract++;
+            }
+
+            placeInLine -= amountToSubtract;
+            if (amountToSubtract <= placeInLine)
+            {
+                //this means that we're on the same line and we can safely add the 
+                //current blockLine (as white space has already been incorporated)
+                //and reset our placeInLine
+                this->begginingLines.push_back(this->blockLine);
+            }
+            else
+            {
+                //we're on a new line which means all appropriate code has already
+                //been added by the advanceToNextCharacter() method. Reset our
+                //position to the beginning of the current line
+                placeInLine = 0;
+            }
+            
+            this->blockType = 7;
+            return;
+        }
+    }
+    else if (contains(types, firstWord) || contains(classes, firstWord))
+    {
+        //If the first word of the line is a class or built-in type it means one of two things.
+        //Either we're about to define a function, i.e. void func() {}, or we're about to define
+        //some variables, i.e. int x = 5, y = 6; It will depend on whether we first find an '=',
+        //a ';', or a '(' character. If we encounter an '=' of ';' first then the line is for defining variables.
+
+        bool functionFound = false;
+        while (true)
+        {
+            this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+            currentCharacter = allCodeLines[currentLine][placeInLine];
+            this->blockLine += currentCharacter;
+
+            if (!functionFound)
+            {
+                if (currentCharacter == '=' || currentCharacter == ';')
+                {
+                    if (debugPrint) std::cout << "Found a variable definition block" << std::endl;
+                    //We found a variable definition block. Scan the code until we hit
+                    //the first ';'. If a ';' has already been found then the below loop
+                    //won't execute
+                    while (currentCharacter != ';')
+                    {
+                        this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+                        currentCharacter = allCodeLines[currentLine][placeInLine];
+                        this->blockLine += currentCharacter;
+                    }
+                    
+                    this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
+                    this->blockType = 3;
+
+                    return; //this is considered a standard line of code
+                }
+                else if (currentCharacter == '(')
+                {
+                    //we've either found a function definition, or a function declaration, jump forwards
+                    //to the next ')' character
+                    functionFound = true;
+                    while (currentCharacter != ')')
+                    {
+                        this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+                        currentCharacter = allCodeLines[currentLine][placeInLine];
+                        this->blockLine += currentCharacter;
+                    }
+                }
+            }
+            else
+            {
+                if (currentCharacter == '{')
+                {
+                    if (debugPrint) std::cout << "Found a function definition block" << std::endl;
+                    this->blockType = 9;
+                    this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
+                    return;
+                }
+                
+                else if (currentCharacter == ';')
+                {
+                    if (debugPrint) std::cout << "Found a function declaration block" << std::endl;
+                    this->blockType = 4;
+                    this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
+                    return;
+                }
+            }
+        }
+    }
+    else if (contains(objects, firstWord))
+    {
+        //we've either found a class, struct or enum declaration, advance to the first
+        //curly brace. Also, add the new class/struct/enum to the list of acceptable
+        //classes for this block
+        if (debugPrint) std::cout << "Found a class/struct/enum definition block" << std::endl;
+        
+        while (currentCharacter != '{')
+        {
+            this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+            currentCharacter = allCodeLines[currentLine][placeInLine];
+            this->blockLine += currentCharacter;
+        }
+        this->blockType = 9;
+        this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
+        return;
+    }
+    else if (contains(scopes, firstWord))
+    {
+        //The Scope definitions, like public: and private: take up the
+        //whole line, since we're already at the end of the word we can
+        //just call the addClosingWhiteSpace() method to add the line.
+        if (debugPrint) std::cout << "Found a scope block" << std::endl;
+        this->blockType = 5;
+        this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
+        return;
+    }
+    else if (contains(keywords, firstWord))
+    {
+        //We've found a word like return, break or continue. Return may or may
+        //not have a value after it, but all of these words must have a semi-colon
+        //after them somewhere. Scan until we find the first one.
+        if (debugPrint) std::cout << "Found a keyword block of code" << std::endl;
+
+        while (currentCharacter != ';')
+        {
+            this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+            currentCharacter = allCodeLines[currentLine][placeInLine];
+            this->blockLine += currentCharacter;
+        }
+        this->blockType = 6;
+        this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
+        return;
+    }
+
+    //If we can't determine what the block is then it must just be a standard block
+    //i.e. x += 10; where x is an already predefined variable. Scan until we find
+    //a ';' character
+    if (debugPrint) std::cout << "Found a standard block of code" << std::endl;
+
+    this->blockType = 3;
+    while (allCodeLines[currentLine][placeInLine] != ';')
+    {
+        this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+        this->blockLine += allCodeLines[currentLine][placeInLine];
+    }
+
+    //this->begginingLines.push_back(this->blockLine);
+    //this->blockLine = "";
+    this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine); //add any potential white space at end of line
+    return;
+}
+
+void recursiveCodeBlockCreation(std::vector<CodeBlock*>& blockArray, std::vector<std::string>& allCodeLines, int& currentLineNumber, int& placeInLine)
+{
+    //We're always going to be starting at a new block when this function gets called, the first step is to determine
+    //what kind of block it is. The below CodeBlock
+    CodeBlock* codeBlock = new CodeBlock(allCodeLines, currentLineNumber, placeInLine);
+
+    if (codeBlock->blockType >= 7)
+    {
+        //This code block will have some sub-blocks and potentially an ending curly brace.
+        //We recursively call this function with the sub-block array of the current code
+        //block at the current location.
+
+        while (true)
+        {
+            //the recursive function will automatically increment the currentLineNumber and
+            //placeInLine variables for us, we just need to reassign currentCharacter each 
+            //time
+            recursiveCodeBlockCreation(codeBlock->subBlocks, allCodeLines, currentLineNumber, placeInLine);
+            if (codeBlock->subBlocks.back()->closer)
+            {
+                //The condition for closing out the current nested block has been met
+                codeBlock->blockLine = codeBlock->subBlocks.back()->blockLine;
+                codeBlock->subBlocks.pop_back();
+                break;
+            }
+
+            //BlockType 6 is a block without curly braces, which means it can only have a
+            //single sub-block so there's no need to keep looping
+            if (codeBlock->blockType == 7)
+            {
+                blockArray.push_back(codeBlock);
+                return;
+            }
+        }
+
+        //add the closing bracket and advance to the next block of code
+        codeBlock->addClosingWhiteSpace(allCodeLines, currentLineNumber, placeInLine, true);
+    }
+
+    blockArray.push_back(codeBlock);
+    return;
+}
+
+void codeParse()
+{
+    auto run_time = std::chrono::steady_clock::now();
+
+    //First, get the test code from .txt file
+    std::string sampleCode = "", reader = "";
+    std::ifstream myFile;
+    std::vector<std::string> linesOfCode;
+    myFile.open("testParse.txt");
+    while (std::getline(myFile, reader))
+    {
+        reader += '\n'; //add in newline characters that are removed from getLine()
+        linesOfCode.push_back(reader);
+    }
+    linesOfCode.back().pop_back(); //remove the final \n as it isn't needed
+    myFile.close();
+
+    std::vector<CodeBlock*> outermostBlocks;
+    int currentLineNumber = 0, placeInLine = 0;
+
+    //for (int i = 0; i < linesOfCode.size(); i++) std::cout << linesOfCode[i];
+
+    while (currentLineNumber < linesOfCode.size())
+    {
+        recursiveCodeBlockCreation(outermostBlocks, linesOfCode, currentLineNumber, placeInLine);
+        outermostBlocks.back()->printBlock();
+    }
+    std::cout << std::endl << std::endl;
+    std::cout << "Parsed " << linesOfCode.size() << " lines of code in " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 << 
+        " seconds." << std::endl;
+
+    //for (int i = 0; i < outermostBlocks.size(); i++) outermostBlocks[i]->printBlock();
+    //after getting all of the blocks, search for any adjacent single line comment blocks as they 
+    //can be combined into a single block for ease.
 }
