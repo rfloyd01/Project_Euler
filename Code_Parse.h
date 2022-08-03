@@ -37,37 +37,21 @@ Code Block types are:
 class CodeBlock
 {
 public:
-    //CodeBlock(int blockType) { this->blockType = blockType; }
     CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine);
 
     std::vector<std::string> begginingLines;
     std::vector<CodeBlock*> subBlocks;
     std::vector<std::string> endingLines;
-    //std::string endingCharacter = "";
     
     int blockType = -1;
     std::string blockLine = "";
     bool closer = false;
-    //char beginningCharacter, endingCharacter;
 
-    //void addBeginningLine(std::string line) { this->begginingLines.push_back(line); }
-    //void addEndingLine(std::string line) { this->endingLines.push_back(line); }
-    //void determineBlockType(std::vector<std::string>& allCodeLines, int currentLine, int placeInLine);
     void advanceToNextCharacter(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine, bool endOfBlock = false);
     void advanceToEndOfComment(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine, char startChar);
     void findClosingParenthese(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine);
     void addClosingWhiteSpace(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine, bool endOfBlock = false);
     std::string getFirstWord(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine);
-    //std::pair<int, int> endingCharacterLocation; //keeps track of location the terminates the 'beginning' of the block
-
-    /*char getBeginningEndCharacter()
-    {
-        return this->beginningCharacter;
-    }
-    char getEndingEndCharacter()
-    {
-        return this->endingCharacter;
-    }*/
 
     void printBlock()
     {
@@ -630,27 +614,41 @@ CodeBlock::CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, i
             //the end of the blocks. If there are no non-space characters, just reset the 
             //position to the beginning of the line and return. Otherwise, reset the position
             //to the location of the last non-space character
+
+            //Note: The amountToSubtract variable was necessary because it's possible for the
+            //blockLine variable to get broken up by quotation marks. Using this variable
+            //allows us to find the correct amount of white space even when the current line
+            //is chopped into multiple pieces.
             
             int lastNonSpaceCharacterLocation = this->blockLine.size();
+            int amountToSubtract = 1;
+
             while (lastNonSpaceCharacterLocation > 0)
             {
                 char c = this->blockLine[--lastNonSpaceCharacterLocation];
                 if (c != ' ' && c != '\t') break;
+                amountToSubtract++;
             }
-            placeInLine = lastNonSpaceCharacterLocation;
 
-            if (lastNonSpaceCharacterLocation)
+            placeInLine -= amountToSubtract;
+            if (amountToSubtract <= placeInLine)
             {
-                //remove everything after the last character in this->blockLine, and then call the
-                //addClosingWhiteSpace() method to add the space back properly
-                this->blockLine.erase(this->blockLine.begin() + lastNonSpaceCharacterLocation + 1, this->blockLine.end());
-                this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
+                //this means that we're on the same line and we can safely add the 
+                //current blockLine (as white space has already been incorporated)
+                //and reset our placeInLine
+                this->begginingLines.push_back(this->blockLine);
             }
-
+            else
+            {
+                //we're on a new line which means all appropriate code has already
+                //been added by the advanceToNextCharacter() method. Reset our
+                //position to the beginning of the current line
+                placeInLine = 0;
+            }
+            
             this->blockType = 7;
             return;
         }
-
     }
     else if (contains(types, firstWord) || contains(classes, firstWord))
     {

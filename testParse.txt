@@ -1,3 +1,462 @@
+#pragma once
+
+#include <Header_Files/pch.h>
+#include <vector>
+#include <iostream>
+#include <string>
+#include <fstream>
+
+std::vector<std::string> blockwords = { "for", "while", "if", "else" };
+std::vector<std::string> keywords = { "continue", "break", "return" };
+std::vector<std::string> types = { "short", "int", "long", "float", "double", "void", "char", "bool"};
+std::vector<std::string> classes = { "vector", "pair", "string", "ifstream"};
+std::vector<std::string> objects = { "class", "struct", "enum" };
+std::vector<std::string> scopes = { "private:", "public:", "protected:" };
+std::vector<char> whiteSpaceCharacters = { ' ', '\t' };
+std::vector<char> newLineCharacters = { '\n', '\r' };
+
+bool debugPrint = false;
+
+/*
+Code Block types are:
+("blocks without sub-blocks")
+0 - Preprocessor command
+1 - Comment
+2 - Standalone semi-colon
+3 - Standard code line
+4 - Function declaration block
+5 - Scope block
+6 - Keyword blocks
+
+("blocks with sub-blocks")
+7 - Loop/If/Block without curly braces
+8 - Loop/If/Block with curly braces
+9 - Function/Class/Struct definition
+*/
+
+class CodeBlock
+{
+public:
+    CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine);
+
+    std::vector<std::string> begginingLines;
+    std::vector<CodeBlock*> subBlocks;
+    std::vector<std::string> endingLines;
+    
+    int blockType = -1;
+    std::string blockLine = "";
+    bool closer = false;
+
+    void advanceToNextCharacter(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine, bool endOfBlock = false);
+    void advanceToEndOfComment(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine, char startChar);
+    void findClosingParenthese(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine);
+    void addClosingWhiteSpace(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine, bool endOfBlock = false);
+    std::string getFirstWord(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine);
+
+    void printBlock()
+    {
+        for (int i = 0; i < this->begginingLines.size(); i++) std::cout << this->begginingLines[i];
+        for (int i = 0; i < this->subBlocks.size(); i++) subBlocks[i]->printBlock();
+        for (int i = 0; i < this->endingLines.size(); i++) std::cout << this->endingLines[i];
+    }
+};
+
+void CodeBlock::advanceToNextCharacter(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine, bool endOfBlock)
+{
+    //This function gets used a lot. It iterates the currentLine and placeInLine variables to the next
+    //non-white space character. If a quote is encountered then the function scans through the entire quote and adds
+    //it as a separate line to the current block.
+
+    //If the endOfBlock boolean is true, it means that we add the blockLine variable to the endingLines vector as opposed
+    //to the beginningLines vector of the current code block
+
+    char currentCharacter;
+    bool inQuote = false;
+    bool escapeCharacter = false;
+
+    while (true)
+    {
+        placeInLine++;
+        if (placeInLine >= allCodeLines[currentLine].size())
+        {
+            currentLine++;
+            placeInLine = 0;
+        }
+
+        if (currentLine >= allCodeLines.size())
+        {
+            //It's possible that the above block can advance us past the
+            //end of the code file, if that happens return from this function
+            return;
+        }
+        
+        currentCharacter = allCodeLines[currentLine][placeInLine];
+
+        //Regardless of whether we're in a comment, a quote, or just normal code, white space gets added just the same
+        if (std::count(whiteSpaceCharacters.begin(), whiteSpaceCharacters.end(), currentCharacter))
+        {
+            this->blockLine += currentCharacter; //white space is added
+            continue;
+        }
+        else if (std::count(newLineCharacters.begin(), newLineCharacters.end(), currentCharacter))
+        {
+            //If we encounter a new line character then we add the current block line to the array of beginning lines
+            //and then reset blockLine to handle characters from the next line of code
+            if (!endOfBlock) this->begginingLines.push_back(this->blockLine + currentCharacter);
+            else this->endingLines.push_back(this->blockLine + currentCharacter);
+
+            this->blockLine = "";
+            continue;
+        }
+
+        //we aren't inside of a comment so we proceed normally
+        if (!inQuote)
+        {
+            if (currentCharacter == '\'' || currentCharacter == '\"')
+            {
+                //Since we aren't currently inside of a comment block, we've found the start of a quotation. Add
+                //The current block line to the beggining lines array and then start a new one for the quote.
+                if (!endOfBlock) this->begginingLines.push_back(this->blockLine);
+                else this->endingLines.push_back(this->blockLine);
+
+                this->blockLine = currentCharacter;
+                inQuote = true;
+            }
+            else
+            {
+                //Any other character encountered will break us out of this function. We don't add the character
+                //to the current block line as we're not sure of what the character means yet.
+                return;
+            }
+        }
+        else
+        {
+            //The only thing that will break us out is a non-escaped version of the character that started the quote.
+            //The character that started the quote will be at the very beginning of the current blockLine string. We use
+            //the escapeCharacter boolean to keep track of whether or not the previous character was a '\' as it helps
+            //for keeping track across different lines
+
+            this->blockLine += currentCharacter; //the current character get's added regardless of what it is
+            if (currentCharacter == '\\')
+            {
+                //We use XOR on the boolean so that if we have two escape characters in a row it will un-escape
+                //the third character (i.e. '\'' is an escaped apostraphe but '\\' is en escaped backslash)
+                escapeCharacter ^= 1;
+                continue;
+            }
+            else if (currentCharacter == this->blockLine[0])
+            {
+                if (!escapeCharacter)
+                {
+                    //There's no escape character before this so we've reached the end of the quote.
+                    //Add the quote to the current code block as a separate entity
+                    if (!endOfBlock) this->begginingLines.push_back(this->blockLine);
+                    else this->endingLines.push_back(this->blockLine);
+
+                    this->blockLine = "";
+                    inQuote = false;
+                    continue;
+                }
+            }
+            escapeCharacter = false; //didn't encounter a '\' so this variable becomes false
+        }
+    }
+}
+
+void CodeBlock::advanceToEndOfComment(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine, char startChar)
+{
+    //If we're find comment block, then this function will keep advancing until the end of the comment is reached.
+    //When in a single line comment, we can add whole lines as there's no way to break out of one other than
+    //by going to a new line. If we're in a multi-line comment, ironically, it's possible for the comment to
+    //end on the same line so we must scan one character at a time.
+
+    char currentCharacter;
+    bool nonSpaceEncountered = true;
+
+    while (true)
+    {
+        placeInLine++;
+        if (placeInLine >= allCodeLines[currentLine].size())
+        {
+            currentLine++;
+            placeInLine = 0;
+        }
+        if (currentLine >= allCodeLines.size()) return; //we've reached the end of the code
+        currentCharacter = allCodeLines[currentLine][placeInLine];
+
+        //First, check to see if we're dealing with a white space or newline character
+        if (std::count(whiteSpaceCharacters.begin(), whiteSpaceCharacters.end(), currentCharacter))
+        {
+            this->blockLine += currentCharacter; //white space is added
+            continue;
+        }
+        else if (std::count(newLineCharacters.begin(), newLineCharacters.end(), currentCharacter))
+        {
+            //If we encounter a new line character then we add the current block line to the array of beginning lines
+            //and then reset blockLine to handle characters from the next line of code
+            this->begginingLines.push_back(this->blockLine + currentCharacter);
+            this->blockLine = "";
+            nonSpaceEncountered = false; //this needs to reset for each new line (used for single line comments)
+            continue;
+        }
+
+        if (startChar == '/')
+        {
+            //--Single line comment--
+            //White space is handled at the beginning of this function so we're going to be looking at an actual
+            //character here. We need to figure out if we're at the very beginning of the line or not. If we are,
+            //and the current character is anything but a '/' symbol then we're out of the current comment.
+            if (!nonSpaceEncountered)
+            {
+                if (currentCharacter == '/')
+                {
+                    //We've either encountered another single line comment, or the start of a multi-line comment.
+                    //In the case of another single line comment, it gets added to the current block and we keep going.
+                    if (allCodeLines[currentLine][placeInLine + 1] == '/')
+                    {
+                        nonSpaceEncountered = true;
+                        this->blockLine += currentCharacter;
+                        continue; //go back to beginning of loop
+                    }
+                }
+                
+                //We didn't start another single line comment block so the current block is done. Go to the end
+                //of the previous line so that the addClosingWhiteSpace() method will bring us back to this location
+                //without messing up the indentation of the following block
+                currentLine--;
+                placeInLine = allCodeLines[currentLine].size() - 1;
+                this->blockLine = "";
+                return;
+            }
+
+            //If we're down here then it means were confirmed to still be in a comment
+            this->blockLine += currentCharacter; //if we didn't return already in the above if-statement then it's safe to add character
+        }
+        else
+        {
+            //--Multi-line Comment--
+            //In a multi-line comment, the only thing that can break us out are the consecutive "*/" characters
+            if (currentCharacter == '*')
+            {
+                if (allCodeLines[currentLine][placeInLine + 1] == '/')
+                {
+                    //the comment is complete, add the final two characters and then advance to the start of the next block.
+                    //Advance via the advanceToNextCharacter() method so and trailing white space can be added to this comment's
+                    //block
+                    this->blockLine += "*/";
+                    placeInLine++; //advance to the closing '/' character
+                    return;
+                }
+            }
+
+            //If we make it here, either we encountered a '*' character that didn't end the quote, or we encountered
+            //any other character. Either way, add the character and then continue
+            this->blockLine += currentCharacter;
+        }
+    }
+}
+
+void CodeBlock::addClosingWhiteSpace(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine, bool endOfBlock)
+{
+    //When we've reached the end of our code block's start, this function will add any trailing white
+    //space and/or empty lines before the sub blocks start.
+
+    //As an example:
+    //for (int i = 0; i < 10; i++)
+    //{
+    //
+    //    i += 1;
+    //}
+    //This function will tak on the space after the '{' character and the blank line right after it.
+
+    int lineNumberCopy = currentLine;
+    if (!(currentLine >= allCodeLines.size())) this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine, endOfBlock);
+
+    if ((lineNumberCopy == currentLine) || currentLine >= allCodeLines.size())
+    {
+        //if lineNumberCopy equals the currentLine variable, it means that we're on the same
+        //physical line, in which case the advanceToNextCharacter function will NOT have added
+        //the white space to the code block yet. Alternatively, if the current line is greater
+        //than the maximum then we've reached the end of the code and should add the current
+        //block line as well.
+        if (!endOfBlock) this->begginingLines.push_back(this->blockLine);
+        else this->endingLines.push_back(this->blockLine);
+
+        blockLine = "";
+        return;
+    }
+    else
+    {
+        //We're on a different line than we were before, which means the appropriate white space
+        //has already been added by the advanceToNextCharacter() method. Go back up to the end of 
+        //the last line so that we can correctly get white space for the next block
+        placeInLine = 0;
+        blockLine = "";
+        return;
+    }
+}
+
+std::string CodeBlock::getFirstWord(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine)
+{
+    //returns the first word in the given line of code, a "word" ends when it 
+    //encounters white space, or a '(' character. The parentheses is uncluded
+    //because there doesn't actually have to be white space between certain keywords
+    //like. while(i < 5) and while (i < 5) are both syntactically correct
+
+    //we also ignore the '<' chracter so if we're dealing with a class, i.e.
+    //std::pair<std::vector<std::vector<int>>, int>, all that really matters is 
+    //that we're working with a pair on the outermost layer, so the first word will
+    //just be std::pair.
+
+    std::string firstWord = "";
+    char currentCharacter;
+    while (placeInLine < allCodeLines[currentLine].size())
+    {
+        currentCharacter = allCodeLines[currentLine][placeInLine];
+        if (currentCharacter == ' ' || currentCharacter == '\n' || currentCharacter == '\r' || currentCharacter == '\t' || currentCharacter == '(') break;
+        else if (currentCharacter == '<') break;
+        else firstWord += currentCharacter;
+
+        placeInLine++;
+    }
+
+    //see if we actually have any letters
+    if (firstWord.size() == 0) return firstWord;
+
+    //If we have some letters then we need to move our placeInLine back by one so it's focused
+    //on the last letter of the found word
+    placeInLine--;
+
+    //see if the last character of the found word is a semi-colon, if so remove it
+    //and reduce our current position by 1
+    if (firstWord[firstWord.size() - 1] == ';')
+    {
+        firstWord.pop_back();
+        placeInLine--;
+    }
+
+    //add all characters found so far to the current blockLine string
+    this->blockLine += firstWord;
+
+    //before returning the word, see if there are any namespaces before the name and truncate them.
+    //This is useful for us to figure out what kind of words we're looking at (variable, parameter, etc.)
+    int startPoint = 0;
+    for (int j = firstWord.length() - 1; j--; j >= 0)
+    {
+        if (firstWord[j] == ':')
+        {
+            startPoint = j + 1;
+            break;
+        }
+    }
+    return firstWord.substr(startPoint);
+}
+
+void findQuoteEnd(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine)
+{
+    //This function advances us to the end of a quote. A quote can either start with " or ',
+    //whatever is starts with it will also have to end with. While still inside the quote, make
+    //sure that any potential end characters aren't preceeded by the '\' escape character
+    char endCharacter = allCodeLines[currentLine][placeInLine++];
+    bool lastCharacterEscape = false;
+
+    while (true)
+    {
+        if (placeInLine >= allCodeLines[currentLine].size())
+        {
+            //go to the next line
+            currentLine++;
+            placeInLine = 0;
+        }
+
+        if (allCodeLines[currentLine][placeInLine] == '\\')
+        {
+            lastCharacterEscape ^= 1; //if we hit two escape characters in a row then we actually break the escape
+            placeInLine++;
+        }
+        else if (allCodeLines[currentLine][placeInLine] == endCharacter && !lastCharacterEscape)
+        {
+            //placeInLine++; //advance one spot further so we don't accidentally call this function again
+            return; //we've reached the end of the quote
+        }
+        else
+        {
+            //found a non-escape character, set lastCharacterEscape to false and increment
+            lastCharacterEscape = false;
+            placeInLine++;
+        }
+    }
+}
+
+void findFirstNonQuoteCharacter(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine, char c)
+{
+    //finds the first instance of the given character that isn't inside of a quote string
+    while (true)
+    {
+        if (allCodeLines[currentLine][placeInLine] == c) break;
+        else if (allCodeLines[currentLine][placeInLine] == '\'' || allCodeLines[currentLine][placeInLine] == '\"') findQuoteEnd(allCodeLines, currentLine, placeInLine);
+
+        if (placeInLine >= allCodeLines[currentLine].size())
+        {
+            currentLine++;
+            placeInLine = 0;
+        }
+        else placeInLine++;
+    }
+}
+
+void CodeBlock::findClosingParenthese(std::vector<std::string>& allCodeLines, int &currentLine, int &placeInLine)
+{
+    //this function is used to iterate to the appropriate closing parentheses of our current
+    //block. This function is needed because there can be multiple parentheses nested inside of
+    //each other like in loops [for (int i = 0; i < vec.size(); i++)] or nested functions 
+    //[choose(floor(5/2), 2)]
+
+    //Scan until we find the first parentheses if we aren't already on it
+    if (allCodeLines[currentLine][placeInLine] != '(') this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+    this->blockLine += '(';
+
+    int parenthesesLevel = 1;
+    //we're now located just after the opening '(' character. We keep scanning and every time we find a '('
+    //character we inncrease the value of the parentheses level variable by one and every ')' character will
+    //decrease the level by 1. We keep scanning until the value of the variable drops to 0. Any parentheses
+    //that are part of strings will be automatically ignored by the advanceToNextCharacter() method.
+    while (parenthesesLevel)
+    {
+        //Add the next character
+        this->advanceToNextCharacter(allCodeLines, currentLine, placeInLine);
+        this->blockLine += allCodeLines[currentLine][placeInLine];
+
+        if (allCodeLines[currentLine][placeInLine] == '(') parenthesesLevel++;
+        else if (allCodeLines[currentLine][placeInLine] == ')') parenthesesLevel--;
+    }
+
+    return; //we return without advancing again, so the placeInLine index will still be on the closing parentheses
+}
+
+void findEndOfMultiLineQuote(std::vector<std::string>& allCodeLines, int& currentLine, int& placeInLine)
+{
+    //a multi line quote depends on two consecutive characters to terminate instead of just one. This is
+    //out of the ordinary so it get's its own dedicated function to do this. We pass the location of the 
+    //start of the quote to this function, so we need to skip the first two characters
+
+    placeInLine += 2;
+    while (true)
+    {
+        if (placeInLine >= allCodeLines[currentLine].size())
+        {
+            currentLine++;
+            placeInLine = 0;
+        }
+
+        if (allCodeLines[currentLine][placeInLine] == '*')
+        {
+            if (allCodeLines[currentLine][++placeInLine] == '/') return;
+        }
+        else placeInLine++;
+    }
+}
+
 bool contains(std::vector<std::string>& vec, std::string item)
 {
     //checks to see if the given item is contained in the given vector
