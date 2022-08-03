@@ -1,5 +1,10 @@
-int main()
+class CodeBlock
 {
-    std::cout << "Hello, world!" << std::endl;
-    return 0;
-}
+public:
+    void printBlock()
+    {
+        for (int i = 0; i < this->begginingLines.size(); i++) std::cout << this->begginingLines[i];
+        for (int i = 0; i < this->subBlocks.size(); i++) subBlocks[i]->printBlock();
+        for (int i = 0; i < this->endingLines.size(); i++) std::cout << this->endingLines[i];
+    }
+};
