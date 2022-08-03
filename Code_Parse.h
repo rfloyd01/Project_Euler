@@ -554,7 +554,7 @@ CodeBlock::CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, i
                 amountToSubtract++;
             }
 
-            placeInLine -= amountToSubtract;
+            //placeInLine -= amountToSubtract;
             if (amountToSubtract <= placeInLine)
             {
                 //this means that we're on the same line and we can safely add the 
