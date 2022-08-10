@@ -15,7 +15,7 @@ std::vector<std::string> scopes = { "private:", "public:", "protected:" };
 std::vector<char> whiteSpaceCharacters = { ' ', '\t' };
 std::vector<char> newLineCharacters = { '\n', '\r' };
 
-bool debugPrint = false;
+bool debugPrint = true;
 
 /*
 Code Block types are:
@@ -27,11 +27,13 @@ Code Block types are:
 4 - Function declaration block
 5 - Scope block
 6 - Keyword blocks
+7 - Variable definition block
 
 ("blocks with sub-blocks")
-7 - Loop/If/Block without curly braces
-8 - Loop/If/Block with curly braces
-9 - Function/Class/Struct definition
+8 - Loop/If/Block without curly braces
+9 - Loop/If/Block with curly braces
+10 - Class/Struct/enum definition
+11 - Function definition
 */
 
 class CodeBlock
@@ -42,7 +44,7 @@ public:
     std::vector<std::string> begginingLines;
     std::vector<CodeBlock*> subBlocks;
     std::vector<std::string> endingLines;
-    
+
     int blockType = -1;
     std::string blockLine = "";
     bool closer = false;
@@ -521,7 +523,7 @@ CodeBlock::CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, i
             if (debugPrint) std::cout << "Found a curly brace block" << std::endl;
             this->blockLine += currentCharacter;
             this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
-            this->blockType = 8;
+            this->blockType = 9;
             return;
         }
         else
@@ -570,7 +572,7 @@ CodeBlock::CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, i
                 placeInLine = 0;
             }
             
-            this->blockType = 7;
+            this->blockType = 8;
             return;
         }
     }
@@ -604,7 +606,7 @@ CodeBlock::CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, i
                     }
                     
                     this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
-                    this->blockType = 3;
+                    this->blockType = 7;
 
                     return; //this is considered a standard line of code
                 }
@@ -626,7 +628,7 @@ CodeBlock::CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, i
                 if (currentCharacter == '{')
                 {
                     if (debugPrint) std::cout << "Found a function definition block" << std::endl;
-                    this->blockType = 9;
+                    this->blockType = 10;
                     this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
                     return;
                 }
@@ -654,7 +656,7 @@ CodeBlock::CodeBlock(std::vector<std::string>& allCodeLines, int& currentLine, i
             currentCharacter = allCodeLines[currentLine][placeInLine];
             this->blockLine += currentCharacter;
         }
-        this->blockType = 9;
+        this->blockType = 10;
         this->addClosingWhiteSpace(allCodeLines, currentLine, placeInLine);
         return;
     }
@@ -710,7 +712,7 @@ void recursiveCodeBlockCreation(std::vector<CodeBlock*>& blockArray, std::vector
     //what kind of block it is. The below CodeBlock
     CodeBlock* codeBlock = new CodeBlock(allCodeLines, currentLineNumber, placeInLine);
 
-    if (codeBlock->blockType >= 7)
+    if (codeBlock->blockType >= 8)
     {
         //This code block will have some sub-blocks and potentially an ending curly brace.
         //We recursively call this function with the sub-block array of the current code
@@ -730,9 +732,9 @@ void recursiveCodeBlockCreation(std::vector<CodeBlock*>& blockArray, std::vector
                 break;
             }
 
-            //BlockType 6 is a block without curly braces, which means it can only have a
+            //BlockType 8 is a block without curly braces, which means it can only have a
             //single sub-block so there's no need to keep looping
-            if (codeBlock->blockType == 7)
+            if (codeBlock->blockType == 8)
             {
                 blockArray.push_back(codeBlock);
                 return;

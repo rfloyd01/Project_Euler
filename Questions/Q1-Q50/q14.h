@@ -5,21 +5,19 @@
 #include <map>
 
 //Longest Collatz sequence
-int* used_numbers = new int[1000000];
-
-int ChainLength(long long n)
+int ChainLength(long long n, int* used_numbers)
 {
 	if (n >= 1000000)
 	{
-		if (n % 2 == 0) return (1 + ChainLength(n / 2));
-		else return (2 + ChainLength((3 * n + 1) / 2));
+		if (n % 2 == 0) return (1 + ChainLength(n / 2, used_numbers));
+		else return (2 + ChainLength((3 * n + 1) / 2, used_numbers));
 	}
 	else
 	{
 		if (used_numbers[n]) return used_numbers[n];
 
-		if (n % 2 == 0) used_numbers[n] = 1 + ChainLength(n / 2);
-		else used_numbers[n] = 2 + ChainLength((3 * n + 1) / 2);
+		if (n % 2 == 0) used_numbers[n] = 1 + ChainLength(n / 2, used_numbers);
+		else used_numbers[n] = 2 + ChainLength((3 * n + 1) / 2, used_numbers);
 
 		return used_numbers[n];
 	}
@@ -33,14 +31,15 @@ std::pair<std::string, double> q14()
 	int answer = 0, longest_chain = 0;
 
 	//create hash table for numbers already calculated below 1000000, initialize 1 to a length of 1
-	for (int i = 0; i < 1000000; i++) used_numbers[i] = 0;
+	int* used_numbers = new int[1000000]();
 	used_numbers[1] = 1;
 
-	for (int i = 500000; i < 1000000; i++)
+	for (int i = 2; i < 1000000; i++)
 	{
-		if (ChainLength(i) > longest_chain)
+		int current_length = ChainLength(i, used_numbers);
+		if (current_length > longest_chain)
 		{
-			longest_chain = ChainLength(i);
+			longest_chain = current_length;
 			answer = i;
 		}
 	}

@@ -1,33 +1,23 @@
-std::pair <std::string, double> q3(int yeety)
+int answer = 999999;
+bool cont = true;
+while (cont)
 {
-	auto run_time = std::chrono::steady_clock::now();
-
-	long long num = 600851475143, prim = 2, answer = 2; //set answer to 2, if the answer isn't 2 then it will be discovered in while loop
-	long long stop_point = sqrt(num);
-
-	while (num % 2 == 0) num /= prim;
-	if (num != 1)
-	{
-		prim++;
-		while (prim <= stop_point)
-		{
-			if (num == 1)
-			{
-				answer = prim - 2;
-				break;
-			}
-			if (num % prim == 0) num /= prim;
-			else prim += 2;
-		}
-
-		if (num == 1) answer = prim;
-		else answer = num;
-	}
-	//ran in 0.0000305 seconds
-	//HackerRank Score: 100.00 / 100.00
-
-	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
-
-	//the answer is 6857
-	//ran in 0.0000305 seconds
+    if (palindromeTestSixDigits(answer))
+    {
+        int start = 100, stop = sqrt(answer);
+        for (int i = start; i < stop; i++)
+        {
+            if (answer % i == 0)
+            {
+                if (answer / i > 999) continue;
+                {
+                    cont = false;
+                    break;
+                }
+            }  
+        }
+    }
+    answer--;
 }
+answer++;
+//run_time = 0.0008639 seconds

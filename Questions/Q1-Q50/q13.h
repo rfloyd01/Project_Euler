@@ -2,6 +2,8 @@
 
 #include <Header_Files/pch.h>
 #include <fstream>
+#include <Header_Files/int_64x.h>
+#include <Header_Files/functions.h>
 
 //Large sum
 std::pair<std::string, double> q13()
@@ -11,32 +13,22 @@ std::pair<std::string, double> q13()
 
 	auto run_time = std::chrono::steady_clock::now();
 
-	long long ans = 0;
+	long long answer = 0;
 
 	std::ifstream inFile;
-	inFile.open("C:/Users/Bobby/Documents/Coding/C++/Project_Euler/Resources/q13.txt");
-	char num; //variable used for reading characters
+	std::string currentLine = "";
+	inFile.open("Resources/q13.txt");
 
-	//first need to read all numbers from text file
-	for (int i = 0; i < 100; i++)
-	{
-		long long current_number = 0;
-		for (int j = 0; j < 12; j++) //only read the first 12 digits of each number
-		{
-			inFile >> num;
-			current_number *= 10;
-			current_number += (num - '0'); //convert char to int
-		}
-		for (int j = 0; j < 38; j++) inFile >> num; //read to end of line
-		ans += current_number;
-	}
-	std::string answer = std::to_string(ans); //convert int to string
-	answer.erase(answer.begin() + 10, answer.end()); //remove everything other than first 10 characters
+	//2 extra digits get added from the additions, and we started with 2 more digits than we need
+	//so the final answer needs to be divided by 10,000 so that we only get the first 10 digits
+	while (std::getline(inFile, currentLine)) answer += std::stoll(currentLine.substr(0, 12));
+	answer /= 10000;
+	//ran in 0.0001998 seconds
 
-	return { answer , std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
+	return { std::to_string(answer) , std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 5537376230
-	//ran in 0.0003432 seconds
+	//ran in 0.0001998 seconds
 	//HackerRank Score = 100.00/100.00
 }
 

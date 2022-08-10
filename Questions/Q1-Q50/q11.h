@@ -15,7 +15,7 @@ std::pair<std::string, double> q11()
 
 	//first step is to copy the grid
 	std::ifstream inFile;
-	inFile.open("C:/Users/Bobby/Documents/Coding/C++/Project_Euler/Resources/q11.txt");
+	inFile.open("Resources/q11.txt");
 
 	for (int i = 0; i < 20; i++)
 	{

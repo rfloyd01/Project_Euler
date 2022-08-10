@@ -2,6 +2,7 @@
 #include <Header_Files/functions.h> //includes permutationsOfPartitions()
 #include <iostream>
 
+
 //Top Dice
 std::pair<std::string, double> q240()
 {

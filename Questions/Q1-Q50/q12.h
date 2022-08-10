@@ -23,6 +23,6 @@ std::pair<std::string, double> q12()
 	return { std::to_string(triangle_num), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 76576500
-	//ran in 0.100889 seconds
+	//ran in 0.0992731 seconds
 }
 

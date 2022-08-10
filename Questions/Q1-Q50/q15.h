@@ -7,33 +7,17 @@
 std::pair<std::string, double> q15()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	const int maximum = 20; //maximum value is 500 in HackerRank version
 
-	//create grid and initialize first row and column to have values of 1.
-	long long grid[maximum + 1][maximum + 1] = { {0} };
-	for (int i = 0; i <= maximum; i++)
-	{
-		grid[0][i] = 1;
-		grid[i][0] = 1;
-	}
 
-	//Traverse through the grid and dynamically build answer
-	for (int i = 1; i <= maximum; i++)
-	{
-		for (int j = 1; j <= maximum; j++)
-		{
-			grid[i][j] = grid[i - 1][j] + grid[i][j - 1]; // % 1000000007; modulo needed for HackerRank version
-		}
-	}
-
-	//In the HackerRank version, a loop would go at this part that would print out grid[m][n] for all of the given inputs.
-	//The ProjectEuler version only cares about the one answer though so the loop has been ommited.
-	long long answer = grid[20][20];
+	////In the HackerRank version, a loop would go at this part that would print out grid[m][n] for all of the given inputs.
+	////The ProjectEuler version only cares about the one answer though so the loop has been ommited.
+	//long long answer = grid[20][20];
+	long long answer = recursiveChoose(40, 20);
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 137846528820
-	//ran in 0.0000021 seconds
+	//ran in 0.0000009 seconds
 }
 
 //NOTES
@@ -83,4 +67,27 @@ long long binomial(int n, int k)
 
 	return ans;
 }
+*/
+
+/*
+* Update 8/10/22. Decided to use the recent recursive choose function I found, makes this question
+* cleaner and faster. Here's the code from before this update
+* 	const int maximum = 20; //maximum value is 500 in HackerRank version
+
+	//create grid and initialize first row and column to have values of 1.
+	long long grid[maximum + 1][maximum + 1] = { {0} };
+	for (int i = 0; i <= maximum; i++)
+	{
+		grid[0][i] = 1;
+		grid[i][0] = 1;
+	}
+
+	//Traverse through the grid and dynamically build answer
+	for (int i = 1; i <= maximum; i++)
+	{
+		for (int j = 1; j <= maximum; j++)
+		{
+			grid[i][j] = grid[i - 1][j] + grid[i][j - 1]; // % 1000000007; modulo needed for HackerRank version
+		}
+	}
 */
