@@ -464,6 +464,9 @@
     <ClInclude Include="Code_Parse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Questions\Q151-Q200\q169.h">
+      <Filter>Header Files\Questions\Q151-Q200</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Resources\q11.txt">

@@ -12,9 +12,8 @@ std::pair<std::string, double> q175()
 	int goalFraction[2] = { 987654321 / 9, 123456789 / 9 }; //represents the ratio of f(n - 1) to f(n), this is the inverse of what the problem asks for
 	std::vector<bool> directionTaken;
 
-	//we have two options for terminating the below loop. Either goalFraction[0] will become 1, or,
-	//goalFraction[1] - goalFraction[0] will equal 1.
-	while (true)
+	//iterate until we reach the beginning of a row
+	while (goalFraction[0] != 1)
 	{
 		if (goalFraction[0] == 1) break;
 		else if (goalFraction[1] - goalFraction[0] == 1)

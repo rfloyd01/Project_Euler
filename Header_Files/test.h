@@ -2,10 +2,6 @@
 #include <Header_Files/print.h>
 #include <iostream>
 
-int palindromeTestSixDigits(int y) {
-    return 0;
-}
-
 std::pair<std::string, double> test()
 {
 	auto run_time = std::chrono::steady_clock::now();
