@@ -8,13 +8,7 @@ std::pair<std::string, double> q15()
 {
 	auto run_time = std::chrono::steady_clock::now();
 
-
-	////In the HackerRank version, a loop would go at this part that would print out grid[m][n] for all of the given inputs.
-	////The ProjectEuler version only cares about the one answer though so the loop has been ommited.
-	//long long answer = grid[20][20];
-	long long answer = recursiveChoose(40, 20);
-
-	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
+	return { std::to_string(recursiveChoose(40, 20)), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 137846528820
 	//ran in 0.0000009 seconds

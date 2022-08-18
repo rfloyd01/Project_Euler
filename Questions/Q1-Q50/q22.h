@@ -16,7 +16,7 @@ std::pair<std::string, double> q22()
 	//first step is to copy the names
 	std::ifstream inFile;
 	std::vector<std::string> names;
-	inFile.open("C:/Users/Bobby/Documents/Coding/C++/Project_Euler/Resources/q22.txt");
+	inFile.open("Resources/q22.txt");
 
 	//read all of the names from the text file into the names vector
 	std::string s;

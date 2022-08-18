@@ -120,31 +120,31 @@ std::pair<std::string, double> q19()
 //NOTES
 //Old algorithm
 /*
-//int answer = 0;
-    //int current_day = 0; //Jan. 1 1901 was a Monday so start at day 0
-    //bool leap_year = 0;
-    //std::vector<int> month_days = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }; //days in the month for Jan. - Dec.
+int answer = 0;
+    int current_day = 0; //Jan. 1 1901 was a Monday so start at day 0
+    bool leap_year = 0;
+    std::vector<int> month_days = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }; //days in the month for Jan. - Dec.
 
-    //for (int year = 1901; year < 2001; year++)
-    //{
-    //	//the 100 and 400 year rule would only take effect during the year 2000 but I've left them in the code just for completeness sake
-    //	if (year % 400 == 0) leap_year = 1;
-    //	else if (year % 100 == 0) leap_year = 0;
-    //	else if (year % 4 == 0) leap_year = 1;
-    //	else leap_year = 0;
+    for (int year = 1901; year < 2001; year++)
+    {
+    	//the 100 and 400 year rule would only take effect during the year 2000 but I've left them in the code just for completeness sake
+    	if (year % 400 == 0) leap_year = 1;
+    	else if (year % 100 == 0) leap_year = 0;
+    	else if (year % 4 == 0) leap_year = 1;
+    	else leap_year = 0;
 
-    //	for (int month = 1; month <= 12; month++)
-    //	{
-    //		current_day %= 7; //make sure to round to the current week
-    //		if (current_day == 6)
-    //		{
-    //			//std::cout << "Month = " << month << ", Year = " << year << std::endl;
-    //			answer++;
-    //		}
+    	for (int month = 1; month <= 12; month++)
+    	{
+    		current_day %= 7; //make sure to round to the current week
+    		if (current_day == 6)
+    		{
+    			//std::cout << "Month = " << month << ", Year = " << year << std::endl;
+    			answer++;
+    		}
 
-    //		current_day += month_days[month];
-    //		if ((month == 2) & leap_year) current_day++;
-    //	}
-    //}
-    //ran in 0.0000064 seconds
+    		current_day += month_days[month];
+    		if ((month == 2) & leap_year) current_day++;
+    	}
+    }
+    ran in 0.0000064 seconds
 */
