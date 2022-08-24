@@ -92,6 +92,16 @@ T ModPow(T base, T exp, T modulus, bool overflow)
 }
 
 template <typename T>
+T ModularMultiplicativeInverse(T b, T mod)
+{
+	//I've run into issues in the past where I need to use division with modular arithmetic, however, this causes issues. 
+	//Instead of dividing, you need to multiply by the modular multiplicative inverse, i.e. instead of doing a / b = x, you 
+	//need to do a * (1/b) = x. This modular multiplicative inverse can be found using Euler's theorem, basically,
+	//b ^ -1 == b ^ (m-2) MOD m.
+	return ModPow(b, mod - 2, mod, true);
+}
+
+template <typename T>
 T BinomialMod(T n, T k, T m);
 
 template <typename T>
