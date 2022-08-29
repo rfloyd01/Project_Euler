@@ -55,6 +55,9 @@
     <Filter Include="Header Files\Questions\Q751-Q800">
       <UniqueIdentifier>{a9754368-6774-46fb-90f9-e707dd880cc5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Questions\Q651-Q700">
+      <UniqueIdentifier>{3e2f799d-26c1-4c6a-912e-714ab9784267}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -472,6 +475,9 @@
     </ClInclude>
     <ClInclude Include="Header_Files\regexPractice.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q651-Q700\q684.h">
+      <Filter>Header Files\Questions\Q651-Q700</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

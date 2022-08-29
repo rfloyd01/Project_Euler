@@ -280,6 +280,7 @@
     <ClInclude Include="Questions\Q51-Q100\q92.h" />
     <ClInclude Include="Questions\Q51-Q100\q94.h" />
     <ClInclude Include="Questions\Q51-Q100\q95.h" />
+    <ClInclude Include="Questions\Q651-Q700\q684.h" />
     <ClInclude Include="Questions\Q700-Q751\q719.h" />
     <ClInclude Include="Questions\Q700-Q751\q727.h" />
     <ClInclude Include="Questions\Q751-Q800\q799.h" />

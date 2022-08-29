@@ -1181,12 +1181,6 @@ std::string BigNum::GetNumberStringLastXDigits(int x)
 
 int gcd(int a, int b)
 {
-	/*if (a == 0 or b == 0) return 0;
-	if (a == b) return a;
-
-	if (a > b) return gcd(a - b, b);
-	return gcd(a, b - a);*/
-
 	//new method utilizes modular division instead of subtraction
 	//it's assumed that a is larger than b 
 	if (!b) return a;
