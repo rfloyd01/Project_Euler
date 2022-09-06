@@ -7,19 +7,18 @@
 std::pair<std::string, double> q686()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	long long answer = 0;
 
-	double diff = (log10(124) - log10(123)) / log10(2);
-	int k = 0, hitNumber = 0;
+	int answer = 90, hits = 1; //start at first found exponent
+	long long differences[3] = { 196, 289, 485  }; //these were found by examaning patterns
 
-	while (true)
+	while (hits < 678910)
 	{
-		double upper = ( k++ + log10(124)) / log10(2);
-		if ((long long)upper > (long long)(upper - diff))
+		for (int i = 0; i < 3; i++)
 		{
-			if (++hitNumber == 678910)
+			if ((int)pow(10, (answer + differences[i]) * log10(2) - (int)((answer + differences[i]) * log10(2)) + 2) == 123)
 			{
-				answer = (long long)upper;
+				answer += differences[i];
+				hits++;
 				break;
 			}
 		}
@@ -28,7 +27,7 @@ std::pair<std::string, double> q686()
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 193060223
-	//ran in 0.0929607 seconds
+	//ran in 0.0301722 seconds
 }
 
 //NOTES
@@ -62,13 +61,9 @@ So it looks like there are two 485 terms next to eachother here at terms 30 and 
 although if the differences still only include the numbers 196, 289 and 485 (which is simply 196 + 289) then all isn't lost. After carying out the sequence for the first 150 
 hits (starting with the 6th hit) this is what the pattern looks:
 
-1545
 485, 196, 289, 196, 289, 196, 289, 196,
-3681
 485, 196, 289, 196, 289, 196, 289, 196,
-5817
 485, 196, 289, 196, 289, 196, 289, 196,
-7953
 485, 485, 196, 289, 196, 289, 196,
 485, 485, 196, 289, 196, 289, 196,
 485, 485, 196, 289, 196, 289, 196,
@@ -89,35 +84,34 @@ hits (starting with the 6th hit) this is what the pattern looks:
 485, 485, 485, 485, 196,
 485, 485, 485, 485, 196,
 485, 485, 485, 485,
-681, 485, 485, 485
 
-So it's definitely changing quite a bit, furthermore, the code I wrote to generate this hits does so by moving forward by the original pattern. If the pattern changes
-and I'm only moving forward by the original pattern it's possible that I'm skipping over certain values. To confirm this I want to iterate over every number in the area
-where I see the pattern changing above, however, it becomes painstakingly slow to check every single number. If I knew the pattern was going to change every set number of 
-terms and by a set amount it would be one thing, but that doesn't appear to be the case. Assuming that I haven't missed any terms then the pattern lasts for 24, 49, 36 and 30
-terms from what I can see, but then only lasts for 4 before changing again which takes me to the end of my data. So I'm a little stumped here, considering that this problem
-is only supposed to be 5% difficulty there must be something major that I'm missing so it may be time to approach this from a different angle. Maybe it has something to do 
-with the prime factorization of the exponents? That seems unlikely though because the pattern is additive and not multiplicative. Looking at the binary forms of the numbers
-probably wont help either, since they're all powers of 2 it'll just be a 1 followed by a bunch of zeros.
+So it's definitely changing quite a bit, however, it seems that even though the pattern changes only the same three numbers are used. Instead of iterating over the 
+pattern I had initially found it may be enough to just try adding any of the above three numbers to the current exponent. 485 is the sum of 196 and 289 so it should 
+be the last number tested, otherwise numbers may get skipped.
 
-If I'm not able to solve this with a pattern, maybe I can come up with some kind of equation to help. We're looking for integer powers of 2 that will be less than 124 * 10 ^ x and 
-less than 123 * 10 ^ x for all values of x. Using logarithms we can see that when x = 10, 2^x = 1,240,000,000,000 ---> xlog(2) = log(124 * 10,000,000,000) ---> xlog(2) = log(124) + log(10^10)
----> xlog(2) = log(124) + 10 ---> x = (log(124) + 10) / log(2) ---> x = 40.173 and (log(123) + 10) / log(2) = 40.162. There aren't any whole numbers that come between 40.173 and 40.162
-so we know that there is no power of 2 that will get a value of 123 followed by 10 zeros. We can extend this to any power of 10 to easily see if there are any powers of 2 that will
-be a whole number. Our first hit found with the brute force algorithm was 2^90. 2^90 = 10^27  so applying this to the other equations (log(124) + (27-2)) / log(2) = 90.002 and
-(log(123) + (27-2)) / log(2) = 89.9907. In this scenario we see that the non-decimal part of the number extends from 89 to 90 which means that 2^90 will give a value that starts with 123.
+The last thing to do is to find a good way to tell if the first three digits of our number are 123. During my brute force testing above I used an int_64x, converted 
+it into a string and then just tested whether the first three characters were "123", this is obviously very inefficient. What would be better would be to use 
+logarithms to figure it out. If we want the first three digits of a number to equal 123 then the number would look something like this:
 
-Basically what we get are two different linear equations:
-y1 = (log(123) + x) / log(2)
-y2 = (log(124) + x) / log(2)
+10^x = 123yy
 
-y2 - y1 = ((log(124) + x) - (log(123) + x)) / log(2)
-y2 - y1 = (log(124) - log(123)) / log(2) = 0.01168
+In this scenario x doesn't have to be an integer, it can feature a decimal amount. Every time we subtract 1 from whatever this number is it has the effect of dividing
+the number on the right side of the equation by 10.
 
-So for any given power of 10, the value of the exponent that 2 is raised to to get the number 124(0) will always be greater than the exponent to get a number of the form 123(0)
-by a value of 0.01168. What this boils down to, is that as long as the decimal portion of the equation y = (log(124) + x) / log(2) is less than 0.01168, then we'll have a hit.
+10^x = 123yy
+10^(x - 1) = 123y.y
+10^(x - 2) = 123.yy
+10^(x - (int)x) = 1.23yy
 
-I implemented a brute force-ish approach where I calculate all values of our upper range and then subtract the difference to the lower range (0.01168...) I then cast both of 
-these doubles to integers and if the upper integer is greater than the lower integer we have a hit. I didn't think this approach would be that effective but surprisingly it works
-in under 100 milliseconds. Just goes to show that what I consider to be brute force solutions aren't truly brute force these days.
+As can be seen, if we remove the integer part of the exponent entirely then we'll be left with a number less than 10 on the right side of the equation. So to see if the 
+first three digits of our power of 2 are equal to 123 we can use the below equation:
+
+2^exp = 10^x
+exp*log(2) = x
+exp*log(2) - (int)(exp*log(2)) = x_decimal_only
+(int)10^(x_decimal_only + 2) = three digit number
+
+If we raise 10 to the decimal portion of our known exponent log(2) and add 2 to it then we'll be guaranteed to get a three digit number. All we need to do from here is cast
+this three digit number to an integer to remove the decimals and see whether or not the number is 123. Starting from the first known exponent that was found (because this is 
+the only exponent I found which doesn't follow the set pattern) and only adding one of the numbers [196, 289, 485] allows us to find the answer in about 30 milliseconds.
 */
