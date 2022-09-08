@@ -17,7 +17,7 @@ std::pair<std::string, double> q700()
 		//Starting at our current value, get as close to "mod" as possible using the current euler coin without surpassing
 		//mod. From this point, the next Euler coin occurs if we advance forward by one more of the current Euler Coin
 		currentValue += (mod - currentValue) / currentEulerCoin * currentEulerCoin;
-		currentEulerCoin = (currentValue + currentEulerCoin) % mod;
+		currentEulerCoin = (currentValue + currentEulerCoin) - mod;
 	}
 
 

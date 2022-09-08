@@ -58,6 +58,9 @@
     <Filter Include="Header Files\Questions\Q651-Q700">
       <UniqueIdentifier>{3e2f799d-26c1-4c6a-912e-714ab9784267}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Questions\Q601-Q650">
+      <UniqueIdentifier>{f1e9ba20-805d-43e9-8fcc-fe214294e410}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -484,6 +487,12 @@
     </ClInclude>
     <ClInclude Include="Questions\Q651-Q700\q700.h">
       <Filter>Header Files\Questions\Q651-Q700</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q751-Q800\q751.h">
+      <Filter>Header Files\Questions\Q751-Q800</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q601-Q650\q650.h">
+      <Filter>Header Files\Questions\Q601-Q650</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
