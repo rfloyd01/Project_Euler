@@ -14,45 +14,53 @@ std::pair<std::string, double> q650()
 {
 	auto run_time = std::chrono::steady_clock::now();
 
-	long long answer = 1, mod = 1000000007; //skip the first row and start with answer at 1
-	int max_k = 10000;
+	long long answer = 0, mod = 1000000007;
+	int max_k = 20000;
+	long long* sum_of_factors = new long long[max_k + 1]();
 
+	for (int i = 1; i <= max_k; i++) sum_of_factors[i] = 1;
 	std::vector<int> prims = primes(max_k);
 
-	for (int k = 2; k <= max_k; k++)
+	for (int i = 0; i < prims.size(); i++)
 	{
-		long long sum = 1;
-		for (int i = 0; i < prims.size(); i++)
-		{
-			if (prims[i] > k) break;
+		//create a new array to hold the exponents for the prime at each value of n
+		long long* number_of_prime = new long long[max_k + 1]();
 
-			long long number_of_current_prime = 0, prime_power = prims[i], rolling_denominator_sum = 0;
-			
-			while (prime_power <= k)
+		for (int j = 1; j <= (log(max_k) / log(prims[i])); j++)
+		{
+			int power = pow(prims[i], j);
+			int current_location = power, multiplier = 1;
+			int current_num = current_location - 1;
+			while (current_location <= max_k)
 			{
-				long long divisor = k / prime_power;
-				long long final_exponent = 2 * (k - divisor * prime_power) + 2;
-				number_of_current_prime += divisor;
-				rolling_denominator_sum += 2 * prime_power * triangle(divisor) - (divisor * (2 * prime_power - final_exponent));
-				prime_power *= prims[i];
-			}
-			
-			number_of_current_prime = number_of_current_prime * (k + 1) - rolling_denominator_sum;
-			
-			if (number_of_current_prime)
-			{
-				long long power_sum = (ModPow((long long)prims[i], number_of_current_prime + 1, mod, 1) - 1) * ModularMultiplicativeInverse((long long)prims[i] - 1, mod);
-				sum = ModMult(sum, power_sum, mod);
+				for (int k = 0; k < power; k++)
+				{
+					number_of_prime[current_location++] += current_num;
+					current_num -= multiplier;
+					if (current_location > max_k) break;
+				}
+				
+				multiplier++;
+				current_num = multiplier * (power - 1);
+				
 			}
 		}
 
-		answer = (answer + sum) % mod;
+		//once the amount of the current prime has been calculated for all values, go over each value
+		//and multiply the final total by (prime^(amount+1) - 1) / (prime - 1)
+		for (int j = 1; j <= max_k; j++)
+			if (number_of_prime[j]) sum_of_factors[j] = ModMult(sum_of_factors[j], ModMult((ModPow((long long)prims[i], number_of_prime[j] + 1, mod, 1) - 1), ModularMultiplicativeInverse((long long)(prims[i] - 1), mod), mod), mod);
+
+		delete[] number_of_prime;
 	}
+
+	for (int i = 1; i <= max_k; i++) answer = (answer + sum_of_factors[i]) % mod;
+	delete[] sum_of_factors;
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 538319652
-	//ran in 161.606 seconds
+	//ran in 141.181 seconds
 }
 
 //NOTES
@@ -174,4 +182,8 @@ Maybe what I can do is keep an array of length 20,000 where all values are initi
 prime for each row, I can just iterate over all primes and plug their values into the appropriate row. We know for example that starting in the second row, 2 will
 appear in the denominator and by raised to the second power. In the third row it'll be raised to the 4th power, in the 4th row it'll be raised to the 6th power and 
 so on and so on. Since the exponents are always shifting by 2, we should always know how many exponents will be added from a given number by looking at the row before.
+
+Looking through the forums (just a brief glance) it looks like a lot of people have long runtimes on this one, although there are plenty who have better times than
+me. The consensus seems to be that this problem O(n^2 / log n) time, which seems to mesh with what I have. With a few optimizations I can probably cut down the time 
+a little bit, but I can't imagine cutting the time by orders of magnitude without some great new revalation.
 */
