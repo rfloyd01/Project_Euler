@@ -20,6 +20,8 @@ std::pair<std::string, double> q650()
 
 	for (int i = 1; i <= max_k; i++) sum_of_factors[i] = 1;
 	std::vector<int> prims = primes(max_k);
+	std::vector<long long> prime_inverses; //memoize prime inverses - 1 % mod to save on calculations
+	for (int i = 0; i < prims.size(); i++) prime_inverses.push_back(ModularMultiplicativeInverse((long long)(prims[i] - 1), mod));
 
 	for (int i = 0; i < prims.size(); i++)
 	{
@@ -49,7 +51,7 @@ std::pair<std::string, double> q650()
 		//once the amount of the current prime has been calculated for all values, go over each value
 		//and multiply the final total by (prime^(amount+1) - 1) / (prime - 1)
 		for (int j = 1; j <= max_k; j++)
-			if (number_of_prime[j]) sum_of_factors[j] = ModMult(sum_of_factors[j], ModMult((ModPow((long long)prims[i], number_of_prime[j] + 1, mod, 1) - 1), ModularMultiplicativeInverse((long long)(prims[i] - 1), mod), mod), mod);
+			if (number_of_prime[j]) sum_of_factors[j] = ModMult(sum_of_factors[j], ModMult((ModPow((long long)prims[i], number_of_prime[j] + 1, mod, 1) - 1), prime_inverses[i], mod), mod);
 
 		delete[] number_of_prime;
 	}
@@ -60,7 +62,7 @@ std::pair<std::string, double> q650()
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 538319652
-	//ran in 141.181 seconds
+	//ran in 44.833 seconds
 }
 
 //NOTES
