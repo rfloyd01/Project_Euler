@@ -500,6 +500,15 @@
     <ClInclude Include="Questions\Q751-Q800\q788.h">
       <Filter>Header Files\Questions\Q751-Q800</Filter>
     </ClInclude>
+    <ClInclude Include="Questions\Q751-Q800\q800.h">
+      <Filter>Header Files\Questions\Q751-Q800</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q751-Q800\q757.h">
+      <Filter>Header Files\Questions\Q751-Q800</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q701-Q750\q745.h">
+      <Filter>Header Files\Questions\Q700-Q751</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Resources\q11.txt">

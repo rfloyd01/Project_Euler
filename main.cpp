@@ -1,5 +1,5 @@
 #include <Header_Files/pch.h>
-#include <Questions/Q751-Q800/q788.h>
+#include <Questions/Q701-Q750/q745.h>
 #include <Header_Files/test.h>
 
 int main()
@@ -7,7 +7,7 @@ int main()
 	//All project euler questions are handled in separate header files. Each question is it's own functino which returns a pair where first is the answer and second is the time to run
 	//The question number is stored in the question_number variable automatically for ease of reading
 
-	auto answer = q788();
+	auto answer = q745();
 	//auto answer = test();
 
 
