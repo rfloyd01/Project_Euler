@@ -85,6 +85,11 @@ T ModMult(T a, T b, T mod)
 	//This function returns a * b % mod which is useful when multiplying 2 large numbers would normally overflow a long long int
 	//as a caveat it only works if the value of mod is 63 bits or less
 
+	if (a < 0)
+	{
+		std::cout << a << ", " << b << std::endl;
+	}
+
 	T result = 0;
 	while (a != 0)
 	{

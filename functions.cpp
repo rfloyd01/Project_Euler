@@ -911,6 +911,22 @@ long long generalizedLucasTheorem(long long n, long long m, long long p, long lo
 	long long r = n - m, j = 0, mod = MyPow(p, q);
 	bool mBiggerThanR = (m > r ? true : false); //needed to calculate e vector later
 
+	//TEMP: See if this works, different calculation of e_0. All it does is 
+	//look at the total number of p that exists in choose(n, m) after all
+	//cancellation of primes has taken place. For example, in choose(8, 3)
+	//there should be three 2's because choose(8, 3) = 8! / (5!*3!) = 
+	//(8*7*6*5*4*3*2*1)/(5*4*3*2*1*3*2*1) = (8*7*6)/(3*2*1) = 8 * 7 = 7 * 2 * 2 * 2.
+	//After all primes have been cancelled there are three two's remaining, 
+	//so the value of e_0 should be 3.
+	long long e_0 = 0, mult = p;
+	while (mult <= n)
+	{
+		e_0 += n / mult;
+		e_0 -= m / mult;
+		e_0 -= r / mult;
+		mult *= p;
+	}
+
 	std::vector<long long> n_j, m_j, r_j, N_j, M_j, R_j, e_j;
 
 	//create vectors for n_j, m_j and r_j
@@ -1016,7 +1032,10 @@ long long generalizedLucasTheorem(long long n, long long m, long long p, long lo
 	}
 
 	//finally, multiply the numerator value by p^e_0, we then have our answer
-	if (e_j[0]) numerator = ModMult(numerator, MyPow(p, e_j[0]), mod);
+	//if (e_j[0]) numerator = ModMult(numerator, MyPow(p, e_j[0]), mod);
+
+	//TEMP: See if the new calculation of e_0 works out
+	if (e_0) numerator = ModMult(numerator, MyPow(p, e_0), mod);
 
 	return numerator;
 }
