@@ -21,23 +21,53 @@ std::vector<bool> p_sieve(int maximum);
 void PrimesWithSieve(bool* prime_array, int maximum, std::vector<int>& primes);
 std::vector<int> primes(int maximum);
 std::vector<int> p_factors(int number);
-std::vector<int> PrimeFactors(int number);
+//std::vector<int> PrimeFactors(int number);
 std::vector<int> getFactors(int number);
 bool primeNumberTest(long long number);
+
+template <typename T>
+std::vector<T> PrimeFactors(T number)
+{
+	//returns a list of the prime factors of number, with repititions
+	std::vector<T> p_facts;
+	T i = 2;
+	while (number > 1)
+	{
+		if (number % i == 0)
+		{
+			p_facts.push_back(i);
+			number /= i;
+		}
+		else i++;
+	}
+
+	return p_facts;
+}
 
 int NumberOfFactors(int n);
 int char_to_int(char a);
 char int_to_char(int a);
-long long choose(int m, int n);
-long long recursiveChoose(int m, int n);
 int_64x BigChoose(int m, int n);
 int_64x BigPow(int_64x n, int p);
 long long factorial(int n);
 int gcd(int a, int b);
 long long gcd(long long a, long long b);
+long long extendedEuclideanGCD(long long a, long long b, long long *x, long long *y);
 bool coprime(int a, int b);
 int numberOfDigits(long long n);
 void FaraySequence(int maximum, std::vector<fraction>& pairs, fraction low = { 0, 1 }, fraction high = { 1, 1 }, bool new_pair = false);
+std::vector<int> baseConversion(int n, int b);
+long long ChineseRemainderTheorem(long long n, long long mod, std::vector<std::pair<long long, long long> > *equations = nullptr);
+
+//Binomial Functions
+long long choose(int m, int n);
+long long recursiveChoose(int m, int n);
+long long binomialMod(long long n, long long m, long long mod, int isPrime = 2);
+long long binomialModPrime(long long n, long long m, long long p, long long* factorials = nullptr, long long* inverse_factorials = nullptr);
+long long binomialModePrimeAdvanced(long long n, long long m, long long p);
+long long lucasTheorem(long long n, long long m, long long p);
+long long generalizedLucasTheorem(long long n, long long m, long long p, long long q);
+long long primeFactorialInstances(long long k, long long p);
 
 //Partition Functions
 std::vector<long long> polynomial_multiply(std::vector<long long>& p1, std::vector<long long>& p2, int cut_off = 0);
@@ -48,7 +78,7 @@ void getPartitions(int n, std::vector<std::vector<std::vector<int> > > &all_part
 	int currentLength = 0, int currentValue = 0, std::vector<int>* currentPartition = nullptr, bool recursive = false);
 long long permutationsOfPartitions(int n, int l, int maximum = 0, int minimum = 0, bool quick_choose = true);
 
-//Template Functions
+//Modular Arithmetic Functions
 template <typename T>
 T ModMult(T a, T b, T mod)
 {
@@ -92,13 +122,37 @@ T ModPow(T base, T exp, T modulus, bool overflow)
 }
 
 template <typename T>
-T ModularMultiplicativeInverse(T b, T mod)
+T ModularMultiplicativeInverse(T b, T mod, bool isPrime = 1)
 {
 	//I've run into issues in the past where I need to use division with modular arithmetic, however, this causes issues. 
 	//Instead of dividing, you need to multiply by the modular multiplicative inverse, i.e. instead of doing a / b = x, you 
 	//need to do a * (1/b) = x. This modular multiplicative inverse can be found using Euler's theorem, basically,
 	//b ^ -1 == b ^ (m-2) MOD m.
-	return ModPow(b, mod - 2, mod, true);
+	if (isPrime) return ModPow(b, mod - 2, mod, true);
+
+	//if mod isn't a prime then we need to calculate the inverse differently
+	T m0 = mod, y = 0, x = 1;
+
+	if (mod == 1) return 0;
+
+	while (b > 1)
+	{
+		//q is quotient
+		T q = b / mod, t = mod;
+
+		//m is remainder now, process same as Euclid's algo
+		mod = b % mod, b = t;
+		t = y;
+
+		//Update y and x
+		y = x - q * y;
+		x = t;
+	}
+
+	// Make x positive
+	if (x < 0) x += m0;
+
+	return x;
 }
 
 template <typename T>

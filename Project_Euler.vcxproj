@@ -287,6 +287,7 @@
     <ClInclude Include="Questions\Q700-Q751\q719.h" />
     <ClInclude Include="Questions\Q700-Q751\q727.h" />
     <ClInclude Include="Questions\Q701-Q750\q710.h" />
+    <ClInclude Include="Questions\Q701-Q750\q725.h" />
     <ClInclude Include="Questions\Q701-Q750\q743.h" />
     <ClInclude Include="Questions\Q701-Q750\q745.h" />
     <ClInclude Include="Questions\Q751-Q800\q751.h" />

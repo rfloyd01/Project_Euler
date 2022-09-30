@@ -90,23 +90,23 @@ std::vector<int> p_factors(int number)
 	return facts;
 }
 
-std::vector<int> PrimeFactors(int number)
-{
-	//returns a list of the prime factors of number, with repititions
-	std::vector<int> p_facts;
-	int i = 2;
-	while (number > 1)
-	{
-		if (number % i == 0)
-		{
-			p_facts.push_back(i);
-			number /= i;
-		}
-		else i++;
-	}
-
-	return p_facts;
-}
+//std::vector<int> PrimeFactors(int number)
+//{
+//	//returns a list of the prime factors of number, with repititions
+//	std::vector<int> p_facts;
+//	int i = 2;
+//	while (number > 1)
+//	{
+//		if (number % i == 0)
+//		{
+//			p_facts.push_back(i);
+//			number /= i;
+//		}
+//		else i++;
+//	}
+//
+//	return p_facts;
+//}
 
 std::vector<int> getFactors(int number)
 {
@@ -437,6 +437,101 @@ void FaraySequence(int maximum, std::vector<fraction>& pairs, fraction low, frac
 	}
 }
 
+std::vector<int> baseConversion(int n, int b)
+{
+	//Takes the number n which is in base 10 and converts it to be in base b.
+	//A vector is used to store the new digits because not all bases higher than 10 have 
+	//a convenient way to represent their digits (i.e. in hexadecimal numbers higher than 
+	//9 are represented with the letters A-F).
+	std::vector<int> n_b;
+	while (n >= b)
+	{
+		n_b.push_back(n % b);
+		n /= b;
+	}
+	n_b.push_back(n);
+	
+	return n_b;
+}
+
+long long ChineseRemainderTheorem(long long n, long long mod, std::vector<std::pair<long long, long long> >* equations)
+{
+	//The Chinese Remainder Theorem is used to solve n % mod = ? by means of breaking it into smaller problems. Basically,
+	//the value of mod is broken down into factors that are coprime with eachother (for example, if mod was 100 then it 
+	//could be broken down into factors of 4 (2 * 2) and 25 (5 * 5)) and we solve the smaller questions of n % factor_1 = a,
+	//n % factor_2  = b ... The Chinese Remainder Theorem states that once we get all of these smaller answers, there will be 
+	//a single value, X, where:
+	//X = a (mod factor_1)
+	//X = b (mod factor_2)
+	//X = c (mod factor_3)
+	//and so on. This value for x is the original answer to the question, i.e. n % mod = X. There are a number of reasons
+	//as to why n % mod couldn't be calculated directly and this function should be used. A good example would be if 
+	//"mod" isn't a prime number and we're using an equation that only works modulo prime numbers (Lucas' Theory as an example).
+
+	//I've designed this function to work in two different ways, we can either feed it a value for n and mod, and let it 
+	//calculate the conruence equations on it's own, or, we can just enter the congruence equations directly if they've
+	//been calculated elsewhere.
+	bool deleteEquations = false;
+	if (equations == nullptr)
+	{
+		//if the "equations" variable is a nullptr it means that we need to come up with the congruence equations
+		//here. To do this, we break down mod into it's prime factorization. Each prime factor will get its
+		//own equation to ensure that all of the factors are coprime with eachother.
+		
+		equations = new std::vector<std::pair<long long, long long> >;
+		deleteEquations = true; //this flag tells the function to delete the equations vector created in the line above before returning
+
+		std::vector<long long> p_factors = PrimeFactors(mod);
+		long long currentFactor = 1, currentPrime = p_factors[0];
+
+		for (int i = 1; i < p_factors.size(); i++)
+		{
+			if (p_factors[i] != currentPrime)
+			{
+				equations->push_back({ n % currentFactor, currentFactor });
+				currentFactor = 1;
+				currentPrime = p_factors[i];
+			}
+			else currentFactor *= currentPrime;
+		}
+		equations->push_back({ n % currentFactor, currentFactor }); //make sure to add the final factor after loop ends
+	}
+
+	//Check to see if the congruence values are all equal, in this case the value of X would be the same as these
+	//congruences (i.e. X == 3 (mod 4), X == 3 (mod 25) would indicate that X == 3 (mod 100)). This check is here
+	//to speed things up when the modulo numbers are much larger than the congruency numbers.
+	bool equalityCheck = true;
+	for (int i = 1; i < equations->size(); i++)
+	{
+		if (equations->at(i).first != equations->at(i - 1).first)
+		{
+			equalityCheck = false;
+			break;
+		}
+	}
+	if (equalityCheck) return equations->at(0).first;
+
+	//The equations in the "equations" vector have the form {n % factor_i, factor_i}. In essence, we need to solve
+	//X = equations[i].first % equation[i].second for each value in the "equations" vector.
+	long long m = 1; //reconstruct the original modulus
+	for (int i = 0; i < equations->size(); i++) m *= equations->at(i).second;
+
+	long long result = 0;
+	/*for (int i = 0; i < equations->size(); i++)
+	{
+		long long x, y;
+		extendedEuclideanGCD(m / equations->at(i).second, equations->at(i).second, &x, &y);
+		result += (equations->at(i).first * x * m / equations->at(i).second);
+	}*/
+	for (int i = 0; i < equations->size(); i++)
+	{
+		long long withoutI = m / equations->at(i).second;
+		result += equations->at(i).first * ModularMultiplicativeInverse(withoutI, equations->at(i).second, 0) * withoutI;
+	}
+
+	return ((result % m) + m) % m; //the extra mods are to handle negative results
+}
+
 //Partition Functions
 std::vector<long long> polynomial_multiply(std::vector<long long>& p1, std::vector<long long>& p2, int cut_off)
 {
@@ -641,7 +736,18 @@ template <typename T>
 T BinomialMod(T n, T k, T m)
 {
 	//returns choose(n, k) % m
+
+	//If m is a prime number this task is much easier so we call a different function
+	//to do so
 	if (m > n) return BinomialModLargePrime(n, k, m);
+
+	//If m isn't prime then we use the generalized version of Lucas' Theorem.
+	//The steps boil down to:
+	//1. Find prime factors (and multiplicities) of m (i.e. m = 100 = 2^2 * 5^2)
+	//2. Use generalized Lucas' Theorem to find all sub problems for each choose(n, k) mod p_i^e
+	//3. Solve sub problems choose(n, k) using Fermat's little theorem
+	//4. Use Chinese Remainder Theorem to combine the results
+
 }
 
 long long MyPow(long long x, unsigned long long p)
@@ -654,6 +760,267 @@ long long MyPow(long long x, unsigned long long p)
 	if (p % 2 == 0) return tmp * tmp;
 	else return x * tmp * tmp;
 }
+
+long long primeFactorialInstances(long long k, long long p)
+{
+	//returns the number of times prime p appears in k!. For example
+	//in 5! there are 3 instances of the prime 2 appearing:
+	//5 * 4 * 3 * 2 * 1 --> = 5 * 3 * 2 * 2 * 2 * 1
+	long long occurences = 0, u = p, t = k;
+	while (u <= t)
+	{
+		occurences += t / u;
+		u *= p;
+	}
+	return occurences;
+}
+long long binomialMod(long long n, long long m, long long mod, int isPrime)
+{
+	//This function returns choose(n, m) % mod. Depending on the value of mod there are a few
+	//different ways to calculate this value. If mod is a prime number then the calculation 
+	//is fairly straightforward. If mod isn't a prime number, but is only composed of 
+	//primes raised to the first power (i.e. 70 = 2^1 * 5^1 * 7^1) we can calculate the answer
+	//with a combination of Lucas' Theorem and the Chinese Remainder Theorem. If mod has
+	//any primes raised to a power then we need to use a Generalized version of Lucas' Theorem.
+
+	//Before checking anything, look to see if m > n, if so we just return 0
+	if (m > n) return 0;
+
+	//if we're not sure whether or not mod is a prime number we can just call a prime number
+	//test on it. The number 2 is used to designate this option
+	bool prime = false;
+	if (isPrime == 2) prime = primeNumberTest(mod);
+	else prime = isPrime;
+
+	//If mod is a prime number then we can just solve the binomial % mod using Fermat's Little
+	//Theorem
+	if (prime) return binomialModPrime(n, m, mod);
+	
+	//If mod isn't a prime number then we need to break the problem down into sub problems.
+	//We break mod down into it's prime factorization and then solve choose(n, m) % p^q
+	//for each prime in the factorization (where q is the power of each prime).
+	//We then use the Chinese Remainder Theorem on these different sub answers to get 
+	//the final answer
+	std::vector<long long> p_factors = PrimeFactors(mod);
+	std::vector<std::pair<long long, long long> > chineseRemainderCongruences;
+
+	int i = 0;
+	long long current_prime = p_factors[0], prime_count = 0;
+	while (i < p_factors.size())
+	{
+		if (p_factors[i] != current_prime)
+		{
+			//We found a different prime so we're ready to do our calculation for the existing prime.
+			//If there's only one instance of the prime in question we use Lucas' Theorem to calculate
+			//the binomial, otherwise we need to used the generalized version of Lucas' Theorem.
+			if (prime_count == 1) chineseRemainderCongruences.push_back({ lucasTheorem(n, m, current_prime), current_prime });
+			else chineseRemainderCongruences.push_back({ generalizedLucasTheorem(n, m, current_prime, prime_count), MyPow(current_prime, prime_count)});
+
+			current_prime = p_factors[i];
+			prime_count = 1;
+		}
+		else prime_count++;
+		
+		i++;
+	}
+
+	//Use the appropriate version of Lucas' Theorem one last time for the final prime in the array
+	if (prime_count == 1) chineseRemainderCongruences.push_back({ lucasTheorem(n, m, current_prime), current_prime });
+	else chineseRemainderCongruences.push_back({ generalizedLucasTheorem(n, m, current_prime, prime_count), MyPow(current_prime, prime_count) });
+
+	//Finally, use the Chinese Remainder Theorem to combine all of the different partial
+	//answers obtained above.
+	return ChineseRemainderTheorem(0, 0, &chineseRemainderCongruences);
+}
+long long lucasTheorem(long long n, long long m, long long p)
+{
+	//Calculates choose(n, m) % p. This function only works if p is a prime number.
+	//This function works by converting both n and m from base 10 into base p, i.e.:
+	//n = n_0 + n_1*p + n_2 * p^2...
+	//m = m_0 + m_1*p + m_2 * p^2...
+	//Lucas' Theorem states that choose(n, m) is congruent to choose(n_i, m_i) mod p
+	//for all of the n_i and m_i found when converting the numbers to base p. After
+	//the main binomial is broken up into smaller binomials, these are each solved
+	//using Fermat's Little Theorem
+
+	//First, convert n and m to base p format. Since n is bigger then m, add any trailing
+	//0's that are necessary to make m_p the same length as n_p
+	std::vector<int> n_p = baseConversion(n, p), m_p = baseConversion(m, p);
+	for (int i = 0; i < n_p.size() - m_p.size(); i++) m_p.push_back(0);
+
+	long long answer = 1;
+	for (int i = 0; i < n_p.size(); i++) answer = ModMult(answer, binomialModPrime((long long)n_p[i], (long long)m_p[i], p), p);
+
+	return answer;
+}
+long long binomialModPrime(long long n, long long m, long long p, long long* factorials, long long* inverse_factorials)
+{
+	//Calculates choose(n, m) % p. This function only works if p is a prime and m < k.
+	//This function can be called with a precalculated array of factorials and inverse factorials % mod
+	//for quicker computation
+
+	//In cases where m >= k, the advanced version of the function gets called
+	if (m >= p) return binomialModePrimeAdvanced(n, m, p);
+
+	if (factorials == nullptr)
+	{
+		long long numerator = 1, denominator = 1;
+		for (long long i = n; i > n - m; i--) numerator = ModMult(numerator, i, p); //possible to overflow 64-bit so use ModMult()
+		for (long long i = 2; i <= m; i++) denominator = ModMult(denominator, i, p); //possible to overflow 64-bit so use ModMult()
+
+		return ModMult(numerator, ModularMultiplicativeInverse(denominator, p), p);
+	}
+	else return ModMult(factorials[n], ModMult(inverse_factorials[m], inverse_factorials[n - m], p), p);
+}
+long long binomialModePrimeAdvanced(long long n, long long m, long long p)
+{
+	//Calculates choose(n, m) % mod. This function only works if mod is a prime.
+
+	//The degree of mod in the numerator must be equal to that of the denominator,
+	//i.e. we need to be able to cancel out all instances of mod from choose(n, m).
+	//For example, choose(5, 2) can be rewritten as (5 * 4 * 3 * 2 * 1)/((3 * 2 * 1)(2 * 1))
+	//which, after cancelling out all prime numbers can in turn be written as (5 * 2).
+	//If we were trying to find choose(5, 2) % 2 or choose(5, 2) % 5, the answer would just
+	//be 0 as the binomial is divisible by mod.
+	long long numerator_degree = primeFactorialInstances(n, p) - primeFactorialInstances(n - m, p);
+	long long denominator_degree = primeFactorialInstances(m, p);
+	if (numerator_degree > denominator_degree) return 0;
+
+	long long numerator = 1, denominator = 1;
+	for (long long i = n; i > n - m; i--)
+	{
+		long long cur = i;
+		while (!(cur % p)) cur /= p;
+		numerator = ModMult(numerator, cur, p); //possible to overflow 64-bit so use ModMult()
+	}
+	for (long long i = 2; i <= m; i++)
+	{
+		long long cur = i;
+		while (!(cur % p)) cur /= p;
+		denominator = ModMult(denominator, cur, p); //possible to overflow 64-bit so use ModMult()
+	}
+
+	return ModMult(numerator, ModularMultiplicativeInverse(denominator, p), p);
+}
+long long generalizedLucasTheorem(long long n, long long m, long long p, long long q)
+{
+	//this function returns choose(n, m) % p^q. It's based off of the following paper: https://web.archive.org/web/20170202003812/http://www.dms.umontreal.ca/~andrew/PDF/BinCoeff.pdf
+	//Note: p^q must be able to fit into a long integer for this function to work
+
+	//First calculate the arrays for n_j, m_j, r_j, N_j, M_j, R_j and e_j
+	long long r = n - m, j = 0, mod = MyPow(p, q);
+	bool mBiggerThanR = (m > r ? true : false); //needed to calculate e vector later
+
+	std::vector<long long> n_j, m_j, r_j, N_j, M_j, R_j, e_j;
+
+	//create vectors for n_j, m_j and r_j
+	while (n >= p)
+	{
+		n_j.push_back(n % p);
+		n /= p;
+	}
+	n_j.push_back(n);
+	j = n_j.size();
+
+	while (m >= p)
+	{
+		m_j.push_back(m % p);
+		m /= p;
+	}
+	m_j.push_back(m);
+	while (m_j.size() < n_j.size()) m_j.push_back(0);
+
+	while (r >= p)
+	{
+		r_j.push_back(r % p);
+		r /= p;
+	}
+	r_j.push_back(r);
+	while (r_j.size() < n_j.size()) r_j.push_back(0);
+
+	//Use the n_j, m_j and r_j arrays to create N_j, M_j and R_j arrays
+	for (int i = 0; i < j; i++)
+	{
+		long long N_i = 0, M_i = 0, R_i = 0, pow = 1;
+		for (int k = 0; k < q; k++)
+		{
+			if (k + i >= j) break;
+			N_i += n_j[k + i] * pow;
+			M_i += m_j[k + i] * pow;
+			R_i += r_j[k + i] * pow;
+			pow *= p;
+		}
+		N_j.push_back(N_i);
+		M_j.push_back(M_i);
+		R_j.push_back(R_i);
+	}
+
+	//Work backwards through the arrays to calculate e_j. The way that the above paper calculates 
+	//e_j isn't entirely correct, instead of just comparing n to m, n should be compared to the 
+	//larger of m and r.
+	long long e = 0;
+	for (int i = j - 1; i >= 0; i--)
+	{
+		/*if (mBiggerThanR)
+		{
+			if (m_j[i] > n_j[i]) e_j.insert(e_j.begin(), ++e);
+			else e_j.insert(e_j.begin(), e);
+		}
+		else
+		{
+			if (r_j[i] > n_j[i]) e_j.insert(e_j.begin(), ++e);
+			else e_j.insert(e_j.begin(), e);
+		}*/
+		if ((m_j[i] > n_j[i]) || (r_j[i] > n_j[i])) e_j.insert(e_j.begin(), ++e);
+		else e_j.insert(e_j.begin(), e);
+	}
+
+	//With all of the arrays calculated we can calculate the answer
+	long long numerator = 1, denominator = 1;
+
+	//The numerator is composed of all the (N!)_p terms. The denominator is compose of both the 
+	//(M!)_p and (R!)_p terms. The subscript p in this case means that we take the factorial of N, M and R
+	//but omit any terms that are divisible by p.
+	for (long long i = 0; i < j; i++)
+	{
+		for (long long k = 1; k <= N_j[i]; k++)
+		{
+			if (k % p == 0) continue;
+			numerator = ModMult(numerator, k, mod);
+		}
+		for (long long k = 1; k <= M_j[i]; k++)
+		{
+			if (k % p == 0) continue;
+			denominator = ModMult(denominator, k, mod);
+		}
+		for (long long k = 1; k <= R_j[i]; k++)
+		{
+			if (k % p == 0) continue;
+			denominator = ModMult(denominator, k, mod);
+		}
+	}
+
+	//Multiply the numerator by the modular inverse of the denominator, since all terms divisible
+	//by p have been omitted, p^q will be coprime with both the numerator and denominator
+	numerator = ModMult(numerator, ModularMultiplicativeInverse(denominator, mod, 0), mod);
+
+	//Multiply the numerator by the +/-1 term from the equation
+	if (p > 2 || q < 3)
+	{
+		//if p = 2 and q >= 3 the term is +1 so we ignore it
+		if ((j >= q) && e_j[q - 1] % 2 == 1)
+		{
+			numerator *= -1;
+			numerator = ((numerator % mod) + mod) % mod;
+		}
+	}
+
+	//finally, multiply the numerator value by p^e_0, we then have our answer
+	if (e_j[0]) numerator = ModMult(numerator, MyPow(p, e_j[0]), mod);
+
+	return numerator;
+}
+
 BigNum::BigNum()
 {
 	//default constructor for BigNum
@@ -1198,6 +1565,57 @@ long long gcd(long long a, long long b)
 	//it's assumed that a is larger than b 
 	if (!b) return a;
 	else return gcd(b, a % b);
+}
+
+//long long extendedEuclideanGCD(long long a, long long b, long long* x, long long* y)
+//{
+//	//The extended Euclidean GCD algorithm.
+//	//Computes x and y for the equation ax + by = gcd(a, b)
+//
+//	//This current version of the algorithm (which I made for the Chinese Remainder function above)
+//	//assumes that a and b are coprime so gcd(a, b) is just 1.
+//	// Base Case
+//	if (a == 0)
+//	{
+//		*x = 0;
+//		*y = 1;
+//		return b;
+//	}
+//
+//	long long x1, y1; // To store results of recursive call
+//	long long gcd = extendedEuclideanGCD(b % a, a, &x1, &y1);
+//
+//	// Update x and y using results of
+//	// recursive call
+//	*x = y1 - (b / a) * x1;
+//	*y = x1;
+//
+//	return gcd;
+//}
+
+long long extendedEuclideanGCD(long long a, long long b, long long* x, long long* y)
+{
+	//The extended Euclidean GCD algorithm.
+	//Computes x and y for the equation ax + by = gcd(a, b)
+
+	//This current version of the algorithm (which I made for the Chinese Remainder function above)
+	//assumes that a and b are coprime so gcd(a, b) is just 1.
+	*x = 0;
+	*y = 0;
+	long long u = 1, v = 0;
+	while (a != 0)
+	{
+		long long q = b / a, r = b % a;
+		long long m = *x - u * q, n = *y - v * q;
+		b = a;
+		a = r;
+		*x = u;
+		*y = v;
+		u = m;
+		v = n;
+	}
+	//gcd = b
+	return 0;
 }
 
 bool coprime(int a, int b)
