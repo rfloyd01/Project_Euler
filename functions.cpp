@@ -526,7 +526,7 @@ long long ChineseRemainderTheorem(long long n, long long mod, std::vector<std::p
 	for (int i = 0; i < equations->size(); i++)
 	{
 		long long withoutI = m / equations->at(i).second;
-		result += equations->at(i).first * ModularMultiplicativeInverse(withoutI, equations->at(i).second, 0) * withoutI;
+		result = (result + ModMult(ModMult(equations->at(i).first, ModularMultiplicativeInverse(withoutI, equations->at(i).second, 0), m), withoutI, m)) % m;
 	}
 
 	return ((result % m) + m) % m; //the extra mods are to handle negative results
