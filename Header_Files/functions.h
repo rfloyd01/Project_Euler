@@ -56,6 +56,7 @@ long long extendedEuclideanGCD(long long a, long long b, long long *x, long long
 bool coprime(int a, int b);
 int numberOfDigits(long long n);
 void FaraySequence(int maximum, std::vector<fraction>& pairs, fraction low = { 0, 1 }, fraction high = { 1, 1 }, bool new_pair = false);
+void orderedFaraySequence(int maximum, std::vector<fraction>& pairs, fraction low = { 0, 1 }, fraction high = { 1, 1 }, bool new_pair = false, int insertIndex = -1);
 std::vector<int> baseConversion(int n, int b);
 long long ChineseRemainderTheorem(long long n, long long mod, std::vector<std::pair<long long, long long> > *equations = nullptr);
 
@@ -127,13 +128,18 @@ T ModPow(T base, T exp, T modulus, bool overflow)
 }
 
 template <typename T>
-T ModularMultiplicativeInverse(T b, T mod, bool isPrime = 1)
+T ModularMultiplicativeInverse(T b, T mod, int isPrime = 2)
 {
 	//I've run into issues in the past where I need to use division with modular arithmetic, however, this causes issues. 
 	//Instead of dividing, you need to multiply by the modular multiplicative inverse, i.e. instead of doing a / b = x, you 
 	//need to do a * (1/b) = x. This modular multiplicative inverse can be found using Euler's theorem, basically,
 	//b ^ -1 == b ^ (m-2) MOD m.
-	if (isPrime) return ModPow(b, mod - 2, mod, true);
+
+	//If we're unsure whether or not the modulus is a prime number (isPrime = 2), we do a quick
+	//primality test
+	bool prime = isPrime;
+	if (isPrime == 2) prime = primeNumberTest((long long)mod);
+	if (prime) return ModPow(b, mod - 2, mod, true);
 
 	//if mod isn't a prime then we need to calculate the inverse differently
 	T m0 = mod, y = 0, x = 1;
@@ -181,6 +187,9 @@ T BinomialModLargePrime(T n, T k, T m, long long* factorials)
 	//std::cout << "choose(" << n << ", " << k << ") MOD " << m << " = " << (factorials[n] * mult_inverse) % m << std::endl;
 	return (factorials[n] * mult_inverse) % m;
 }
+
+void modularMultiplicativeInverseRange(int n, long long mod, long long* inverses);
+void modularMultiplicativeInverseRangeOverflowSafe(int n, long long mod, long long* inverses);
 
 long long MyPow(long long x, unsigned long long p);
 

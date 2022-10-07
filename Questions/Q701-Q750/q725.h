@@ -9,7 +9,7 @@
 std::pair<std::string, double> q725()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	long long answer = 0, mod = 10000000000000000;
+	long long answer = 0, mod = 1E16;
 	int max_length = 2020;
 
 	for (long long i = 1; i < 10; i++)
@@ -20,7 +20,7 @@ std::pair<std::string, double> q725()
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 4598797036650685
-	//ran in 0.0179389 seconds
+	//ran in 0.0098699 seconds
 }
 
 //NOTES

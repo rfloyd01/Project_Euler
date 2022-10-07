@@ -424,16 +424,26 @@ int numberOfDigits(long long n)
 void FaraySequence(int maximum, std::vector<fraction>& pairs, fraction low, fraction high, bool new_pair)
 {
 	//this function returns a vector of fraction types holding all of the coprime pairs with integers less than maximum
-	if (new_pair)
-	{
-		pairs.push_back({ low });
-	}
+	if (new_pair) pairs.push_back({ low });
 
 	//this portion advances to the next pair in the Faray sequence
 	if (low.denominator + high.denominator <= maximum)
 	{
 		FaraySequence(maximum, pairs, { low.numerator + high.numerator, low.denominator + high.denominator }, high, true);
 		FaraySequence(maximum, pairs, low, { low.numerator + high.numerator, low.denominator + high.denominator }, false);
+	}
+}
+
+void orderedFaraySequence(int maximum, std::vector<fraction>& pairs, fraction low, fraction high, bool new_pair, int insertIndex)
+{
+	//Same as the above function but gives the fractions in appropriate order, slightly slower because of the insert function.
+	if (new_pair) pairs.insert(pairs.begin() + insertIndex, { low });
+
+	//this portion advances to the next pair in the Faray sequence
+	if (low.denominator + high.denominator <= maximum)
+	{
+		orderedFaraySequence(maximum, pairs, { low.numerator + high.numerator, low.denominator + high.denominator }, high, true, insertIndex + 1);
+		orderedFaraySequence(maximum, pairs, low, { low.numerator + high.numerator, low.denominator + high.denominator }, false, insertIndex);
 	}
 }
 
@@ -531,6 +541,7 @@ long long ChineseRemainderTheorem(long long n, long long mod, std::vector<std::p
 
 	return ((result % m) + m) % m; //the extra mods are to handle negative results
 }
+
 
 //Partition Functions
 std::vector<long long> polynomial_multiply(std::vector<long long>& p1, std::vector<long long>& p2, int cut_off)
@@ -748,6 +759,78 @@ T BinomialMod(T n, T k, T m)
 	//3. Solve sub problems choose(n, k) using Fermat's little theorem
 	//4. Use Chinese Remainder Theorem to combine the results
 
+}
+
+void modularMultiplicativeInverseRange(int n, long long mod, long long* inverses)
+{
+	//This method creates an array that holds the values [1/1, 1/2, 1/3, ...., 1/n] (% mod) using the Montgomery
+	//batch inversion technique. The array is created using only a single division and 3n multiplications. There
+	//are three times as many operations required for this function as there are to just take all of the
+	//inverses individually, but the operations are much quicker than taking the inverses.
+
+	inverses[0] = 1; inverses[1] = 1; //in case they aren't already, set 0 and 1 inverses to 1
+	if (mod >= 3037000499 || n >= 3037000499)
+	{
+		//If either n or mod are greater than sqrt(2^{63} - 1) then it's possible to overflow
+		//a signed long integer even though we're using modulus division. In these cases
+		//we call a different version of this function which uses the ModMult() function
+		//instead of normal multiplication to safely multiply without overflow. This is 
+		//much slower than standard multiplication so we only use this method if it's 
+		//necessary. Note: 3,037,000,499 = floor(sqrt(2^{63} - 1))
+		modularMultiplicativeInverseRangeOverflowSafe(n, mod, inverses);
+	}
+
+	//TODO: The below commented out section was to split out cases where mod is a small number
+	//so that I could modular divide the necessary values of i before multiplying them. After
+	//doing some separate testing though, I couldn't find any instances where (a * (b % m)) % m
+	//gave a different answer than, (a * b) % m. This implies that only one of the numbers in the
+	//multiplication needs to be modulus divided and not both of them. I feel like this isn't correct
+	//because everything I've read online says that for modular multiplication,
+	//(a * b) % m == ((a % m) * (b % m)) % m. If things start acting fishy with this function 
+	//then this will be my first smoking gun.
+	
+	//if (mod <= n)
+	//{
+	//	//if mod is a small number, like 7 for instance, we'll need to mod values before even
+	//	//multiplying them. This is because (a * b) % m == ((a % m) * (b % m)) % m,
+	//	//but the following isn't necessarily true (a * b) % m == (a * (b % m)) % m. When
+	//	//a is smaller than m, then a % m is just a which is why we can skip the extra
+	//	//modulus division.
+	//	
+	//	//compute successive modular inverses for values of i % mod
+	//	for (long long i = 2; i < mod; i++) inverses[i] = (i * inverses[i - 1]) % mod;
+	//	for (long long i = mod; i <= n; i++) inverses[i] = ((i % mod) * inverses[i - 1]) % mod;
+	//}
+	//else
+	//{
+	//	//compute successive modular inverses for values of i % mod
+	//	for (long long i = 2; i <= n; i++) inverses[i] = (i * inverses[i - 1]) % mod;
+	//}
+
+	for (long long i = 2; i <= n; i++) inverses[i] = (i * inverses[i - 1]) % mod;
+	inverses[n] = ModularMultiplicativeInverse(inverses[n], mod); //the sole division takes place on the last element
+
+	for (long long i = n - 1; i >= 0; i--)
+	{
+		long long temp = inverses[i];
+		inverses[i] = (inverses[i + 1] * (i + 1)) % mod;
+		inverses[i + 1] = (inverses[i + 1] * temp) % mod;
+	}
+}
+void modularMultiplicativeInverseRangeOverflowSafe(int n, long long mod, long long* inverses)
+{
+	//The same thing as the modularMultiplicativeInverseRange() function, however, checks to 
+	//see if overflow of unsigned long integers will happen before multiplication so that it 
+	//can safely do all multiplications.
+	for (long long i = 2; i <= n; i++) inverses[i] = ModMult(i, inverses[i - 1], mod);
+	inverses[n] = ModularMultiplicativeInverse(inverses[n], mod); //the sole division takes place on the last element
+
+	for (long long i = n - 1; i >= 0; i--)
+	{
+		long long temp = inverses[i];
+		inverses[i] = ModMult(inverses[i + 1], i + 1, mod);
+		inverses[i + 1] = ModMult(inverses[i + 1], temp, mod);
+	}
 }
 
 long long MyPow(long long x, unsigned long long p)
@@ -977,16 +1060,6 @@ long long generalizedLucasTheorem(long long n, long long m, long long p, long lo
 	long long e = 0;
 	for (int i = j - 1; i >= 0; i--)
 	{
-		/*if (mBiggerThanR)
-		{
-			if (m_j[i] > n_j[i]) e_j.insert(e_j.begin(), ++e);
-			else e_j.insert(e_j.begin(), e);
-		}
-		else
-		{
-			if (r_j[i] > n_j[i]) e_j.insert(e_j.begin(), ++e);
-			else e_j.insert(e_j.begin(), e);
-		}*/
 		if ((m_j[i] > n_j[i]) || (r_j[i] > n_j[i])) e_j.insert(e_j.begin(), ++e);
 		else e_j.insert(e_j.begin(), e);
 	}
@@ -994,6 +1067,10 @@ long long generalizedLucasTheorem(long long n, long long m, long long p, long lo
 	//With all of the arrays calculated we can calculate the answer
 	long long numerator = 1, denominator = 1;
 
+	//TODO: This is just a brute force calculation of all the (N!)_p terms. At some point
+	//I should try and incorporate Theorems 2 and 3 from the above paper to calculate these
+	//values more quickly. Implementing these theorems allows for the calculation of the (n!)_p
+	//terms while only needed to go up to q*p
 	//The numerator is composed of all the (N!)_p terms. The denominator is compose of both the 
 	//(M!)_p and (R!)_p terms. The subscript p in this case means that we take the factorial of N, M and R
 	//but omit any terms that are divisible by p.
@@ -1020,6 +1097,9 @@ long long generalizedLucasTheorem(long long n, long long m, long long p, long lo
 	//by p have been omitted, p^q will be coprime with both the numerator and denominator
 	numerator = ModMult(numerator, ModularMultiplicativeInverse(denominator, mod, 0), mod);
 
+	//TODO: The calculation of the e vector isn't correct. It seems rare that it would
+	//actually be an issue, but there's a chance that the e_j[q-1] term could be off
+	
 	//Multiply the numerator by the +/-1 term from the equation
 	if (p > 2 || q < 3)
 	{
@@ -1032,9 +1112,6 @@ long long generalizedLucasTheorem(long long n, long long m, long long p, long lo
 	}
 
 	//finally, multiply the numerator value by p^e_0, we then have our answer
-	//if (e_j[0]) numerator = ModMult(numerator, MyPow(p, e_j[0]), mod);
-
-	//TEMP: See if the new calculation of e_0 works out
 	if (e_0) numerator = ModMult(numerator, MyPow(p, e_0), mod);
 
 	return numerator;

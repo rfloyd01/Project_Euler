@@ -10,27 +10,23 @@
 std::pair<std::string, double> q374()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	long long answer = 1; //answer could be initialized to no-pivot as there's only one case of that
-	
-	//TODO(HackerRank): if the goal number is one less than a triangular number, the maximum amount of digits in the chain will end up being
-	//one less than what's actually possible. For example, if the goal number was 54 we could get there with [2, 3, 4, 5, 6, 7, 8, 9, 10]
-	//currently I start the search with the highest possible pivot number and calculate everything based off of that which in this case
-	//the highest pivot would be [2, 3, 4, 5, 6, 7, 8, 10] = 45 and ends up being 1 digit shorter than the physical maximum (where there's no pivot)
-	//this shouldn't be a big deal for the Euler problem where it's known whether the goal number meets this criteria, however, it may come into play
-	//for the HackerRank version where there will be multiple different goal numbers given.
 
-	long long goal = 100000000000000;
-	//long long goal = 100;
+	long long answer = 1, goal = 100000000000000, mod = 982451653;
 	long long max_length = (-3 + sqrt(9 + 8 * (goal - 1))) / 2.0, final_value, current_num = 0;
 	
-	long long start_number = (max_length + 1) * (max_length + 2) / 2; //start number is the second number in the final group (aka the number with the longest partition and highest pivot point). calculated from triangular number formula
-	long long current_factorial = factorial(max_length + 1); //used for faster calculation of factorial
-	long long pivot_stop = max_length - 1 - (goal - start_number) - 1; //when pivot reaches this location the maximum possible length decreases by 1
+	//start number is the second number in the final group (aka the number with the longest partition and highest pivot point). calculated from triangular number formula
+	long long start_number = (max_length + 1) * (max_length + 2) / 2;
+	long long current_factorial = 1; 
+	for (long long i = 2; i <= max_length + 1; i++) current_factorial = (current_factorial * i) % mod;
+
+	//when pivot reaches this location the maximum possible length decreases by 1 (don't mod this number)
+	long long pivot_stop = max_length - 1 - (goal - start_number) - 1;
 	long long double_pivot_start = max_length;
 	if (max_length + start_number > goal) double_pivot_start--;
 
-	//std::cout << max_length << ", " << pivot_stop << std::endl;
-	//std::cout << max_length << ", " << start_number << std::endl;
+	//Memoize modular multiplicative inverses up to max_length + 2 for quicker calculations
+	long long* inverses = new long long[max_length + 3];
+	modularMultiplicativeInverseRange(max_length + 2, mod, inverses);
 
 	for (long long pp = max_length - 1; pp >= 0; pp--) //pp stands for pivot point you pervs
 	{
@@ -41,70 +37,51 @@ std::pair<std::string, double> q374()
 		//of our array. 11 - 9 = 2, so as soon as the pivot becomes less than 2, i.e. the first time it hits 1 we need to subtract the 
 		//final value of our cumulative multiplication. Keep track of our final value each iteration and when the time comes just
 		//subtract it from the "current_num" variable.
-		if (pp == pivot_stop) current_num -= final_value;
+		if (pp == pivot_stop) current_num = ((current_num - final_value) + mod) % mod;
 
-		//separate multiplication and division into two steps to avoid floating point errors
-		current_num *= (pp + 3);
-		current_num /= (pp + 2);
+		current_num = (current_num * (pp + 3)) % mod;
+		current_num = (current_num * inverses[pp + 2]) % mod;
 
 		//add new values
-		current_factorial /= (pp + 2);
-		long long new_values = current_factorial * (pp + 3) * (pp + 1); //calculating the factorial each iteration is slow, keep a running tally of the current factorial instead
-		//long long new_values = factorial(pp + 1) * (pp + 3) * (pp + 1); //TODO(maybe): I might need to manually calculate factorials because of modular division. If so I'll need a much better factorial function
-		current_num += new_values;
+		current_factorial = (current_factorial * inverses[pp + 2]) % mod;
+		long long new_values = ((current_factorial * (pp + 3)) % mod * (pp + 1)) % mod; //calculating the factorial each iteration is slow, keep a running tally of the current factorial instead
+		current_num = (current_num + new_values) % mod;
 
 		//set final row value
 		if (pp == (max_length - 1)) final_value = current_num; //set the first time
 		else
 		{
-			final_value *= (pp + 3);
-			final_value /= (pp + 2);
+			final_value = (final_value * (pp + 3)) % mod;
+			final_value = (final_value * inverses[pp + 2]) % mod;
 		}
 
 		//calculate no pivot value by multiplying case where pivot is at the very end
-		answer += new_values * (pp + 2) / (pp + 3);
+		answer = (answer + (((new_values * (pp + 2)) % mod * inverses[pp + 3]) % mod)) % mod;
 
 		//calculate double pivot by cascading every number up by 1. This value should only be
 		//calculated in the first iteration of loop if start_number + max_length < goal which is
 		//why there's the double_pivot_start variable
-		if (pp < double_pivot_start) answer += new_values * (pp + 2) / 2 * (pp + 4) / (pp + 3);
+		if (pp < double_pivot_start) answer = (answer + (((((new_values * (pp + 2)) % mod * inverses[2]) % mod * (pp + 4)) % mod * inverses[pp + 3]) % mod)) % mod;
 
-		//std::cout << current_num << std::endl;
-
-		answer += current_num;
-
-		//DEBUG: Print out all possible combinations with the current pivot point
-		/*for (int i = pp; i < max_length; i++)
-		{
-			long long product = 1;
-			int sum = 0;
-			std::cout << '[';
-			for (int j = 0; j < pp; j++)
-			{
-				std::cout << j + 2 << ", ";
-				product *= (j + 2);
-				sum += (j + 2);
-			}
-			for (int j = pp; j < i; j++)
-			{
-				std::cout << j + 3 << ", ";
-				product *= (j + 3);
-				sum += (j + 3);
-			}
-			product *= (i + 3);
-			sum += (i + 3);
-			std::cout << i + 3 << "]: " << sum << " = " << (i + 1) * product << std::endl;
-		}
-		std::cout << std::endl;*/
+		answer = (answer + current_num) % mod;
 	}
 
+	delete[] inverses;
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
-	//the answer is xxx
-	//ran in 0.199284 seconds (this is current run time when goal is set to 10e14)
+	//the answer is 334420941
+	//ran in 0.450418 seconds
 }
 
-//NOTES
+//HACKERRANK Notes
+//If the goal number is one less than a triangular number, the maximum amount of digits in the chain will end up being
+//one less than what's actually possible. For example, if the goal number was 54 we could get there with [2, 3, 4, 5, 6, 7, 8, 9, 10]
+//currently I start the search with the highest possible pivot number and calculate everything based off of that which in this case
+//the highest pivot would be [2, 3, 4, 5, 6, 7, 8, 10] = 45 and ends up being 1 digit shorter than the physical maximum (where there's no pivot)
+//this shouldn't be a big deal for the Euler problem where it's known whether the goal number meets this criteria, however, it may come into play
+//for the HackerRank version where there will be multiple different goal numbers given.
+
+//Original NOTES
 /*
 initial thoughts:
 At first when I saw this problem I thought it was going to be really hard, the number of integer partitions for each
