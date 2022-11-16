@@ -116,87 +116,61 @@ std::pair<std::string, double> q54()
 
 	//fill up an array with values from 16^0 all the way through 16^12 for easy construction of hexadecimal numbers
 	int suite_values[4] = { 1, 2, 4, 8 }; //suite order will be heart, club, diamond, spade
-	long long card_values[13], counter = 1;
+	long long card_values[13], counter = 1, player_one_hand_score;
 	for (long long i = 0; i < 13; i++)
 	{
 		card_values[i] = counter;
 		counter *= 16;
 	}
 
-	//create two arrays to hold all of the hands for each player
-	long long* player_one_hands = new long long[1000];
-	long long* player_two_hands = new long long[1000];
-
-	//read through text file and add hexadecimal representations of each hand to the player hand arrays
+	//read through text file and create hexadecimal representations for each players hand
 	std::ifstream inFile;
 	inFile.open("Resources/q54.txt");
-	char letter = 'a'; //just use a random character to initialize the variable
+	char value, suite; //just use a random character to initialize the variable
+	std::string current_game;
 
-	for (int i = 0; i < 1000; i++) //1000 lines to read
+	while (std::getline(inFile, current_game))
 	{
-		for (int j = 0; j < 2; j++) //2 players to read hands for
+		for (int player = 0; player < 2; player++)
 		{
 			long long hand = 0;
-			for (int k = 0; k < 5; k++) //5 cards per hand
+			for (int card = 0; card < 5; card++)
 			{
-				long long card = 0;
-				for (int l = 0; l < 2; l++) //3 characters to read per card including ' ' and '\n'
-				{
-					inFile >> letter;
+				long long current_card = 0;
 
-					if (l == 0) //card value is read first
-					{
-						if (letter == '2') card = card_values[0];
-						else if (letter == '3') card = card_values[1];
-						else if (letter == '4') card = card_values[2];
-						else if (letter == '5') card = card_values[3];
-						else if (letter == '6') card = card_values[4];
-						else if (letter == '7') card = card_values[5];
-						else if (letter == '8') card = card_values[6];
-						else if (letter == '9') card = card_values[7];
-						else if (letter == 'T') card = card_values[8];
-						else if (letter == 'J') card = card_values[9];
-						else if (letter == 'Q') card = card_values[10];
-						else if (letter == 'K') card = card_values[11];
-						else card = card_values[12];
-					}
-					else
-					{
-						if (letter == 'H') card *= suite_values[0];
-						else if (letter == 'C') card *= suite_values[1];
-						else if (letter == 'D') card *= suite_values[2];
-						else card *= suite_values[3];
-					}
-				}
-				hand = hand | card; //add the card into the hand
+				value = current_game[3 * card + 15 * player];
+				suite = current_game[3 * card + 15 * player + 1];
+
+				if (value <= '9') current_card = card_values[value - '2'];
+				else if (value == 'T') current_card = card_values[8];
+				else if (value == 'J') current_card = card_values[9];
+				else if (value == 'Q') current_card = card_values[10];
+				else if (value == 'K') current_card = card_values[11];
+				else current_card = card_values[12];
+
+				if (suite == 'H') current_card *= suite_values[0];
+				else if (suite == 'C') current_card *= suite_values[1];
+				else if (suite == 'D') current_card *= suite_values[2];
+				else current_card *= suite_values[3];
+
+				hand = hand | current_card; //add the card into the hand
 			}
-			if (j == 0) player_one_hands[i] = hand;
-			else player_two_hands[i] = hand;
+
+			if (!player) player_one_hand_score = scoreHand(hand, card_values);
+			else
+			{
+				//now that the each hand been saved in the proper format, compare the score for players 1 and 2
+				//for each hand
+				if (player_one_hand_score > scoreHand(hand, card_values)) answer++;
+			}
 		}
 	}
 	inFile.close(); //close file after reading all of the hands
 
-	//Was curious to see how long it takes to physically read the poker hands so added the below print line, is there a way to improve the read time? It seems a little high
-	//std::cout << "Time to read poker hands from file is: " << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 << " seconds." << std::endl;
-	
-	//now that the hands have been saved in the proper format, compare the score for players 1 and 2 for each hand
-	long long player_one_hand_score, player_two_hand_score;
-	int value_to_check = 8;
-	for (int i = 0; i < 1000; i++)
-	{
-		player_one_hand_score = scoreHand(player_one_hands[i], card_values);
-		player_two_hand_score = scoreHand(player_two_hands[i], card_values);
-		if (player_one_hand_score > player_two_hand_score) answer++;
-	}
-
-	//make sure to delete hand arrays off of the heap
-	delete[] player_one_hands;
-	delete[] player_two_hands;
-
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 376
-	//ran in 0.0013582 seconds
+	//ran in 0.0006511 seconds
 }
 
 //NOTES

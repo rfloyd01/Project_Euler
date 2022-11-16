@@ -10,27 +10,35 @@ std::pair<std::string, double> q24()
 {
 	auto run_time = std::chrono::steady_clock::now();
 	std::string answer = "";
-	std::vector<bool> digit_used = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	int to_target = 1000000;
 
-	for (int i = 0; i < 10; i++) //one iteration for each digit that needs to be found
+	int permutation_length = 10, to_target = 1000000;
+	long long* facts = new long long[permutation_length]();
+	std::vector<bool> digit_used;
+	for (int i = 0; i < permutation_length; i++) digit_used.push_back(0);
+
+	//initialize factorials up to (permutation_length - 1)!
+	facts[0] = 1;
+	for (long long i = 1; i < permutation_length; i++) facts[i] = i * facts[i - 1];
+
+	for (int i = 0; i < permutation_length; i++) //one iteration for each digit that needs to be found
 	{
-		long long fact = (double)factorial(9 - i);
-		int next_digit = ceil((double) to_target / fact);
+		int next_digit = ceil((double) to_target / facts[(permutation_length - 1) - i]);
 		int count = 0;
-		for (int j = 0; j < digit_used.size(); j++)
+		for (int j = 0; j < permutation_length; j++)
 		{
 			if (!digit_used[j]) count++;
 			if (count == next_digit)
 			{
 				digit_used[j] = 1;
-				answer += int_to_char(j);
-				to_target -= (fact * (count - 1));
+				answer += '0' + j;
+				//answer += 'a' + j; //used in HackerRank version
+				to_target -= (facts[(permutation_length - 1) - i] * (count - 1));
 				break;
 			}
 		}
 	}
 
+	delete[] facts;
 	return { answer, std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 2783915460

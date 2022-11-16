@@ -8,39 +8,44 @@ std::pair<std::string, double> q53()
 	auto run_time = std::chrono::steady_clock::now();
 	int answer = 0;
 
-	int pascal_row[51] = { 0 }; //create an array which will be filled with the first half of each row of Pascal's Triangle, up to row 100
+	unsigned long long goal = 1000000;
+	int max_row = 100, current_start = 1; //current start keeps track of which element in the row we will start addition from;
+	unsigned long long *pascal_row = new unsigned long long[max_row / 2 + 1](); //create an array which will be filled with the first half of each row of Pascal's Triangle, up to row 100
 	pascal_row[0] = 1; //first number in each row is always 1
-	int current_start = 1; //keeps track of which element in the row we will start addition from
-	bool million_found = false; //once we've hit our first number over 1,000,000 we will use it to calculate where to start in the row
 
-	for (int n = 2; n <= 100; n++)
+	bool goal_found = false; //once we've hit our first number over 1,000,000 we will use it to calculate where to start in the row
+
+	for (int n = 2; n <= max_row; n++)
 	{
 		for (int i = current_start; i > 0; i--)
 		{
-			if (pascal_row[i] == 0) pascal_row[i] = 2 * pascal_row[i - 1];
-			else pascal_row[i] += pascal_row[i - 1];
+			if (pascal_row[i] == 0) pascal_row[i] = pascal_row[i - 1]; //row expands when n is even
 
-			if (pascal_row[i] > 1000000)
+			if (goal - pascal_row[i] <= pascal_row[i - 1])
 			{
-				million_found = true;
+				//Don't bother adding adjacent numbers if they'll exceed the limi.
+				goal_found = true;
 				current_start--;
 			}
+			else pascal_row[i] += pascal_row[i - 1];
 		}
 
 		//since the million value has been breached, wherever current_start is located is the last number in the row below 1000000
 	    //the number of numbers in the row greater than 1000000 therefore will be (n + 1) - 2 * (current_start + 1) which reduces to
 		//n - 2 * current_start - 1.
-		if (!million_found)
+		if (!goal_found)
 		{
 			if (n % 2 == 1) current_start++;
 		}
 		else answer += (n - 2 * current_start - 1);
 	}
+	
+	delete[] pascal_row;
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 4075
-	//ran in .0000022 seconds
+	//ran in 0.0000022 seconds
 }
 
 //NOTES
