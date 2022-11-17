@@ -166,6 +166,7 @@ std::pair<std::string, double> q54()
 		}
 	}
 	inFile.close(); //close file after reading all of the hands
+	//ran in 0.0006511 seconds
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 

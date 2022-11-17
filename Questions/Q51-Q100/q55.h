@@ -1,9 +1,6 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/print.h>
-#include <Header_Files/BigInt_128.h>
-#include <vector>
 
 long long getPalindrome(long long n)
 {
@@ -22,14 +19,11 @@ std::pair<std::string, double> q55()
 {
 	auto run_time = std::chrono::steady_clock::now();
 	int answer = 0;
-	uint8_t* lychrel_numbers = new uint8_t[10000]; //each index can hold a value of 0, 1 or 2. 0 = untested, 1 = non-lychrel, 2 = lychrel
-	for (int i = 0; i < 10000; i++) lychrel_numbers[i] = 0; //set everything to 0 to start off
+
 	long long current_number = 0;
 
 	for (int i = 1; i < 10000; i++)
 	{
-		if (lychrel_numbers[i]) continue; //skip numbers that have already been tested
-		std::vector<long long> current_chain; //create vector for new chain
 		bool lychrel = true;
 		current_number = i;
 
@@ -41,39 +35,20 @@ std::pair<std::string, double> q55()
 				if (j > 0) //starting on a palindrome doesn't count, as can be seen in example text
 				{
 					lychrel = false;
-					for (int k = 0; k < current_chain.size(); k++)
-					{
-						if (current_chain[k] >= 10000) break; //no need to keep track of numbers outside of current limit
-						lychrel_numbers[current_chain[k]] = 1; //set every number in current chain to be non-lycheral
-					}
 					break; //no need to iterate all the way up to 50
 				}
 			}
-			current_chain.push_back(current_number);
-			current_chain.push_back(pal);
+
 			current_number += pal;
 		}
 
-		//vprint(current_chain);
-
-		if (lychrel)
-		{
-			for (int k = 0; k < current_chain.size(); k++)
-			{
-				if (current_chain[k] >= 10000) break; //no need to keep track of numbers outside of current limit
-				lychrel_numbers[current_chain[k]] = 2; //set every number in current chain to be lycheral
-				answer++; //add each lychrel number under 10000 towards the answer
-			}
-		}
+		if (lychrel) answer++;
 	}
-
-	//delete lychrel numbers array from heap memory
-	delete[] lychrel_numbers;
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
-	//the answer is xxx
-	//ran in xxx seconds
+	//the answer is 249
+	//ran in 0.0005788 seconds
 }
 
 //NOTES
@@ -84,3 +59,10 @@ std::pair<std::string, double> q55()
 //non-lycheral without the need to retest each individual one. This should a little bit of a speed up in the algorithm. The same can be said for numbers that are Lychrel. The
 //last thing, since we're limited to 50 iterations and the largest number to test is 9,999 then some of the larger numbers dealt with in this problem might be able to overflow
 //a 64-bit integer. Start off by using long integers but if something seems screwy will need to switch to a big integer type or use an array to hold individual digits.
+
+//Had an issue where numbers that had already been proven to be non-Lychrel (such as 496) were getting counted as Lychrel later on because they were the palindromes of Lychrel 
+//numbers ending in zero (in this case 6940). Decided to eliminate all code having to do with saving numbers in the current chain and this led to the correct answer, as well 
+//as reducing the run time. Normally I'd say that saving numbers proven to be non-lychrel to avoid recalculation should always benefit, however, it seems that most non-lychrel 
+//numbers end up hitting a palindrome in relatively few iterations. Since this is the case the time saving benefit of eliminating recalculations doesn't end up helping out. Also,
+//there are instances where the 64-bit integer holding the current number gets overflowed which throws things off. Despite this, the correct answer is still obtained. I think this 
+//is because overflow doesn't tend to happen until just about the 50th iteration, so every number that get's high enough to overflow the 64-bit int ends up being Lychrel anyway.
