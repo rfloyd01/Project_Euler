@@ -4,7 +4,6 @@
 #include <Header_Files/BigInt.h>
 
 //Square Root Convergents
-
 int digitNumber(bigint n)
 {
 	//returns the number of digits in n
@@ -20,25 +19,32 @@ int digitNumber(bigint n)
 std::pair<std::string, double> q57()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	int answer = 0;
 
-	bigint numerator("3");
-	bigint denominator("2");
-	bigint temp("0");
-	for (int i = 2; i <= 1000; i++)
+	int answer = 0, limit = 1000;
+	long double fraction[2] = { 3.0, 2.0 };
+	bool numerator = 0, denominator = 1;
+
+	for (int i = 1; i <= limit; i++)
 	{
-		numerator += denominator;
-		temp = numerator;
-		numerator = denominator;
-		denominator = temp;
-		numerator += denominator;
-		if (digitNumber(numerator) > digitNumber(denominator)) answer++;
+		if (fraction[numerator] >= 10.0)
+		{
+			if (fraction[denominator] < 10.0) answer++;
+
+			fraction[numerator] /= 10.0;
+			fraction[denominator] /= 10.0;
+		}
+
+		fraction[numerator] += fraction[denominator];
+		fraction[denominator] += fraction[numerator];
+
+		numerator = !numerator;
+		denominator = !denominator;
 	}
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 153
-	//ran in 0.0225001 seconds
+	//ran in 0.0000082 seconds
 }
 
 //NOTES

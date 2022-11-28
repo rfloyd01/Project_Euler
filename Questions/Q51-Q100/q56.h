@@ -31,6 +31,7 @@ std::pair<std::string, double> q56()
 			if (current_sum > answer) answer = current_sum;
 		}
 	}
+	//ran in 0.0281492 seconds
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
@@ -42,7 +43,7 @@ std::pair<std::string, double> q56()
 //I wrote a big integer class for a reason, should be able to brute force this one without too much effort.
 
 //The brute force approach ended up taking much much longer than I thought it would until I realized that I was 
-//doing way too many multiplictions. For each invrement of b I was starting the multiplication over. For example,
+//doing way too many multiplictions. For each increment of b I was starting the multiplication over. For example,
 //when A was 5 and B was 6 I calculated out 5 * 5 * 5 * 5 * 5 * 5. This wasn't necessary though because I had already calculated
 //5^5 in the step before, and 5^4 in the step before that. Basically each time b increments I just need to multiply
 //A by A again and not start over from scratch. Doing the initial method would yield about 4,500 multiplications

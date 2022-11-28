@@ -42,8 +42,13 @@ std::pair<std::string, double> q55()
 			current_number += pal;
 		}
 
-		if (lychrel) answer++;
+		if (lychrel)
+		{
+			std::cout << i << std::endl;
+			answer++;
+		}
 	}
+	//ran in 0.0005788 seconds
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 

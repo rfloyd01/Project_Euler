@@ -67,6 +67,7 @@ std::pair<std::string, double> q60()
 			}
 		}
 	}
+	std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 << std::endl;
 
 	bool cont = true;
 	int winning_numbers[5] = { 0, 0, 0, 0, 0 };
@@ -121,7 +122,7 @@ std::pair<std::string, double> q60()
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 26033
-	//ran in 0.444561 seconds
+	//ran in 0.26605 seconds
 }
 
 //NOTES

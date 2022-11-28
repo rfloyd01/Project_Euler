@@ -2,104 +2,73 @@
 
 #include <Header_Files/pch.h>
 #include <fstream>
+#include <sstream>
 #include <vector>
 
 //XOR Decryption
 std::pair<std::string, double> q59()
 {
 	auto run_time = std::chrono::steady_clock::now();
+
 	int answer = 0;
 
-	char letter = 'a'; //just use a random character to initialize the variable
-
-	//first step is to copy the encrypted letters from the text file
+	//The given text file is only on a single line, read this line into a string with a
+	//single readLine() call, convert it into a stringstream and then parse by separating 
+	//out the commas
 	std::ifstream inFile;
+	std::string encryptedLetters;
 	inFile.open("Resources/q59.txt");
 
-	std::vector<char> encrypted_letters, decrypted_letters;
+	std::getline(inFile, encryptedLetters);
+	std::stringstream encryptedStream(encryptedLetters);
+	std::vector<char> encrypted_letters;
+	
+	while (std::getline(encryptedStream, encryptedLetters, ',')) encrypted_letters.push_back(std::stoi(encryptedLetters));
 
-	//wasn't sure how to break the loop when EOF is reached so I just put an '@' character at the very end of the file to signify when to stop
-	while (letter != '@')
-	{
-		char encrypted_letter = 0;
-		while (true)
-		{
-			inFile >> letter;
-			if (letter == ',' || letter == '@') break;
-			encrypted_letter *= 10;
-			encrypted_letter += (letter - 48);
-		}
-
-		encrypted_letters.push_back(encrypted_letter);
-		decrypted_letters.push_back(0); //decrypted letters vector is being default initialized to the same size as the encrypted letters
-	}
-
-	char decryption_key[3] = { 0 };
-	const int words_to_check = 5;
-	std::string decrypted_words[words_to_check];
+	char decryption_key[3] = { 0 }, answer_key[3] = { 0 };
+	int longest_word = 100, average_expected_word_length = 10, characters_to_check = 100;
+	int minimum_expected_spaces = characters_to_check / average_expected_word_length;
 
 	for (char i = 97; i <= 122; i++)
 	{
+		decryption_key[0] = i;
 		for (char j = 97; j <= 122; j++)
 		{
+			decryption_key[1] = j;
 			for (char k = 97; k <= 122; k++)
 			{
-				decryption_key[0] = i;
-				decryption_key[1] = j;
 				decryption_key[2] = k;
-				for (int x = 0; x < encrypted_letters.size(); x++) decrypted_letters[x] = (decryption_key[x % 3] ^ encrypted_letters[x]); //once decryption key is set, decrypt the message
-
-				//after decryption put the first five words into the string array
-				int position_counter = 0;
-				bool cont = true;
-				for (int x = 0; x < words_to_check; x++)
+				int spaces_found = 0, max_word_length = 0, current_word_length = 0;
+				for (int x = 0; x < characters_to_check; x++)
 				{
-					std::string current_word = "";
-					while (decrypted_letters[position_counter] != ' ')
+					if ((decryption_key[x % 3] ^ encrypted_letters[x]) == ' ')
 					{
-						if (decrypted_letters[position_counter] < 65)
-						{
-							//break if a character less than 'A' is found
-							cont = false;
-							break;
-						}
-						else if ((decrypted_letters[position_counter] > 90) && (decrypted_letters[position_counter] < 97))
-						{
-							//break if a character between 'Z' and a'' are found
-							cont = false;
-							break;
-						}
-						else if (decrypted_letters[position_counter] > 122)
-						{
-							//break if a character greater than 'z' is found
-							cont = false;
-							break;
-						}
-						current_word += decrypted_letters[position_counter];
-						position_counter++;
+						spaces_found++;
+						if (current_word_length > max_word_length) max_word_length = current_word_length;
+						current_word_length = 0;
 					}
-					if (!cont) break; //break out of this loop if a non letter or space character is found
-					decrypted_words[x] = current_word;
-					position_counter++;
+					else current_word_length++;
 				}
 
-				if (cont)
+				if (spaces_found < minimum_expected_spaces) break;
+				if (max_word_length < longest_word)
 				{
-					//Uncomment the below three lines to see what the decryption key is and the five words that cracked the code
-					//for (int x = 0; x < 5; x++) std::cout << decrypted_words[x] << ", ";
-					//std::cout << std::endl;
-					//std::cout << "Decryption Key is: [" << decryption_key[0] << ", " << decryption_key[1] << ", " << decryption_key[2] << "]" << std::endl;
-
-					for (int x = 0; x < decrypted_letters.size(); x++) answer += decrypted_letters[x];
+					longest_word = max_word_length;
+					answer_key[0] = decryption_key[0];
+					answer_key[1] = decryption_key[1];
+					answer_key[2] = decryption_key[2];
 				}
 			}
 		}
 	}
 
+	//once the correct key is obtained, decrypt the whole message with it to get the final answer
+	for (int i = 0; i < encrypted_letters.size(); i++) answer += answer_key[i % 3] ^ encrypted_letters[i];
+
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 129448
-	//ran in 0.029874 seconds
+	//ran in 0.0004219 seconds
 }
 
 //NOTES
@@ -117,3 +86,16 @@ std::pair<std::string, double> q59()
 //I could check and still get to the correct answer. I started originally with 5 words, but was able to get the same answer when checking only 4 words. Attempting to break the code
 //when only looking at 3 words though didn't result in the right answer, so it seems that 5 was a good place to start off at. Checking 4 words instead of 5 didn't effect the run time at
 //all, presumably because every attempt fails before 4 words other than the correct attempt.
+
+//HACKERRANK UPDATE
+/*
+Checking back over my first solution, I actually got kind of lucky with how a found the answer. I decided to look at the first five words and make 
+sure there weren't any symbols of any kind. Since the decoded message was a paragraph (and not just random english words like I thought it would
+be) this meant that there was punctuation in the message (apostraphes, periods, commas, etc.). Luckily none of these symbols appeared before the 
+first five words, however, it would be very possible for this to happen in a different message. In the HackerRank version you have to decipher 
+different messages in each trial so I needed a different approach. In a standard paragraph there are spaces after all of the words, so one would 
+expect there to be a good amount of space characters that appear. Furthermore, the spaces should be spread out at least somewhat evenly. I'm not 
+sure what the average word length is in the English language, but I'd bet it's under 10 characters in length. By looking both at the number of 
+space characters that appear, as well as the length of the longest word that's found it should be fairly easy to determine which key correctly 
+deciphers the code.
+*/
