@@ -31,6 +31,7 @@ std::pair<std::string, double> q62()
 	{
 		cube = i * i * i;
 		rep = convertToTenDigit(cube);
+
 		found_cubes[rep].push_back(cube);
 		if (found_cubes[rep].size() == 5)
 		{
