@@ -229,6 +229,7 @@
     <ClInclude Include="Questions\Q151-Q200\q175.h" />
     <ClInclude Include="Questions\Q151-Q200\q178.h" />
     <ClInclude Include="Questions\Q151-Q200\q200.h" />
+    <ClInclude Include="Questions\Q201-Q250\q233.h" />
     <ClInclude Include="Questions\Q201-Q250\q239.h" />
     <ClInclude Include="Questions\Q201-Q250\q240.h" />
     <ClInclude Include="Questions\Q251-Q300\q265.h" />
