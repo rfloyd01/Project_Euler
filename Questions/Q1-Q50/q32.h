@@ -6,7 +6,7 @@
 #include <map>
 
 //Pandigital products
-void constructPandigitals(int length, int current_level, std::vector<bool>& nums, std::vector<int>& bin, std::vector<int>& bin_values, int used = 0, int current_number = 0, int ten_power = 1)
+void constructPandigitals(int length, int N, int current_level, std::vector<bool>& nums, std::vector<int>& bin, std::vector<int>& bin_values, int used = 0, int current_number = 0, int ten_power = 1)
 {
 	//A recursive function to create pandigital numbers, seemed quicker to do it this way than to just loop through everynumber to test if it's pandigital
 	//also keeps track of the binary representation of each pandigital numbers, so it can be seen at a glance which digits it's made up of
@@ -18,20 +18,105 @@ void constructPandigitals(int length, int current_level, std::vector<bool>& nums
 	}
 	else
 	{
-	    for (int i = 1; i < 10; i++)
-	    {
+		for (int i = 1; i <= N; i++)
+		{
 			if (bin_values[i] & used) continue;
-			constructPandigitals(length, current_level + 1, nums, bin, bin_values, used + bin_values[i], current_number + ten_power * i, ten_power * 10);
-	    }
+			constructPandigitals(length, N, current_level + 1, nums, bin, bin_values, used + bin_values[i], current_number + ten_power * i, ten_power * 10);
+		}
+	}
+}
+
+void testNumbers(bool growth, int digits, int start, int end, int N, int target_binary, bool& stop, std::vector<bool>& p_nums,
+	std::vector<int>& binary, std::map<int, bool>& answers, int& answer)
+{
+	if (growth)
+	{
+		//since we need growth by X, the maximum value for 'j' will be the same 
+		//regardless of what 'i' is. Calculate it now.
+		int multiplicand_length = N / 2 - digits;
+		if (multiplicand_length < digits)
+		{
+			//digits should be the smaller number, otherwise we'd would end up double 
+			//counting unnecessarily
+			stop = true;
+			return;
+		}
+		int maximum = MyPow(10, multiplicand_length), goal = MyPow(10, N - digits - multiplicand_length - 1);
+		for (int i = start; i < end; i++)
+		{
+			if (!p_nums[i]) continue; //skip if i isn't a non-repeat number
+			//the minimum value of j will depend on the value of i
+			//std::cout << i << ": minimum = " << goal / i << ", maximum = " << maximum << std::endl;
+			for (int j = goal / i; j < maximum; j++)
+			{
+				if (!p_nums[j]) continue; //skip if i isn't a non-repeat number
+				if (binary[i] & binary[j]) continue; //skip if i and j share a digit
+
+				int numb = i * j;
+				if (p_nums[numb])
+				{
+					if (((binary[i] | binary[j]) ^ binary[numb]) == target_binary) //exclusive or is used to make sure digits 1-9 all appear, and only appear once
+					{
+						if (answers[numb]) continue; //even though this instance passes the test skip it because the product has already been hit by two other numbers
+						//std::cout << i << " * " << j << " = " << i * j << std::endl;
+						answers[numb] = true;
+						answer += numb;
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		//since we need growth by X-1, the minimum value for 'j' will be the same 
+		//regardless of what 'i' is. Calculate it now.
+		int multiplicand_length = (N + 1) / 2 - digits;
+		if (multiplicand_length < digits)
+		{
+			//digits should be the smaller number, otherwise we'd would end up double 
+			//counting unnecessarily
+			stop = true;
+			return;
+		}
+		int minimum = MyPow(10, multiplicand_length - 1), goal = MyPow(10, N - digits - multiplicand_length);
+		for (int i = start; i < end; i++)
+		{
+
+			if (!p_nums[i]) continue; //skip if i isn't a non-repeat number
+			//the maximum value of j will depend on the value of i
+			//std::cout << i << ": minimum = " << minimum << ", maximum = " << goal / i << std::endl;
+			for (int j = minimum; j < goal / i; j++)
+			{
+				if (!p_nums[j]) continue; //skip if j isn't a non-repeat number
+				if (binary[i] & binary[j]) continue; //skip if i and j share a digit
+
+				int numb = i * j;
+				//std::cout << i << " * " << j << " = " << numb << std::endl;
+				if (p_nums[numb])
+				{
+
+					if (((binary[i] | binary[j]) ^ binary[numb]) == target_binary) //exclusive or is used to make sure digits 1-9 all appear, and only appear once
+					{
+						if (answers[numb]) continue; //even though this instance passes the test skip it because the product has already been hit by two other numbers
+						//std::cout << i << " * " << j << " = " << i * j << std::endl;
+						answers[numb] = true;
+						answer += numb;
+					}
+				}
+			}
+		}
 	}
 }
 
 std::pair<std::string, double> q32()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	int answer = 0, target_binary = 1022; //target binary is 1022 because that's the binary value of 2^1 - 2^9, which represents a number having all digits 1-9
+	int answer = 0, N = 9;
+	bool growth = !(N % 2);
+
+	int target_binary = 0; //target binary is 1022 because that's the binary value of 2^1 - 2^9, which represents a number having all digits 1-9
 	std::vector<bool> p_nums;
-	std::vector<int> binary_values = { 1 }, binary; //represents 2^index power, so iniitialize with 2^0 = 1
+	std::vector<int> binary_values, binary; //represents 2^index power, so iniitialize with 2^0 = 1
 	std::map<int, bool> answers; //map used to ensure no duplicates
 
 	for (int i = 0; i < 10000; i++)
@@ -40,44 +125,35 @@ std::pair<std::string, double> q32()
 		binary.push_back(0);
 	}
 
-	int bin = 2;
-	for (int i = 1; i <= 9; i++)
+	int bin = 1;
+	for (int i = 0; i <= N; i++)
 	{
+		target_binary |= bin;
 		binary_values.push_back(bin);
 		bin *= 2;
 	}
+	target_binary--; //can't use the number 0 so remove 2^0 from target
+
+	/*std::cout << target_binary << std::endl;
+	vprint(binary_values);*/
 
 	//loop to construct pandigitals between 1 and 4 digits
-	for (int digits = 1; digits < 5; digits++) constructPandigitals(digits, 0, p_nums, binary, binary_values);
+	for (int digits = 1; digits <= N / 2; digits++) constructPandigitals(digits, N, 0, p_nums, binary, binary_values);
 
-	for (int i = 0; i < p_nums.size(); i++)
+	bool stop = false;
+	int digits = 1, start = 1, end = 10;
+	while (!stop)
 	{
-		if (!p_nums[i]) continue; //skip if i isn't a pandigital number
-		if (i * i >= 10000) break;
-		for (int j = i + 1; j < p_nums.size(); j++)
-		{
-			if (i * j >= 10000) break;//break if i and j yield a 5 digit number or larger
-			if (!p_nums[j]) continue; //skip if j isn't a pandigital number
-			if (binary[i] & binary[j]) continue; //skip if i and j share a digit
-			
-
-			int numb = i * j;
-			if (p_nums[numb])
-			{
-				if (((binary[i] | binary[j]) ^ binary[numb]) == target_binary) //exclusive or is used to make sure digits 1-9 all appear, and only appear once
-				{
-					if (answers[numb]) continue; //even though this instance passes the test skip it because the product has already been hit by two other numbers
-					answers[numb] = true;
-					answer += numb;
-				}
-			}
-		}
+		testNumbers(growth, digits, start, end, N, target_binary, stop, p_nums, binary, answers, answer);
+		digits++;
+		start *= 10;
+		end *= 10;
 	}
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 45228
-	//ran in 0.0004912 seconds
+	//ran in 0.000337 seconds
 }
 
 //NOTES
@@ -98,3 +174,7 @@ std::pair<std::string, double> q32()
 //numbers are the maximum, all pandigitals can now be tracked in a simple boolean vector. There's no more reason to test if the product
 //of two pandigitals is pandigital itself, as all pandigitals are stored in a vector. Removing the pandigital test for the product and
 //a few other things led to another 20x speed up. So the final program is now 100x faster than the original!
+
+//HACKERRANK UPDATE
+//Made changes to pass the HackerRank trials and altered the start and stop variables for loop search. This led to a very slight
+//speedup

@@ -34,6 +34,8 @@ std::pair<std::string, double> q33()
 	int num, den, nnum, dden;
 	int final_numerator = 1, final_denominator = 1;
 
+	int viable_fractions = 0;
+
 	for (int i = 2; i < 100; i++) prime_factorizations.push_back(PrimeFactors(i));
 
 	for (int i = 11; i < 100; i++)
@@ -71,15 +73,16 @@ std::pair<std::string, double> q33()
 
 			if (overlapping_digit)
 			{
+				viable_fractions++;
 				std::pair<int, int> original_fraction = reduceFraction(prime_factorizations[i], prime_factorizations[j]);
 				std::pair<int, int> new_fraction = reduceFraction(prime_factorizations[nnum], prime_factorizations[dden]);
 
 				if ((original_fraction.first == new_fraction.first) & (original_fraction.second == new_fraction.second))
 				{
 					//uncomment this code to see the actual fractions
-					//std::cout << i << '/' << j << std::endl;
-					//std::cout << nnum << '/' << dden << std::endl;
-					//std::cout << std::endl;
+					std::cout << i << '/' << j << std::endl;
+					std::cout << nnum << '/' << dden << std::endl;
+					std::cout << std::endl;
 					final_numerator *= i;
 					final_denominator *= j;
 				}
@@ -87,11 +90,13 @@ std::pair<std::string, double> q33()
 		}
 	}
 
+	std::cout << "There were " << viable_fractions << " fractions tested" << std::endl;
+
 	std::pair<int, int> answer = reduceFraction(PrimeFactors(final_numerator), PrimeFactors(final_denominator));
 	return { std::to_string(answer.second), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 100
-	//ran in 0.0010425 seconds
+	//ran in 0.0003936 seconds
 }
 
 //NOTES
@@ -99,3 +104,7 @@ std::pair<std::string, double> q33()
 //every number into a vector composed of it's prime factors. There should only be around 5000 numerator /denominator
 //combinations that need to be checked against eachother so brute force checking of each number possibility shouldn't
 //be an issue. Any number with a zero in it is skipped so that trivial solutions are ignored.
+
+//HACKERRANK UPDATE
+//Lots of changes were made for the HackerRank version of the problem. The code now accomdates numbers that are either 2, 3 or 4 digits where we can remove anywhere
+//from 1 to number_length - 1 digits from the number.

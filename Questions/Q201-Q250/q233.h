@@ -6,7 +6,7 @@
 //Lattice points on a circle
 int global_total = 0;
 
-void GeneratePrimes(int maximum, std::vector<int>& pythagorean_primes, std::vector<int>& standard_primes)
+void GeneratePrimes(long long maximum, std::vector<int>& pythagorean_primes, std::vector<int>& standard_primes)
 {
     //creates and separates all primes from 2 - maximum into pythagorean and non-pythagorean vectors
     std::vector<int> sieve;
@@ -110,7 +110,7 @@ bool recursive_create_exponents(std::vector<int> current_exponents, int goal, in
     }
 }
 
-std::vector<std::vector<int> > create_lattice_equations(long long limit, int goal)
+std::vector<std::vector<int> > create_lattice_equations(int goal)
 {
     //Returns acceptable equations based on the goal number and the limit. It will keep adding
     //more primes until the goal number is exceeded.
@@ -143,7 +143,7 @@ std::vector<std::vector<int> > create_lattice_equations(long long limit, int goa
 }
 
 void create_all_lattice_circles(long long limit, std::vector<int>& p_primes, unsigned long long* ways_to_make_n_or_less, unsigned long long* cumulative_sum_under_n,
-    std::vector<int>& acceptable_lattice_factorization, std::vector<int> used_primes, unsigned long long& answer, unsigned long long current_num = 1, int current_level = 0)
+    std::vector<int>& acceptable_lattice_factorization, std::vector<int> used_primes, unsigned long long& answer, unsigned long long& number_of_ways, unsigned long long current_num = 1, int current_level = 0)
 {
     //recursively choose all combinations of Pythagorean Primes that fit the given equation and stay 
     //below the limit. For each successful combination we then see what the maximum product is for non-Pythagorean
@@ -153,7 +153,7 @@ void create_all_lattice_circles(long long limit, std::vector<int>& p_primes, uns
         //We've reached the base of the recursion. Increment the recursion by 1 and then call another function
         //to see how many non-Pythagorean primes we can add before exceeding the limit
         answer += (cumulative_sum_under_n[limit / current_num] * current_num);
-        global_total += ways_to_make_n_or_less[limit / current_num];
+        number_of_ways += ways_to_make_n_or_less[limit / current_num];
 
         /*for (int i = 0; i < used_primes.size(); i++) std::cout << p_primes[used_primes[i]] << "^" << acceptable_lattice_factorization[i] << " ";
         std::cout << "yields a total sum of " << ways_to_make_n_or_less[limit / current_num] * current_num << std::endl;*/
@@ -179,14 +179,16 @@ void create_all_lattice_circles(long long limit, std::vector<int>& p_primes, uns
 
         if (!cont) continue; //go to next prime if this one's already been used
 
-        //check to see if the current prime raised to the current power of the equation will exceed the limit,
-        //if so break out of the loop as going further will only make the numbers higher.
-        if (MyPow(p_primes[i], acceptable_lattice_factorization[current_level]) > (limit / current_num)) break;
+        //Figure out the highest exponent we could use for the current prime using logarithms. If the exponent
+        //in the equation is larger than this, break out of the loop as we can no longer use primes to stay
+        //under the limit.
+        int max_allowable_exponent = log(limit / current_num) / log(p_primes[i]);
+        if (max_allowable_exponent < acceptable_lattice_factorization[current_level]) break;
 
         //if we haven't broken out of this loop yet then we recursively call to the next level
         used_primes.push_back(i); //keep track of the index of the prime being used
         create_all_lattice_circles(limit, p_primes, ways_to_make_n_or_less, cumulative_sum_under_n, acceptable_lattice_factorization, used_primes, answer,
-            current_num * MyPow(p_primes[i], acceptable_lattice_factorization[current_level]), current_level + 1);
+            number_of_ways, current_num * MyPow(p_primes[i], acceptable_lattice_factorization[current_level]), current_level + 1);
         used_primes.pop_back(); //remove this prime from the used vector after return from recursion
     }
 }
@@ -204,33 +206,50 @@ std::pair<std::string, double> q233()
     first 4 pythagorean primes to figure out the largest values of primes we'll actually need.
     */
 
-    unsigned long long answer = 0, limit = 100000000000;
-    int goal = 100, prime_limit = 0;
-    std::vector<std::vector<int> > p_prime_factorizations = create_lattice_equations(100, (goal - 4) / 8);
+    unsigned long long answer = 0, limit = 100000000000, maximal_np_prime_product = 1, prime_limit = 0, number_of_ways = 0;
+    int goal = 20;
     std::vector<int> p_primes = { 5, 13, 17, 29 }, np_primes;
 
-    //We find the largest Pythagorean Prime needed by going through each of the equations and using the smallest known
+    //Generate the Pythagorean Prime factorizations that can be used to reach the goal lattice points.
+    //For example, when goal = 420 there are 5 possible equations we can use: p0^52, p0^17 * p1^1,
+    //p0^10 * p1^2, p0^7 * p1^3 and p0^3 * p1^2 * p2^1
+    std::vector<std::vector<int> > p_prime_factorizations = create_lattice_equations((goal - 4) / 8);
+    for (int i = 0; i < p_prime_factorizations.size(); i++) vprint(p_prime_factorizations[i]);
+
+    //We find the largest Pythagorean Prime needed by going through each of the factorizations and using the smallest known
     //primes until we get to the last exponent. We then figure out the largest prime that could go in this final position
     //while still staying under the limit.
-    for (int i = 0; i < )
+    for (int i = 0; i < p_prime_factorizations.size(); i++)
+    {
+        unsigned long long product = 1;
+        for (int j = 0; j < p_prime_factorizations[i].size() - 1; j++) product *= MyPow(p_primes[j], p_prime_factorizations[i][j]);
+        long long largest_p_prime = pow(limit / product, 1.0 / p_prime_factorizations[i].back());
+        if (largest_p_prime > prime_limit) prime_limit = largest_p_prime;
+
+        //Now use the next known p_prime to calculate the largest possible product for np primes
+        product *= MyPow(p_primes[p_prime_factorizations[i].size() - 1], p_prime_factorizations[i].back());
+        if ((limit / product) > maximal_np_prime_product) maximal_np_prime_product = (limit / product);
+    }
+
+    /*std::cout << "Largest prime needed is " << prime_limit << std::endl;
+    std::cout << "Largest np product is " << maximal_np_prime_product << std::endl;*/
+
+    //You only get 4 lattice points when N is a number without any Pythagorean primes in its prime factorization
+    if (goal == 4)
+    {
+        maximal_np_prime_product = limit;
+        prime_limit = limit;
+    }
     
-    //First we create vectors that contain Pythagorean Primesand non - Pythagorean primes
-    //up to the prime limit
-    std::vector<int> p_primes = {5, 13, 17, 29}, np_primes;
+    //Now that we know the largest prime we'll need we can generate all primes up to this limit
+    //and then separate the Pythagorean Primes out
+    p_primes.clear(); //first clear out the first four known p_primes
     GeneratePrimes(prime_limit, p_primes, np_primes);
 
-    //There are only 3 equations we can use to get 420 lattice points without exceeding the limit. They are 
-    //p0^10 * p1^2, p0^7 * p1^3 and p0^3 * p1^2 * p2^1 where p0, p1 and p2 are any combination of Pythagorean
-    //primes.
-    //std::vector<std::vector<int> > acceptable_lattice_factorizations = { {10, 2}, {7, 3}, {3, 2, 1} };
-    //std::vector<std::vector<int> > acceptable_lattice_factorizations = { {4},  {1, 1} };
+    std::cout << p_primes.size() << " vs. " << np_primes.size() << std::endl;
 
-    //Based on the limits of this problem, the largest product we can make using the non-Pythagorean primes is only on
-    //the scale of ~275,000. This is a fairly small number so to help speed up the program we can memoize all of the ways
-    //to make N or less using nothing but the np-primes. For example, if we wanted to see all of the ways to make the number 
-    //10 or less using np-primes we can see that there are 7 ways: 2, 3, 2*2, 2*3, 7, 2*2*2 and 3*3.
-    unsigned long long maximal_np_prime_product = limit / (5 * 5 * 5 * 13 * 13 * 17); //the largest product we can make and stay under limit with np-primes
-    //unsigned long long maximal_np_prime_product = limit / (5 * 13); //the largest product we can make and stay under limit with np-primes
+    //The final step before calculating the answer is to memoize the number of ways we can create 
+    //numbers using only non-Pythagorean primes under a given limit. 
     unsigned long long* ways_to_make_n_or_less = new unsigned long long[maximal_np_prime_product + 1]();
     unsigned long long* cumulative_sum_under_n = new unsigned long long[maximal_np_prime_product + 1]();
     ways_to_make_n_or_less[1] = 1;
@@ -241,7 +260,6 @@ std::pair<std::string, double> q233()
         int current_location = 1;
         while ((maximal_np_prime_product / np_primes[i]) >= current_location)
         {
-            //ways_to_make_n_or_less[current_location * np_primes[i]] += ways_to_make_n_or_less[current_location];
             if (ways_to_make_n_or_less[current_location])
             {
                 ways_to_make_n_or_less[current_location * np_primes[i]] = 1;
@@ -250,28 +268,22 @@ std::pair<std::string, double> q233()
             current_location++;
         }
     }
-
     for (int i = 1; i <= maximal_np_prime_product; i++)
     {
         ways_to_make_n_or_less[i] += ways_to_make_n_or_less[i - 1];
         cumulative_sum_under_n[i] += cumulative_sum_under_n[i - 1];
     }
 
-    //for (int i = 2; i < 50; i++) std::cout << i << ": " << cumulative_sum_under_n[i] << " ways" << std::endl;
-    //std::cout << maximal_np_prime_product << ": " << ways_to_make_n_or_less[maximal_np_prime_product] << " ways" << std::endl;
-
     //With everything prepared we can now count the ways to make 420 lattice points
     std::vector<int> used_primes;
-    for (int i = 0; i < p_prime_factorizations.size(); i++) create_all_lattice_circles(limit, p_primes, ways_to_make_n_or_less, cumulative_sum_under_n,
-        p_prime_factorizations[i], used_primes, answer);
-
-    //std::cout << "There are " << global_total << " different numbers." << std::endl;
-
-    /*std::vector<int> current_exponents = { 0, 0 };
-    int increment_level = 1;
-
-    recursive_create_exponents(current_exponents, 10, increment_level);*/
+    for (int i = 0; i < p_prime_factorizations.size(); i++)
+    {
+        create_all_lattice_circles(limit, p_primes, ways_to_make_n_or_less, cumulative_sum_under_n,
+            p_prime_factorizations[i], used_primes, answer, number_of_ways);
+    }
     
+    if (goal == 4) number_of_ways = ways_to_make_n_or_less[limit];
+    std::cout << "There are " << number_of_ways << " circles with " << goal << " lattice points" << std::endl;
 
     return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
