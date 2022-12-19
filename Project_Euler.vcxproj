@@ -170,6 +170,7 @@
     <ClInclude Include="Header_Files\test2.h" />
     <ClInclude Include="Pet_Detective.h" />
     <ClInclude Include="q247.h" />
+    <ClInclude Include="Questions\Hackerrank\Digit_Cancelling_Fractions.h" />
     <ClInclude Include="Questions\Hackerrank\Picking_Numbers.h" />
     <ClInclude Include="Questions\Hackerrank\StringReverseMerge.h" />
     <ClInclude Include="Questions\Hackerrank\Top_Dice.h" />

@@ -3,100 +3,45 @@
 #include <Header_Files/pch.h>
 #include <Header_Files/functions.h> //includes PrimeFactors() and <vector>
 #include <Header_Files/print.h> //includes vprint()
+#include <map>
 
 //Digit cancelling fractions
-std::pair<int, int> reduceFraction(std::vector<int> numerator, std::vector<int> denominator)
-{
-	int num = 1, den = 1;
-	for (int i = 0; i < denominator.size(); i++)
-	{
-		for (int j = 0; j < numerator.size(); j++)
-		{
-			if (numerator[j] == denominator[i])
-			{
-				numerator[j] = 1;
-				denominator[i] = 1;
-				break;
-			}
-		}
-	}
-
-	for (int i = 0; i < denominator.size(); i++) den *= denominator[i];
-	for (int i = 0; i < numerator.size(); i++) num *= numerator[i];
-
-	return { num, den };
-}
-
 std::pair<std::string, double> q33()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	std::vector<std::vector<int> > prime_factorizations = { {0}, {1} };
-	int num, den, nnum, dden;
-	int final_numerator = 1, final_denominator = 1;
+	
+	fraction final_fraction = { 1, 1 };
+	std::vector<fraction> coprime_pairs;
+	FaraySequence(9, coprime_pairs); //generate coprime pairs with 1-9
 
-	int viable_fractions = 0;
-
-	for (int i = 2; i < 100; i++) prime_factorizations.push_back(PrimeFactors(i));
-
-	for (int i = 11; i < 100; i++)
+	for (int i = 0; i < coprime_pairs.size(); i++)
 	{
-		if (i % 10 == 0) continue;
-		for (int j = i + 1; j < 100; j++)
+		int k = 0;
+		while (true)
 		{
-			if (j % 10 == 0) continue;
-			bool overlapping_digit = false;
+			k++;
+			if (coprime_pairs[i].numerator * k > 9 || coprime_pairs[i].denominator * k > 9) break;
 
-			if (i % 10 == j % 10)
+			//Only one form will give us distinct working answers X#/#X. Plug in all values of 
+			//k * coprime pair to find the ones that work
+			if ((9 * k * coprime_pairs[i].numerator * coprime_pairs[i].denominator) % (10 * coprime_pairs[i].numerator - coprime_pairs[i].denominator) == 0)
 			{
-				overlapping_digit = 1;
-				nnum = i / 10;
-				dden = j / 10;
-			}
-			else if (i % 10 == j / 10)
-			{
-				overlapping_digit = 1;
-				nnum = i / 10;
-				dden = j % 10;
-			}
-			else if (i / 10 == j % 10)
-			{
-				overlapping_digit = 1;
-				nnum = i % 10;
-				dden = j / 10;
-			}
-			else if (i / 10 == j / 10)
-			{
-				overlapping_digit = 1;
-				nnum = i % 10;
-				dden = j % 10;
-			}
-
-			if (overlapping_digit)
-			{
-				viable_fractions++;
-				std::pair<int, int> original_fraction = reduceFraction(prime_factorizations[i], prime_factorizations[j]);
-				std::pair<int, int> new_fraction = reduceFraction(prime_factorizations[nnum], prime_factorizations[dden]);
-
-				if ((original_fraction.first == new_fraction.first) & (original_fraction.second == new_fraction.second))
+				int x = (9 * k * coprime_pairs[i].numerator * coprime_pairs[i].denominator) / (10 * coprime_pairs[i].numerator - coprime_pairs[i].denominator);
+				if (x > 0 && x < 10)
 				{
-					//uncomment this code to see the actual fractions
-					std::cout << i << '/' << j << std::endl;
-					std::cout << nnum << '/' << dden << std::endl;
-					std::cout << std::endl;
-					final_numerator *= i;
-					final_denominator *= j;
+					final_fraction.numerator *= 10 * coprime_pairs[i].numerator * k + x;
+					final_fraction.denominator *= 10 * x + coprime_pairs[i].denominator * k;
 				}
 			}
 		}
 	}
 
-	std::cout << "There were " << viable_fractions << " fractions tested" << std::endl;
+	int answer = final_fraction.denominator / gcd(final_fraction.numerator, final_fraction.denominator);
 
-	std::pair<int, int> answer = reduceFraction(PrimeFactors(final_numerator), PrimeFactors(final_denominator));
-	return { std::to_string(answer.second), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
+	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 100
-	//ran in 0.0003936 seconds
+	//ran in 0.0000182 seconds
 }
 
 //NOTES

@@ -521,6 +521,9 @@
     <ClInclude Include="Questions\Q201-Q250\q233.h">
       <Filter>Header Files\Questions\Q201-Q250</Filter>
     </ClInclude>
+    <ClInclude Include="Questions\Hackerrank\Digit_Cancelling_Fractions.h">
+      <Filter>Header Files\Hackerrank</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Resources\q11.txt">
