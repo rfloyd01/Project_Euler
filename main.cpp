@@ -1,7 +1,6 @@
 #include <Header_Files/pch.h>
-#include <Questions/Q1-Q50/q33.h>
+#include <Questions/Q1-Q50/q34.h>
 #include <Questions/Q1-Q50/master1-50.h>
-#include <Questions/Hackerrank/Digit_Cancelling_Fractions.h>
 #include <Header_Files/test.h>
 
 int main()
@@ -10,9 +9,8 @@ int main()
 	//The question number is stored in the question_number variable automatically for ease of reading
 
 	//Run_1to50();
-	auto answer = q33();
+	auto answer = q34();
 	//auto answer = test();
-	//auto answer = Digit_Cancelling_Fractions();
 
 	std::cout << "The answer is " << answer.first << std::endl;
 	std::cout << "Program ran in " << answer.second << " seconds" << std::endl;
