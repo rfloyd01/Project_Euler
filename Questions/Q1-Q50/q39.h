@@ -1,87 +1,53 @@
 #pragma once
 
-#include <Header_Files/pch.h> //There are a few header files needed to make the below code work, so included them in a precompiled header file
-#include <vector>
+#include <Header_Files/pch.h>
+
 //Integer Right Triangles
-bool coprimeTest(int a, int b)
-{
-	//this is a pretty lame coprime test but should work fine for this question
-	std::vector<int> a_primes, b_primes;
-	int divisor = 2;
-	while (a >= divisor)
-	{
-		if (a % divisor == 0); a_primes.push_back(divisor);
-		a /= divisor;
-		divisor++ ;
-	}
-
-	divisor = 2;
-	while (b >= divisor)
-	{
-		if (b % divisor == 0); b_primes.push_back(divisor);
-		b /= divisor;
-		divisor++;
-	}
-
-	for (int i = 0; i < a_primes.size(); i++)
-	{
-		for (int j = 0; j < b_primes.size(); j++)
-		{
-			if (a_primes[i] == b_primes[j]) return false;
-		}
-	}
-
-	return true;
-}
-
 std::pair<std::string, double> q39()
 {
-	//Use a string as the first part of the pair so that every question returns an answer of the same form (normally you would need ints, doubles, long ints, etc. to store different answers)
 	auto run_time = std::chrono::steady_clock::now();
-	int answer = 0, maximum = 0;
+	int answer = 0;
 
-	uint16_t triangles[1001] = { 0 }; //create a list to hold the number of triangles formed for each number 1000 or less
+	const int P = 1000;
+	int perimeters[P + 1] = { 0 }, current_max = 0, max_m = (sqrt(4 * P / 2 + 1) - 1) / 2.0;
+	int a = 0, b = 1, c = 1, d = max_m; //Farey variables
 
-	int m = 1, n = 2;
-	while (true)
+	//Use an iterative version of the Farey Sequence algorithm to generate coprime pairs
+	//that can be used to generate primitive Pythagorean triples
+	while (c <= max_m)
 	{
-		n = m + 1;
-		uint16_t base_sum = (2 * m * n) + (m * m + n * n) + (n * n - m * m);
-		if (base_sum > 1000) break; //condition to stop incrementing m and break out of loop
-		while (true)
-		{
-			uint16_t new_base_sum = (2 * m * n) + (m * m + n * n) + (n * n - m * m);
-			//std::cout << "m = " << m << ", n = " << n << ", base perimeter = " << new_base_sum << std::endl;
-			if (new_base_sum > 1000) break; //condition to stop incrementing n
-			if (!coprimeTest(m, n))
-			{
-				n++;
-				continue; //m and n need to be coprime to generate a primitive
-			}
-			if (m % 2 == 1 & n % 2 == 1)
-			{
-				n++;
-				continue; //m and n can't both be odd to generate a primitive
-			}
-			for (uint16_t i = new_base_sum; i <= 1000; i += new_base_sum) triangles[i]++; //multiply base case and add to list until it's bigger than 1000
-			n++;
-		}
-		m++;
-	}
+		int k = (max_m + b) / d;
+		int next_c = k * c - a;
+		int next_d = k * d - b;
 
-	for (int i = 1; i < 1001; i++)
-	{
-		if (triangles[i] > maximum)
+		a = c;
+		b = d;
+		c = next_c;
+		d = next_d;
+
+		//if either a or b is even then we find the perimeter of the primitive Pythagorean triple
+		//via the equation P = b^2 + a^2 + 2ab + b^2 - a^2 = 2b(b + a)
+		if (!(a % 2) || !(b % 2))
 		{
-			maximum = triangles[i];
-			answer = i;
+			int perimeter = 2 * b * (b + a);
+
+			for (int i = perimeter; i <= P; i += perimeter)
+			{
+				perimeters[i]++;
+
+				if (perimeters[i] > current_max)
+				{
+					current_max = perimeters[i];
+					answer = i;
+				}
+			}
 		}
 	}
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 840
-	//ran in 0.0003243 seconds
+	//ran in 0.0000022 seconds
 }
 
 //NOTES

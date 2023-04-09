@@ -1,38 +1,32 @@
 #pragma once
 
 #include <Header_Files/pch.h> //There are a few header files needed to make the below code work, so included them in a precompiled header file
+#include <Header_Files/functions.h> //includes powers_of_ten[]
 #include <vector>
 
-std::vector<int> pandigitals;
-
 //Pandigital Multiples
-void numberTest(short num)
+void numberTest(short num, int& answer)
 {
-	//maximum number should be ~18,000 so no need to use integers
-	//short has max size of ~32,000 so just use shorts
-	short used_digits[9] = { 0 };
-	short pandigital_length = 0;
-	short current_mult = 1;
-	std::string pandigital_string;
+	int concatenated_product = num, used = 0, current_mult = 2;
 
-	while (pandigital_length < 9)
+	while (concatenated_product < 100000000)
 	{
-		short product = num * current_mult++;
-		std::string word = std::to_string(product);
-		pandigital_string += word;
-		//std::cout << product << ", " << pandigital_string << std::endl;
-		while (product > 0)
-		{
-			short num = product % 10;
-			if (num == 0) return;
-			if (used_digits[num - 1]) return;
-			product /= 10;
-			used_digits[num - 1] = 1;
-			pandigital_length++;
-		}
+		int prod = num * current_mult++;
+		concatenated_product = concatenated_product * powers_of_ten[(int)log10(prod) + 1] + prod;
 	}
-	//std::cout << num << " results in a pandigital " << pandigital_string << std::endl;
-	pandigitals.push_back(std::stoi(pandigital_string));
+
+	int copy = concatenated_product;
+	while (copy != 0)
+	{
+		int dig = copy % 10;
+		
+		if (!dig) return; //can't have any 0's
+		if (used & powers_of_two[dig]) return; //not pandigital
+
+		copy /= 10;
+		used |= powers_of_two[dig];
+	}
+	if (concatenated_product > answer) answer = concatenated_product;
 }
 
 std::pair<std::string, double> q38()
@@ -41,13 +35,10 @@ std::pair<std::string, double> q38()
 	auto run_time = std::chrono::steady_clock::now();
 	int answer = 0;
 
-	for (short i = 1; i < 10; i++) numberTest(i); //don't bother optimizing for 1 digit numbers
-	for (short i = 25; i < 34; i++) numberTest(i); //test only pertinent 2 digit numbers (nothing else will result in 9 digits for pandigital
-	for (short i = 100; i < 334; i++) numberTest(i); //test only pertinent 3 digit numbers (nothing else will result in 9 digits for pandigital
-	for (short i = 5000; i < 10000; i++) numberTest(i); //test only pertinent 4 digit numbers (nothing else will result in 9 digits for pandigital
-
-	for (int i = 0; i < pandigitals.size(); i++)
-		if (pandigitals[i] > answer) answer = pandigitals[i]; //loop through all found pandigitals to see which is the biggest
+	//only test numbers starting with 9 that will result in a 
+	//9-digit concatenated product
+	//numberTest(9, answer);
+	for (short i = 2; i < 10000; i++) numberTest(i, answer);
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 

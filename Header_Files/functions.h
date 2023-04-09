@@ -79,6 +79,9 @@ void getPartitions(int n, std::vector<std::vector<std::vector<int> > > &all_part
 	int currentLength = 0, int currentValue = 0, std::vector<int>* currentPartition = nullptr, bool recursive = false);
 long long permutationsOfPartitions(int n, int l, int maximum = 0, int minimum = 0, bool quick_choose = true);
 
+//Combinatorics Functions
+std::vector<int> nonRotatedPermutations(std::vector<int> numbers, int max_length);
+
 //Modular Arithmetic Functions
 template <typename T>
 T ModMult(T a, T b, T mod)
@@ -216,6 +219,9 @@ void MatrixVectorMult(T* M, T* V, const int size)
 
 	for (int i = 0; i < size; i++) *(V + i) = temp[i];
 }
+
+//Other
+std::vector<long long> mintageCount(long long total_mintage, std::vector<long long> highest_value);
 
 class BigNum
 {

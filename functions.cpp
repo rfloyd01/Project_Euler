@@ -743,6 +743,64 @@ long long permutationsOfPartitions(int n, int l, int maximum, int minimum, bool 
 	return answer;
 }
 
+std::vector<int> nonRotatedPermutations(std::vector<int> numbers, int max_length)
+{
+	//numbers is a sorted set containing the digits that we're allowed to use
+	int w = numbers[0], x = numbers[0], w_length = 1, mult = 1;
+	std::vector<int> permutations;
+
+	//keep adding w onto itself until we reach max_length
+	while (true)
+	{
+		permutations.push_back(w);
+		mult *= 10; //mult should point to digit right in front of MSB of w
+		for (int i = 0; i < (max_length - w_length) / w_length; i++)
+		{
+			x += mult * w;
+			mult *= MyPow(10, w_length);
+		}
+
+		if (max_length % w_length)
+		{
+			//add remaining digits if necessary
+			w %= MyPow(10, max_length % w_length);
+			w_length = max_length % w_length;
+			x += mult * w;
+			mult *= MyPow(10, w_length);
+		}
+		w_length = max_length;
+
+		mult /= 10; //mult now points to the MSB of x
+
+		//keep removing the most significant digit of x if it's equal to
+		//the maximal number in the 'numbers' set
+		int digits_removed = 0;
+		while (x / mult == numbers.back())
+		{
+			x %= mult;
+			mult /= 10;
+			digits_removed++;
+			w_length--;
+			if (mult == 0) return permutations; //if we cancel all the digits out then we've found all permutations
+		}
+
+		//after removing the necessary digits, increment the most significant 
+		//digit to the next digit chronologically in the 'numbers' set
+		int first_digit = x / mult, next_digit;
+		for (int i = 0; i < numbers.size() - 1; i++)
+		{
+			if (numbers[i] == first_digit)
+			{
+				next_digit = numbers[i + 1];
+				break;
+			}
+		}
+
+		w = x + mult * (next_digit - first_digit);
+		x = w;
+	}
+}
+
 template <typename T>
 T BinomialMod(T n, T k, T m)
 {
@@ -1115,6 +1173,18 @@ long long generalizedLucasTheorem(long long n, long long m, long long p, long lo
 	if (e_0) numerator = ModMult(numerator, MyPow(p, e_0), mod);
 
 	return numerator;
+}
+
+//Other functions
+std::vector<long long> mintageCount(long long total_mintage, std::vector<long long> highest_value)
+{
+	//makes a rough guess for mintage of coin varaints based on their red book values
+	float x = 1, base = highest_value[0];
+	for (int i = 1; i < highest_value.size(); i++) x += (base / highest_value[i]);
+	x = total_mintage / x;
+	for (int i = 0; i < highest_value.size(); i++) highest_value[i] = x * (base / highest_value[i]);
+
+	return highest_value;
 }
 
 BigNum::BigNum()

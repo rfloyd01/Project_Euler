@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
+#include <Header_Files/functions.h> //include MyPow()
 #include <vector>
 
 //Double-base palindromes
@@ -35,15 +36,14 @@ bool palindromeTest(int n)
 	}
 	return 1;
 }
+
 std::pair<std::string, double> q36()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	int answer = 0;
-	std::vector<int> bin_palindromes = { 1, 3, 5, 7 };
-	//numbers 1-7 are palindromes in binary but algorithm starts at 8, add these in manually for ease
 
-	int num_base, num_back, limit = 2;
-	for (int digit = 1; digit <= 10; digit++) //digit max should be 10
+	//1 won't get counted so include it in answer to start off
+	int num_base, num_back, limit = 1, answer = 1;
+	for (int digit = 0; digit <= 9; digit++)
 	{
 		int num_start = 1 << digit;
 		for (int i = 0; i < limit; i++)
@@ -53,21 +53,17 @@ std::pair<std::string, double> q36()
 			int num1 = num_base << (digit + 1) | num_back;
 			int num2 = num_base << (digit + 2) | num_back;
 			int num3 = ((num_base << (digit + 2)) | (1 << digit + 1)) | num_back;
-			if (num1 < 1000000) bin_palindromes.push_back(num1);
-			if (num2 < 1000000) bin_palindromes.push_back(num2);
-			if (num3 < 1000000) bin_palindromes.push_back(num3);
+			if (num1 < 1000000) if (palindromeTest(num1)) answer += num1;
+			if (num2 < 1000000) if (palindromeTest(num2)) answer += num2;
+			if (num3 < 1000000) if (palindromeTest(num3)) answer += num3;
 		}
 		limit *= 2;
 	}
 
-	for (int i = 0; i < bin_palindromes.size(); i++)
-	{
-		if (palindromeTest(bin_palindromes[i])) answer += bin_palindromes[i];
-	}
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 872187
-	//ran in 0.0001225 seconds
+	//ran in 0.000017 seconds
 }
 
 //NOTES
@@ -75,3 +71,47 @@ std::pair<std::string, double> q36()
 //the other for base 10 palindromes. It took about .1 seconds to create each vector so decided against that
 //and just made an array where binary palindromes were found and appended to list. Each palindrome in that
 //list was then checked for base 10 palindromeness.
+
+//HACKERRANK UPDATE
+//The HackerRank version allows the limit to change, and the base for palindromes, so it makes more sense to
+//just create all palindromes in base 10, then convert to the desired base and check for palindromeness again.
+//Here's the code
+/*
+unsigned long long convertToBaseK(int num, int k)
+{
+	//converts the given number to a decimal representation
+	//of its base k equivalent, i.e. given num = 515 and k = 2
+	//this function would return 1000000011.
+
+	int current_num = MyPow(k, log(num) / log(k));
+	unsigned long long answer = 0;
+
+	while (current_num)
+	{
+		answer *= 10;
+		int val = num / current_num;
+
+		answer += val;
+		num -= val * current_num;
+		current_num /= k;
+	}
+	return answer;
+}
+
+std::vector<int> palindromes;
+for (int i = 1; i < 1000000; i++)
+{
+	if (palindromeTest(i)) palindromes.push_back(i);
+}
+
+int limit = 1000000, base = 2, answer = 0;
+
+for (int i = 0; i < palindromes.size(); i++)
+{
+	if (palindromes[i] >= limit) break;
+
+	unsigned long long base_number = convertToBaseK(palindromes[i], base);
+	if (palindromeTest(base_number)) answer += palindromes[i];
+
+}
+*/
