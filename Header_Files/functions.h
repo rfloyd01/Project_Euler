@@ -24,6 +24,7 @@ std::vector<int> p_factors(int number);
 //std::vector<int> PrimeFactors(int number);
 std::vector<int> getFactors(int number);
 bool primeNumberTest(long long number);
+std::vector<std::vector<int> > AllPrimeFactors(int n);
 
 template <typename T>
 std::vector<T> PrimeFactors(T number)
@@ -57,6 +58,7 @@ bool coprime(int a, int b);
 int numberOfDigits(long long n);
 void FaraySequence(int maximum, std::vector<fraction>& pairs, fraction low = { 0, 1 }, fraction high = { 1, 1 }, bool new_pair = false);
 void orderedFaraySequence(int maximum, std::vector<fraction>& pairs, fraction low = { 0, 1 }, fraction high = { 1, 1 }, bool new_pair = false, int insertIndex = -1);
+void Farey_Iterative(int n);
 std::vector<int> baseConversion(int n, int b);
 long long ChineseRemainderTheorem(long long n, long long mod, std::vector<std::pair<long long, long long> > *equations = nullptr);
 

@@ -530,6 +530,9 @@
     <ClInclude Include="Frequency_Calculations.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Questions\Q301-Q350\q302.h">
+      <Filter>Header Files\Questions\Q301-Q350</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Resources\q11.txt">

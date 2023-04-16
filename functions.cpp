@@ -242,6 +242,38 @@ int NumberOfFactors(int n)
 	return number_of_factors;
 }
 
+std::vector<std::vector<int> > AllPrimeFactors(int n)
+{
+	//returns a vector holding the prime factorization for all numbers up to n
+	std::vector<std::vector<int> > prime_factors;
+
+	for (int i = 0; i <= n; i++)
+	{
+		std::vector<int> p_facts;
+		prime_factors.push_back(p_facts);
+	}
+	//prime_factors[1] = { 1 }; //1 isn't prime but we don't want to leave this vector blank
+
+	for (int i = 2; i <= n; i++)
+	{
+		if (prime_factors[i].size() != 0) continue;
+		prime_factors[i] = { i };
+
+		int j = 2, limit = n / i;
+		while (j <= limit)
+		{
+			if (prime_factors[j].size() > 0)
+			{
+				prime_factors[i * j] = prime_factors[j];
+				prime_factors[i * j].push_back(i);
+			}
+			j++;
+		}
+	}
+
+	return prime_factors;
+}
+
 int char_to_int(char a)
 {
 	//wasn't able to find an easy built in way to convert the numeric character to an integer so just wrote this function
@@ -444,6 +476,27 @@ void orderedFaraySequence(int maximum, std::vector<fraction>& pairs, fraction lo
 	{
 		orderedFaraySequence(maximum, pairs, { low.numerator + high.numerator, low.denominator + high.denominator }, high, true, insertIndex + 1);
 		orderedFaraySequence(maximum, pairs, low, { low.numerator + high.numerator, low.denominator + high.denominator }, false, insertIndex);
+	}
+}
+
+void Farey_Iterative(int n)
+{
+	//This method prints out the Farey sequence with maximum value n, in order.
+	int a = 0, b = 1, c = 1, d = n;
+
+	while (c <= n)
+	{
+		//uncomment below line to see the sequence
+		//std::cout << a << "/" << b << std::endl;
+
+		int k = (n + b) / d;
+		int next_c = k * c - a;
+		int next_d = k * d - b;
+
+		a = c;
+		b = d;
+		c = next_c;
+		d = next_d;
 	}
 }
 

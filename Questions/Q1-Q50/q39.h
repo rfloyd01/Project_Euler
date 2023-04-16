@@ -57,7 +57,7 @@ std::pair<std::string, double> q39()
 //multiplied by the same number then it will generate another pythagorean triple (i.e. [3, 4, 5] x2 = [6, 8, 10]). Just keep multiplying primitives by different sizes until 
 //the perimeter is over 1000. Do this for every primitive to find all right triangles with perimeters under 1000.
 
-//TODO
-//Truth be told I think I made a mistake somewhere in my code because it's only saying there are 2 triangles with perimeter of 120 and the problem text proves that there are 3, however,
-//I do get the correct answer so will leave it for now. Will come back at some point in the future and clean this code up. Also would be nice to just generate coprime pairs where
-//both numbers aren't odd instead of having the really unefficient coprime test function (was super easy to code which is why I used it).
+//HackerRank Update
+/*I realized that I could implement a Farey sequence to generate coprime numbers instead of using a coprime checking function. I also found online an algorithm for the Faray sequence 
+* that's iterative instead of recursive. Using this algorithm to generate the coprime pairs led to a very nice speedup.
+*/

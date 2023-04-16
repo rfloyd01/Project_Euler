@@ -4,28 +4,116 @@
 #include <Header_Files/print.h>
 #include <Header_Files/functions.h>
 
-void NewFarey(int n)
+int VectorGDCFinderTest(std::vector<int>& v, int ignore = -1)
 {
-	int a = 0, b = 1, c = 1, d = n;
+	//finds the GCD between all elements in v while ignoring the element at ignore
+	int current_gcd;
 
-	while (c <= n)
+	//set the current_gcd to the first non-zero term that isn't at element ignore
+	for (int i = 0; i < v.size(); i++)
+		if (i != ignore && v[i])
+			current_gcd = v[i];
+
+	for (int i = 0; i < v.size(); i++)
 	{
-		
+		if (i == ignore || !v[i]) continue;
 
-		int k = (n + b) / d;
-		int next_c = k * c - a;
-		int next_d = k * d - b;
+		for (int j = i + 1; j < v.size(); j++)
+		{
+			if (j == ignore || !v[j]) continue;
 
-		//std::cout << a << "/" << b << " (" << c << ", " << d << ", " << k << ")" << std::endl;
+			int new_gcd = gcd(v[i], v[j]);
+			if (new_gcd == 1) return 1;
 
-		a = c;
-		b = d;
-		c = next_c;
-		d = next_d;
+			int combined_gcd = gcd(current_gcd, new_gcd);
+			if (combined_gcd == 1) return 1;
 
-
-
+			current_gcd = combined_gcd;
+		}
 	}
+
+	return current_gcd;
+}
+
+bool StrongNumberTest(std::vector<int>& prime_factors)
+{
+	if (prime_factors.size() < 2) return false;
+
+	int current_factor = prime_factors[0], factor_count = 1;
+	for (int i = 1; i < prime_factors.size(); i++)
+	{
+		if (prime_factors[i] == prime_factors[i - 1]) factor_count++;
+		else
+		{
+			if (factor_count == 1) return false;
+			else
+			{
+				current_factor = prime_factors[i];
+				factor_count = 1;
+			}
+		}
+	}
+
+	if (factor_count == 1) return false;
+	return true;
+}
+
+bool PerfectPowerTest(std::vector<int>& prime_factors)
+{
+	std::vector<int> prime_count;
+
+	int current_prime = prime_factors[0], current_count = 0;
+
+	for (int i = 0; i < prime_factors.size(); i++)
+	{
+		if (prime_factors[i] == current_prime) current_count++;
+		else
+		{
+			prime_count.push_back(current_count);
+			current_count = 1;
+			current_prime = prime_factors[i];
+		}
+	}
+	prime_count.push_back(current_count);
+
+	if (VectorGDCFinderTest(prime_count) == 1) return false;
+	return true;
+}
+
+bool AchillesNumberTest(std::vector<int>& prime_factors)
+{
+	return (StrongNumberTest(prime_factors) && !PerfectPowerTest(prime_factors));
+}
+
+int totient(std::vector<int>& prime_factors)
+{
+	int current_prime = 0, n = 1;
+	for (int i = 0; i < prime_factors.size(); i++) n *= prime_factors[i];
+
+	for (int i = 0; i < prime_factors.size(); i++)
+	{
+		if (prime_factors[i] != current_prime)
+		{
+			n /= prime_factors[i];
+			n *= (prime_factors[i] - 1);
+			current_prime = prime_factors[i];
+		}
+	}
+
+	return n;
+}
+
+bool StrongAchillesNumberTest(int n, std::vector<std::vector<int> >& prime_factors)
+{
+	if (AchillesNumberTest(prime_factors[n]))
+	{
+		if (AchillesNumberTest(prime_factors[totient(prime_factors[n])]))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 std::pair<std::string, long double> test()
@@ -33,61 +121,28 @@ std::pair<std::string, long double> test()
 	auto run_time = std::chrono::steady_clock::now();
 	int answer = 0;
 
-	const int P = 5000000;
-	int* perimeters = new int[P + 1](), current_max = 0, max_m = (sqrt(4 * P / 2 + 1) - 1) / 2.0;
-	int a = 0, b = 1, c = 1, d = max_m;
+	int limit = 100000000;
+	bool* achilles_numbers = new bool[limit + 1]();
 
-	//iterative version of the Farey Sequence algorithm
-	while (c <= max_m)
+	std::vector<std::vector<int> > prime_factors = AllPrimeFactors(limit);
+
+	for (int i = 2; i <= limit; i++)
 	{
-		int k = (max_m + b) / d;
-		int next_c = k * c - a;
-		int next_d = k * d - b;
-
-		a = c;
-		b = d;
-		c = next_c;
-		d = next_d;
-
-		//if either a or b is even then we create a primitive Pythagorean triple
-		if (!(a % 2) || !(b % 2))
-		{
-			int perimeter = 2 * b * (b + a);
-
-			for (int i = perimeter; i <= P; i += perimeter)
-			{
-				perimeters[i]++;
-
-				if (perimeters[i] > current_max)
-				{
-					current_max = perimeters[i];
-					answer = i;
-				}
-			}
-		}
+		if (AchillesNumberTest(prime_factors[i])) achilles_numbers[i] = true;
 	}
 
-	//for (int i = 0; i < coprime_pairs.size(); i++)
-	//{
-	//	if (coprime_pairs[i].numerator % 2 == 0 || coprime_pairs[i].denominator % 2 == 0)
-	//	{
-	//		/*count++;
-	//		std::cout << coprime_pairs[i].numerator << "/" << coprime_pairs[i].denominator << std::endl;*/
-	//		int perimeter = 2 * coprime_pairs[i].denominator * (coprime_pairs[i].denominator + coprime_pairs[i].numerator);
+	for (int i = 3; i <= limit; i++)
+	{
+		if (!achilles_numbers[i]) continue;
 
-	//		for (int i = perimeter; i <= P; i += perimeter)
-	//		{
-	//			perimeters[i]++;
+		if (achilles_numbers[totient(prime_factors[i])])
+		{
+			std::cout << i << std::endl;
 
-	//			if (perimeters[i] > current_max)
-	//			{
-	//				current_max = perimeters[i];
-	//				answer = i;
-	//			}
-	//		}
-	//	}
-	//}
-	//ran in 0.0000219 seconds
+			answer++;
+		}
+		//std::cout << i << " " << totient(prime_factors[i]) << std::endl;
+	}
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
