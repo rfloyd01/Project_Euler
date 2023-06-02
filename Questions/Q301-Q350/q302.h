@@ -8,10 +8,7 @@
 //Strong Achilles Numbers
 
 long long limit = 1e18;
-int county = 0;
 long long ans = 0;
-std::vector<std::vector<int> > GCDs;
-std::vector<long long> strong_achilles_numbers, strong_achilles_numbers1;
 std::vector<std::vector<int> > standard_factors;
 
 void q302PrimeFactors(long long n, std::vector<int>& prime_factorization, std::vector<int>& exponent_count, std::vector<int>& primes)
@@ -111,146 +108,99 @@ bool PerfectPowerTest(long long n, int lowest_power)
 	return false;
 }
 
-int VectorGDCFinder(std::vector<int> v, int ignore)
-{
-	//finds the GCD between all elements in v while ignoring the element at ignore
-	int current_gcd;
-
-	//set the current_gcd to the first non-zero term that isn't at element ignore
-	for (int i = 0; i < v.size(); i++)
-		if (i != ignore && v[i])
-			current_gcd = v[i];
-
-	for (int i = 0; i < v.size(); i++)
-	{
-		if (i == ignore || !v[i]) continue;
-
-		for (int j = i + 1; j < v.size(); j++)
-		{
-			if (j == ignore || !v[j]) continue;
-
-			int new_gcd = GCDs[v[i]][v[j]];
-			if (new_gcd == 1) return 1;
-
-			if (current_gcd <= 0) vprint(v);
-
-			int combined_gcd = GCDs[current_gcd][new_gcd];
-			if (combined_gcd == 1) return 1;
-
-			current_gcd = combined_gcd;
-		}
-	}
-
-	return current_gcd;
-}
-
-void recursiveExponentFill1(long long current_number, std::vector<int>& totient_primes, std::vector<int>& n_prime_powers, std::vector<int>& totient_prime_powers, long long& answer, int current_level = 0)
-{
-	//since the base prime powers are given at the start of this function, then increasing an exponent 
-	//in n will increase the exponent in totient(n) by the exact same amount without effecting any of
-	//the other exponents.
-
-	if (current_level == totient_primes.size() - 1)
-	{
-		//we only ever to our GCD check at the bottom level of the recursion
-		int n_exponent_gcd = VectorGDCFinder(n_prime_powers, current_level);
-		int totient_exponent_gcd = VectorGDCFinder(totient_prime_powers, current_level);
-		int max_exponent = log(limit / (double)current_number) / log(totient_primes[current_level]);
-
-		long long mult = 1;
-		
-		if (n_exponent_gcd == 1 && totient_exponent_gcd == 1)
-		{
-			//if the gcd (excluding the final prime power) is 1 for both n and totient(n) then there's no restriction 
-			//as to what exponent we can use so we just add max_exponent to the answer
-			
-			//answer += (max_exponent + 1);
-
-			//TODO: Go one at a time to help debug
-			for (int i = 0; i <= max_exponent; i++)
-			{
-				answer++;
-				strong_achilles_numbers1.push_back(current_number * mult);
-
-				mult *= totient_primes.back();
-			}
-		}
-		else if (n_exponent_gcd == 1)
-		{
-			//the totient exponents don't have a GCD of 1 but n does. We need to keep incrementing our exponent by 1
-			//and making sure the GCD is 1 each time
-			for (int i = 0; i <= max_exponent; i++)
-			{
-				if (GCDs[totient_prime_powers[current_level] + i][totient_exponent_gcd] == 1)
-				{
-					answer++;
-					strong_achilles_numbers1.push_back(current_number * mult);
-				}
-				mult *= totient_primes.back();
-			}
-		}
-		else if (totient_exponent_gcd == 1)
-		{
-			//the n exponents don't have a GCD of 1 but totient(n) does. We need to keep incrementing our exponent by 1
-			//and making sure the GCD is 1 each time
-			for (int i = 0; i <= max_exponent; i++)
-			{
-				if (GCDs[n_prime_powers[current_level] + i][n_exponent_gcd] == 1)
-				{
-					answer++;
-					strong_achilles_numbers1.push_back(current_number * mult);
-				}
-				mult *= totient_primes.back();
-			}
-		}
-		else
-		{
-			//the gcd for n and totient(n) is more than 1, this means we need to check the GCD for both after each iteration
-			for (int i = 0; i <= max_exponent; i++)
-			{
-				if (GCDs[n_prime_powers[current_level] + i][n_exponent_gcd] == 1)
-				{
-					if (GCDs[totient_prime_powers[current_level] + i][totient_exponent_gcd] == 1)
-					{
-						/*std::cout << i << std::endl;
-						vprint(n_prime_powers);
-						vprint(totient_prime_powers);*/
-						answer++;
-						strong_achilles_numbers1.push_back(current_number * mult);
-					}
-				}
-				mult *= totient_primes.back();
-			}
-		}
-	}
-	else
-	{
-		//check to see if the prime we're looking at is in the prime factorization of n, if not just go to the
-		//next level of the recursion
-		if (!n_prime_powers[current_level])
-		{
-			recursiveExponentFill1(current_number, totient_primes, n_prime_powers, totient_prime_powers, answer, current_level + 1);
-		}
-		else
-		{
-			//calculate the maximum value for the exponent on the current prime.
-			int max_exponent = log(limit / (double)current_number) / log(totient_primes[current_level]);
-			long long new_current_number = current_number;
-
-			for (int i = 0; i <= max_exponent; i++)
-			{
-				recursiveExponentFill1(new_current_number, totient_primes, n_prime_powers, totient_prime_powers, answer, current_level + 1);
-				n_prime_powers[current_level]++;
-				totient_prime_powers[current_level]++;
-				new_current_number *= totient_primes[current_level];
-			}
-
-			//reset the exponent counts before going back to previous level of recursion
-			n_prime_powers[current_level] -= (max_exponent + 1);
-			totient_prime_powers[current_level] -= (max_exponent + 1);
-		}
-	}
-}
+//void exponentFill(long long current_number, long long current_totient, std::vector<int>& primes, bool recursion = true, std::vector<int>* np_factors = nullptr,
+//	std::vector<int>* tp_factors = nullptr, std::vector<int>* np_powers = nullptr, std::vector<int>* tp_powers = nullptr, int current_level = 0)
+//{
+//	if (!recursion)
+//	{
+//		//The non-recursive part of this function is just to set up some key vectors to help with the exponents.
+//		//First we need to get the prime factorizations for the current number and totient, as well as the value of
+//		//their prime exponents
+//		std::vector<int> n_prime_factors, n_prime_powers;
+//		std::vector<int> t_prime_factors, t_prime_powers;
+//
+//		q302PrimeFactors(current_number, n_prime_factors, n_prime_powers, primes);
+//		q302PrimeFactors(current_totient, t_prime_factors, t_prime_powers, primes);
+//
+//		//It's possible for there to be primes in the totient which aren't in n itself. it'll be easier to keep track of primes if 
+//		//all the vectors are the same length and indices are the same, so for any primes in the totient vector that aren't in the n vector, just add a 0
+//		for (int i = 0; i < t_prime_factors.size(); i++)
+//		{
+//			if (t_prime_factors[i] != n_prime_factors[i])
+//			{
+//				n_prime_factors.insert(n_prime_factors.begin() + i, 0);
+//				n_prime_powers.insert(n_prime_powers.begin() + i, 0);
+//			}
+//		}
+//
+//		//with the setup complete we now call the recursive part of the function, the starting level of the recursion must be set to the index of the first
+//		//non-zero prime in the n_prime_factors array
+//		int start_level = -1;
+//		while (!n_prime_factors[++start_level])
+//		{
+//			//intentionally blank
+//		}
+//		exponentFill(current_number, current_totient, primes, true, &n_prime_factors, &t_prime_factors, &n_prime_powers, &t_prime_powers, start_level);
+//	}
+//	else
+//	{
+//		//in the recursive part of the function we simply try and keep adding exponents one by one, checking to make sure that both 
+//		//n and totient(n) remain Achilles numbers. First calculate the maximum amount we can increase the exponent by for the prime
+//		//at the location current_level in the prime_factors vector
+//		int max_exponent = log(limit / (double)current_number) / log(np_factors->at(current_level));
+//
+//		if (current_level == tp_factors->size() - 1)
+//		{
+//			//the base of our recursion happens at the last prime in the prime vector. Increment the final power 
+//			//as much as possible
+//			long long mult = 1;
+//			int current_exponent = 0;
+//
+//			for (int i = 0; i <= max_exponent; i++)
+//			{
+//				if (!PerfectPowerTest(current_number * mult, np_powers->back()))
+//				{
+//					if (!PerfectPowerTest(current_totient * mult, tp_powers->back()))
+//					{
+//						ans++;
+//					}
+//				}
+//
+//				mult *= np_factors->back();
+//			}
+//		}
+//		else
+//		{
+//			//make copies of the current_number, current_totient and smallest number pairs for a slightly easier time
+//			//reseting them when returning from recursion
+//			long long new_current_number = current_number;
+//			long long new_current_totient = current_totient;
+//
+//			//before recursing down to the next level, find the next non-zero prime power and jump to it
+//			int next_power = 0;
+//
+//			while (!np_factors->at(current_level + (++next_power)))
+//			{
+//				//intentionally blank
+//			}
+//
+//			for (int i = 0; i <= max_exponent; i++)
+//			{
+//				//check to see if the next prime in the list is a 0 or not, if so then skip it
+//				exponentFill(new_current_number, new_current_totient, primes, true, np_factors, tp_factors, np_powers, tp_powers, current_level + next_power);
+//				np_powers->at(current_level)++;
+//				tp_powers->at(current_level)++;
+//
+//				new_current_number *= np_factors->at(current_level);
+//				new_current_totient *= np_factors->at(current_level);
+//			}
+//
+//			//reset the exponent counts before going back to previous level of recursion
+//			np_powers->at(current_level) -= (max_exponent + 1);
+//			tp_powers->at(current_level) -= (max_exponent + 1);
+//		}
+//	}
+//}
 
 void exponentFill(long long current_number, long long current_totient, std::vector<int>& primes, bool recursion = true, std::pair<std::pair<int, int>, std::pair<int, int>>* smallest_n_power = nullptr,
 	std::pair<std::pair<int, int>, std::pair<int, int>>* smallest_t_power = nullptr, std::vector<int>* np_factors = nullptr, std::vector<int>* tp_factors = nullptr, std::vector<int>* np_powers = nullptr,
@@ -286,16 +236,6 @@ void exponentFill(long long current_number, long long current_totient, std::vect
 		//the reason for keeping track of the prime powers is to figure out which roots we need to test to look for integers.
 		std::pair<std::pair<int, int>, std::pair<int, int>> n_smallest_powers = FindTwoSmallestValues(n_prime_powers);
 		std::pair<std::pair<int, int>, std::pair<int, int>> t_smallest_powers = FindTwoSmallestValues(t_prime_powers);
-
-		/*std::cout << "n primes :"; vprint(n_prime_factors);
-		std::cout << "n powers :"; vprint(n_prime_powers);
-		std::cout << "smallest n powers are: " << n_smallest_powers.first.second << " and " << n_smallest_powers.second.second << std::endl;
-		std::cout << "smallest n power is : " << n_smallest_power << std::endl;
-		std::cout << "t primes :"; vprint(t_prime_factors);
-		std::cout << "t powers :"; vprint(t_prime_powers);
-		std::cout << "smallest t powers are: " << t_smallest_powers.first.second << " and " << t_smallest_powers.second.second << std::endl;
-		std::cout << "smallest t power is : " << t_smallest_power << std::endl;
-		std::cout << std::endl;*/
 
 		//with the setup complete we now call the recursive part of the function, the starting level of the recursion must be set to the index of the first
 		//non-zero prime in the n_prime_factors array
@@ -384,84 +324,6 @@ void exponentFill(long long current_number, long long current_totient, std::vect
 	}
 }
 
-//void exponentFill1(int current_number, std::vector<int>& primes, std::vector<int>& prime_powers, std::vector<std::vector<int> >& prime_factorizations)
-//{
-//	
-//	//county++;
-//
-//	//Any prime combo that makes it to this point is guaranteed to not have any primes raised to only 
-//	//the first power in the totient. We still need to look at the GCD patterns for both n and totient(n)
-//	//to see what exponents can be used.
-//
-//	//first, we need to come up with a set of equations that tells us how many of each prime there will be in 
-//	//the totient based on what the exponents for the primes in n are.
-//
-//	std::vector<int> totient_primes = primes, totient_powers;
-//	std::vector<std::vector<int> > totient_equations;
-//	for (int i = 0; i < primes.size(); i++)
-//	{
-//		for (int j = 0; j < prime_factorizations[primes[i] - 1].size(); j++)
-//		{
-//			if (std::find(totient_primes.begin(), totient_primes.end(), prime_factorizations[primes[i] - 1][j]) == totient_primes.end())
-//			{
-//				totient_primes.push_back(prime_factorizations[primes[i] - 1][j]);
-//			}
-//		}
-//	}
-//
-//	std::sort(totient_primes.begin(), totient_primes.end());
-//
-//	//find the base level of the exponents in the totient. From this base, increasing an exponent of n will cause the same 
-//	//exponent to increase by the same amount in the totient and none of the other exponents will be effected
-//	for (int i = 0; i < totient_primes.size(); i++) totient_powers.push_back(0);
-//	for (int i = 0; i < primes.size(); i++)
-//	{
-//		//first, each prime power in n will decrease by 1 in the totient
-//		for (int j = 0; j < totient_primes.size(); j++)
-//		{
-//			if (primes[i] == totient_primes[j])
-//			{
-//				totient_powers[j] = prime_powers[i] - 1;
-//				break;
-//			}
-//		}
-//
-//		//then all prime factors of (prime - 1) will increase in the totient
-//		for (int j = 0; j < prime_factorizations[primes[i] - 1].size(); j++)
-//		{
-//			int p_fact = prime_factorizations[primes[i] - 1][j];
-//			for (int k = 0; k < totient_primes.size(); k++)
-//			{
-//				if (p_fact == totient_primes[k])
-//				{
-//					totient_powers[k]++;
-//					break;
-//				}
-//			}
-//		}
-//	}
-//
-//	//once the base exponents for the totient are set we recursively increment the exponents upwards to find
-//	//all posibilites where the GCD between each exponent of n is 1 and the GCD of each exponent in totient(n)
-//	//is also 1. The length of prime_powers and totient_powers needs to be the same so insert 0's into 
-//	//prime powers in the necessary locations.
-//	int location = 0;
-//	for (int i = 0; i < totient_primes.size(); i++)
-//	{
-//		if (totient_primes[i] != primes[location]) prime_powers.insert(prime_powers.begin() + i, 0);
-//		else location++;
-//	}
-//
-//	/*std::cout << "n primes :"; vprint(primes);
-//	std::cout << "n powers :"; vprint(prime_powers);
-//	std::cout << "t primes :"; vprint(totient_primes);
-//	std::cout << "t powers :"; vprint(totient_powers);
-//	std::cout << std::endl;*/
-//
-//	recursiveExponentFill1(current_number, totient_primes, prime_powers, totient_powers, ans);
-//	//std::cout << "answer is now " << ans << std::endl << std::endl;
-//}
-
 void recursivePrimeSelect(long long current_number, long long current_totient, long long stranded_primes,
 	std::vector<std::vector<int> >& prime_factorizations, std::vector<int>& primes, int location = 0, int level = 0)
 {
@@ -484,7 +346,7 @@ void recursivePrimeSelect(long long current_number, long long current_totient, l
 		//Frst, see if the prime at the current location is small enough to add to our current number without exceding the limit.
 		//We assume that this new prime will be the last one in the prime factorization and as such it would get cubed. If this prime 
 		//is too large to be cubed when everything else is only squared then there's no more reason to increment higher.
-		if (pow(limit / (double)current_number, 1.0 / 3.0) < primes[i]) break;
+		if (pow(limit / (double)current_number, 1.0 / 2.0) < primes[i]) break;
 
 		//if the prime is small enough add its square to the current_number representation. The current_totient and stranded_primes each get increased
 		//by the prime. Do this on two separate lines to avoid the primes (which are standard integers) from overflowing.
@@ -547,208 +409,6 @@ void recursivePrimeSelect(long long current_number, long long current_totient, l
 	}
 }
 
-//void recursivePrimeSelect1(long long current_number, std::vector<int>& current_primes, std::vector<int>& totient_primes, std::vector<int>& stranded_primes,
-//	std::vector<std::vector<int> >& prime_factorizations, std::vector<int>& primes, bool* current_prime_factorization, int location = 0) 
-//{
-//	if (current_primes.size() > 1)
-//	{
-//		long long new_current_number = current_number;
-//		bool good_to_go = true;
-//
-//		for (int i = 0; i < stranded_primes.size(); i++)
-//		{
-//			//if there are any stranded primes which aren't part of the original prime factorization of n
-//			//then the totient won't be an Achilles number so we go back to the previous level of the recursion
-//			if (!current_prime_factorization[stranded_primes[i]])
-//			{
-//				good_to_go = false;
-//				break;
-//			}
-//			if (limit / new_current_number < stranded_primes[i]) return;
-//
-//			new_current_number *= stranded_primes[i];
-//		}
-//
-//		if (good_to_go)
-//		{
-//			//This combo in theory works, call a separate function to count all the ways we can set the exponents to make Achilles numbers
-//			//create a vector that represents the minimum value of the exponents and pass it to the exponent function
-//			std::vector<int> base_exponents;
-//			for (int i = 0; i < current_primes.size(); i++)
-//			{
-//				if (std::find(stranded_primes.begin(), stranded_primes.end(), current_primes[i]) != stranded_primes.end()) base_exponents.push_back(3);
-//				else base_exponents.push_back(2);
-//			}
-//
-//			//This combo in theory works, call a separate function to count all the ways we can set the exponents to make Achilles numbers
-//			exponentFill1(new_current_number, current_primes, base_exponents, prime_factorizations);
-//		}
-//	}
-//
-//	for (int i = location; i < primes.size(); i++)
-//	{
-//		//frst, see if the prime at the current location is small enough to add to our current number without exceding the limit.
-//		//We assume that all primes added will be the last, and therefore must be cubed
-//		if (pow(limit / (double)current_number, 0.5) < primes[i]) break;
-//
-//		//if the prime is small enough add it to the current_prime list
-//		current_primes.push_back(primes[i]);
-//		current_prime_factorization[primes[i]] = true;
-//		int p_minus_one = primes[i] - 1;
-//
-//
-//		//create a copies of the totient primes and stranded primes list so we can reset it after checking each new prime
-//		std::vector<int> original_stranded_primes = stranded_primes, original_totient_primes = totient_primes;
-//		stranded_primes.push_back(primes[i]); //all primes will be stranded when first added until larger primes that can decompose into them get added
-//
-//		//iterate through the prime factorization of (primes[i] - 1) and see if 
-//		//it adds or removes anything from the stranded primes list
-//		for (int j = 0; j < prime_factorizations[p_minus_one].size(); j++)
-//		{
-//			int potential_new_prime = prime_factorizations[p_minus_one][j];
-//
-//			//check to see if the current prime factor is in the stranded primes list
-//			bool stranded = false;
-//			auto prime_location = std::find(stranded_primes.begin(), stranded_primes.end(), potential_new_prime);
-//			if (prime_location == stranded_primes.end())
-//			{
-//				//the prime isn't in the stranded list, see if it exists in the totient list (meaning it was once stranded but has already been unstranded)
-//				if (std::find(totient_primes.begin(), totient_primes.end(), potential_new_prime) == totient_primes.end())
-//				{
-//					//this is a new stranded prime so add it to the list
-//					stranded_primes.push_back(potential_new_prime);
-//				}
-//			}
-//			else
-//			{
-//				//the prime is in the stranded list already, this means we will have at least two of this prime in the totient
-//				//so we remove it from the stranded list and add it to the totient list
-//				stranded_primes.erase(prime_location);
-//				totient_primes.push_back(potential_new_prime);
-//			}
-//		}
-//
-//		//once the stranded primes are dealt with we recurse down to the next level
-//		recursivePrimeSelect1(current_number * primes[i] * primes[i], current_primes, totient_primes, stranded_primes, prime_factorizations, primes, current_prime_factorization, i + 1);
-//
-//		//after getting back from the recursion, we remove the current prime from the current_primes vector
-//		//and reset the totient primes and stranded primes vector
-//		current_primes.pop_back();
-//		current_prime_factorization[primes[i]] = false;
-//		totient_primes = original_totient_primes;
-//		stranded_primes = original_stranded_primes;
-//	}
-//}
-
-//void recursivePrimeSelect(long long current_number, std::vector<int>& current_primes, std::vector<int>& totient_primes, std::vector<int>& stranded_primes,
-//	std::vector<std::vector<int> >& prime_factorizations, std::vector<int>& primes, bool* current_prime_factorization, int location = 0)
-//{
-//	if (current_primes.size() > 1)
-//	{
-//		bool good_to_go = true;
-//
-//		for (int i = 0; i < stranded_primes.size(); i++)
-//		{
-//			//if there are any stranded primes which aren't part of the original prime factorization of n
-//			//then the totient won't be an Achilles number so we go back to the previous level of the recursion
-//			if (!current_prime_factorization[stranded_primes[i]])
-//			{
-//				good_to_go = false;
-//				break;
-//			}
-//		}
-//
-//		if (good_to_go)
-//		{
-//			//This combo in theory works, call a separate function to count all the ways we can set the exponents to make Achilles numbers
-//			//create a vector that represents the minimum value of the exponents and pass it to the exponent function
-//			std::vector<int> base_exponents;
-//			for (int i = 0; i < current_primes.size(); i++)
-//			{
-//				if (std::find(stranded_primes.begin(), stranded_primes.end(), current_primes[i]) != stranded_primes.end()) base_exponents.push_back(3);
-//				else base_exponents.push_back(2);
-//			}
-//			exponentFill(current_number, current_primes, base_exponents, prime_factorizations);
-//		}
-//	}
-//
-//	for (int i = location; i < primes.size(); i++)
-//	{
-//		//frst, see if the prime at the current location is small enough to add to our current number without exceding the limit.
-//		//We assume that all primes added will be the last, and therefore must be cubed
-//		if (pow(limit / (double)current_number, 1.0 / 3.0) < primes[i])
-//		{
-//			//Adding the new prime (which must be cubed) causes us to exceed the limit.
-//			//This doesn't mean that it's impossible to use this number though (or even higher
-//			//numbers potentially). There's a chance that higher primes added will have their 
-//			//(p-1) values bring current primes in the factorization from a cube down to a sqaure
-//			//which can get us back under the limit.
-//
-//			//The only time that we can declare it truly impossible to add higher primes is if 
-//			//all cubed numbers are converted to squares and the new prime still makes us exceed
-//			//the limit
-//			break; //square_current assumes that only the last number is cubed
-//		}
-//
-//		//if the prime is small enough add it to the current_prime list
-//		current_primes.push_back(primes[i]);
-//		current_prime_factorization[primes[i]] = true;
-//		int p_minus_one = primes[i] - 1;
-//		long long temp_current_number = current_number * primes[i] * primes[i] * primes[i];
-//		
-//
-//		//create a copies of the totient primes and stranded primes list so we can reset it after checking each new prime
-//		std::vector<int> original_stranded_primes = stranded_primes, original_totient_primes = totient_primes;
-//		stranded_primes.push_back(primes[i]); //all primes will be stranded when first added until larger primes that can decompose into them get added
-//
-//		//iterate through the prime factorization of (primes[i] - 1) and see if 
-//		//it adds or removes anything from the stranded primes list
-//		for (int j = 0; j < prime_factorizations[p_minus_one].size(); j++)
-//		{
-//			int potential_new_prime = prime_factorizations[p_minus_one][j];
-//
-//			//check to see if the current prime factor is in the stranded primes list
-//			bool stranded = false;
-//			auto prime_location = std::find(stranded_primes.begin(), stranded_primes.end(), potential_new_prime);
-//			if (prime_location == stranded_primes.end())
-//			{
-//				//the prime isn't in the stranded list, see if it exists in the totient list (meaning it was once stranded but has already been unstranded)
-//				if (std::find(totient_primes.begin(), totient_primes.end(), potential_new_prime) == totient_primes.end())
-//				{
-//					//this is a new stranded prime so add it to the list
-//					stranded_primes.push_back(potential_new_prime);
-//				}
-//			}
-//			else
-//			{
-//				//the prime is in the stranded list already, this means we will have at least two of this prime in the totient
-//				//so we remove it from the stranded list and add it to the totient list
-//				stranded_primes.erase(prime_location);
-//				totient_primes.push_back(potential_new_prime);
-//
-//				/*if (temp_current_number / potential_new_prime == 0)
-//				{
-//					vprint(current_primes);
-//					std::cout << temp_current_number << std::endl;
-//				}*/
-//
-//				temp_current_number /= potential_new_prime; //we no longer have to cube the prime in the makeup of n, it can be squared
-//				
-//			}
-//		}
-//
-//		//once the stranded primes are dealt with we recurse down to the next level
-//		recursivePrimeSelect(temp_current_number, current_primes, totient_primes, stranded_primes, prime_factorizations, primes, current_prime_factorization, i + 1);
-//
-//		//after getting back from the recursion, we remove the current prime from the current_primes vector
-//		//and reset the totient primes and stranded primes vector
-//		current_primes.pop_back();
-//		current_prime_factorization[primes[i]] = false;
-//		totient_primes = original_totient_primes;
-//		stranded_primes = original_stranded_primes;
-//	}
-//}
-
 std::pair<std::string, long double> q302()
 {
 	auto run_time = std::chrono::steady_clock::now();
@@ -762,7 +422,11 @@ std::pair<std::string, long double> q302()
 	standard_factors.push_back({});
 	for (int i = 1; i <= 64; i++) standard_factors.push_back(getFactors(i));
 
+	std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 << std::endl;
+
 	recursivePrimeSelect(1, 1, 1, prime_factorizations, primez);
+
+	std::cout << std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 << std::endl;
 
 	return { std::to_string(ans), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 

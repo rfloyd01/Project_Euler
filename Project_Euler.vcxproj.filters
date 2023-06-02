@@ -533,6 +533,15 @@
     <ClInclude Include="Questions\Q301-Q350\q302.h">
       <Filter>Header Files\Questions\Q301-Q350</Filter>
     </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q83.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q151-Q200\q151.h">
+      <Filter>Header Files\Questions\Q151-Q200</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Hackerrank\Paper_Sheets.h">
+      <Filter>Header Files\Hackerrank</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Resources\q11.txt">

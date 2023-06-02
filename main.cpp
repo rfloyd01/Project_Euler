@@ -1,5 +1,6 @@
 #include <Header_Files/pch.h>
-#include <Questions/Q301-Q350/q302.h>
+#include <Questions/Q151-Q200/q151.h>
+#include <Questions/Hackerrank/Paper_Sheets.h>
 #include <Questions/Q1-Q50/master1-50.h>
 #include <Header_Files/test.h>
 
@@ -9,8 +10,9 @@ int main()
 	//The question number is stored in the question_number variable automatically for ease of reading
 
 	//Run_1to50();
-	auto answer = q302();
+	//auto answer = q151();
 	//auto answer = test();
+	auto answer = Paper_Sheets();
 
 	std::cout << "The answer is " << answer.first << std::endl;
 	std::cout << "Program ran in " << answer.second << " seconds" << std::endl;

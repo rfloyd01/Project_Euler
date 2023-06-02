@@ -77,7 +77,7 @@ public:
 
 	void addNext(SinglyLinkedListNode<T>* current_node, T data)
 	{
-		//given a pointer to a node in the list, this function adds a new node directly in front of the current one
+		//given a pointer to a node in the list, this function adds a new node directly after the current one
 		if (current_node == nullptr)
 		{
 			std::cout << "Node must be in a list. Data not added." << std::endl;

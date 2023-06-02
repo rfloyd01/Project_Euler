@@ -172,6 +172,7 @@
     <ClInclude Include="Pet_Detective.h" />
     <ClInclude Include="q247.h" />
     <ClInclude Include="Questions\Hackerrank\Digit_Cancelling_Fractions.h" />
+    <ClInclude Include="Questions\Hackerrank\Paper_Sheets.h" />
     <ClInclude Include="Questions\Hackerrank\Picking_Numbers.h" />
     <ClInclude Include="Questions\Hackerrank\StringReverseMerge.h" />
     <ClInclude Include="Questions\Hackerrank\Top_Dice.h" />
@@ -226,6 +227,7 @@
     <ClInclude Include="Questions\q1-q50\q7.h" />
     <ClInclude Include="Questions\q1-q50\q8.h" />
     <ClInclude Include="Questions\q1-q50\q9.h" />
+    <ClInclude Include="Questions\Q151-Q200\q151.h" />
     <ClInclude Include="Questions\Q151-Q200\q169.h" />
     <ClInclude Include="Questions\Q151-Q200\q170.h" />
     <ClInclude Include="Questions\Q151-Q200\q175.h" />
@@ -276,6 +278,7 @@
     <ClInclude Include="Questions\Q51-Q100\q80.h" />
     <ClInclude Include="Questions\Q51-Q100\q81.h" />
     <ClInclude Include="Questions\Q51-Q100\q82.h" />
+    <ClInclude Include="Questions\Q51-Q100\q83.h" />
     <ClInclude Include="Questions\Q51-Q100\q84.h" />
     <ClInclude Include="Questions\Q51-Q100\q85.h" />
     <ClInclude Include="Questions\Q51-Q100\q86.h" />
