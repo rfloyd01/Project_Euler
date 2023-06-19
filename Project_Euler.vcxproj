@@ -171,9 +171,12 @@
     <ClInclude Include="Header_Files\test2.h" />
     <ClInclude Include="Pet_Detective.h" />
     <ClInclude Include="q247.h" />
+    <ClInclude Include="Questions\Hackerrank\Counting_Blocks_I.h" />
+    <ClInclude Include="Questions\Hackerrank\Counting_Blocks_II.h" />
     <ClInclude Include="Questions\Hackerrank\Digit_Cancelling_Fractions.h" />
     <ClInclude Include="Questions\Hackerrank\Paper_Sheets.h" />
     <ClInclude Include="Questions\Hackerrank\Picking_Numbers.h" />
+    <ClInclude Include="Questions\Hackerrank\Red_Green_or_Blue_Tiles.h" />
     <ClInclude Include="Questions\Hackerrank\StringReverseMerge.h" />
     <ClInclude Include="Questions\Hackerrank\Top_Dice.h" />
     <ClInclude Include="Questions\q1-q50\master1-50.h" />
@@ -227,6 +230,10 @@
     <ClInclude Include="Questions\q1-q50\q7.h" />
     <ClInclude Include="Questions\q1-q50\q8.h" />
     <ClInclude Include="Questions\q1-q50\q9.h" />
+    <ClInclude Include="Questions\Q101-Q150\q114.h" />
+    <ClInclude Include="Questions\Q101-Q150\q115.h" />
+    <ClInclude Include="Questions\Q101-Q150\q116.h" />
+    <ClInclude Include="Questions\Q101-Q150\q117.h" />
     <ClInclude Include="Questions\Q151-Q200\q151.h" />
     <ClInclude Include="Questions\Q151-Q200\q169.h" />
     <ClInclude Include="Questions\Q151-Q200\q170.h" />
@@ -241,6 +248,7 @@
     <ClInclude Include="Questions\Q301-Q350\q303.h" />
     <ClInclude Include="Questions\Q301-Q350\q314.h" />
     <ClInclude Include="Questions\Q301-Q350\q329.h" />
+    <ClInclude Include="Questions\Q351-Q400\q371.h" />
     <ClInclude Include="Questions\Q351-Q400\q374.h" />
     <ClInclude Include="Questions\Q401-Q450\q424.h" />
     <ClInclude Include="Questions\Q401-Q450\q425.h" />
@@ -283,6 +291,7 @@
     <ClInclude Include="Questions\Q51-Q100\q85.h" />
     <ClInclude Include="Questions\Q51-Q100\q86.h" />
     <ClInclude Include="Questions\Q51-Q100\q87.h" />
+    <ClInclude Include="Questions\Q51-Q100\q88.h" />
     <ClInclude Include="Questions\Q51-Q100\q89.h" />
     <ClInclude Include="Questions\Q51-Q100\q90.h" />
     <ClInclude Include="Questions\Q51-Q100\q91.h" />

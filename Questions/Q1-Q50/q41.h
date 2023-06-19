@@ -4,7 +4,7 @@
 #include <Header_Files/functions.h> //includes primeNumberTest(), []powers_of_two
 
 //Pandigital Prime
-void checkAllPandigitals(int number_of_digits, long long& answer, int current_level, long long current_number, uint16_t used_numbers, int *two_powers, bool &cont)
+void checkAllPandigitals(int number_of_digits, long long& answer, int current_level, long long current_number, uint16_t used_numbers, const int *two_powers, bool &cont)
 {
 	//checks to see if any pandigital primes exist for the given number of digits. This problem asks for the largest pandigital so we start with the largest
 	//number and break out of the function as soon as an answer is found

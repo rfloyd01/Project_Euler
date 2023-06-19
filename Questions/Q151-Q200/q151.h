@@ -4,214 +4,84 @@
 #include <Header_Files/functions.h>
 
 //Paper sheets of standard sizes: an expected-value problem
-int total_calcs = 0;
-struct Fraction
+void recursiveCreateEnvelopesInOrder(int max_length, int paper_left, long long current_envelope, int current_level, long long total_sheets, double* expected_values, long long* adder,
+	bool solve = false)
 {
-	//new fractions get initialized to 0/1
-	long long numerator = 0;
-	long long denominator = 0;
-
-	void reduce()
+	if (!solve)
 	{
-		if (numerator == 0 || denominator == 0)
+		//This portion of the function is simply for figuring out the next envelope in the sequence
+		if (current_level < 0)
 		{
-			numerator = 0;
-			denominator = 1;
-			return;
-		}
-
-		long long x = gcd(this->numerator, this->denominator);
-		if (x > 1)
-		{
-			this->numerator /= x;
-			this->denominator /= x;
-		}
-	}
-
-	Fraction& operator+=(const Fraction& num)
-	{
-		//first find the GCD for the denominators of the current fraction and the 
-		//fraction being added
-		if (this->denominator == 0)
-		{
-			//current fraction hasn't been initialized yet so set it equal to the incoming fraction
-			this->numerator = num.numerator;
-			this->denominator = num.denominator;
+			//After creating the new envlope, figure out it's expected value by building on values already calculated.
+			//This is done by calling the "solve" part of the recursive function
+			recursiveCreateEnvelopesInOrder(max_length, paper_left, current_envelope, current_level, total_sheets, expected_values, adder, true);
 		}
 		else
 		{
-			long long x = gcd(this->denominator, num.denominator);
-
-			this->numerator *= (num.denominator / x);
-			this->numerator += (num.numerator * (this->denominator / x));
-			this->denominator *= (num.denominator / x);
-		}
-		//reduce the fraction after addition
-		this->reduce();
-		return *this;
-	}
-	friend Fraction operator+(const Fraction& num1, const Fraction& num2)
-	{
-		Fraction num1_copy = num1;
-		num1_copy += num2;
-		return num1_copy;
-	}
-
-	void print()
-	{
-		std::cout << numerator << "/" << denominator << std::endl;
-	}
-};
-
-Fraction recursiveSheetSelectWithProbability(int* current_envelope, int current_sheets, Fraction* discovered_ways, int total_sheets)
-{
-	if (discovered_ways[current_sheets].numerator == 0 && discovered_ways[current_sheets].denominator == 0)
-	{
-		total_calcs++;
-		//We haven't explored this route yet so we keep recursing downwards. The idea of the recursion is that at each 
-		//level you can only take a single sheet of paper, so we take one sheet and do that whole recursion. After returning
-		//we put that piece of paper back and go forwards in the envelope array, taking the next sheet and recursion downwards
-		//again. All of the recursions initiated at this level will contribute to the number of hits and misses that make up 
-		//the pair which will go in the discovered ways array.
-
-		for (int i = 3; i >= 0; i--)
-		{
-			if (current_envelope[i])
+			int stop = paper_left / powers_of_two[current_level + 1];
+			long long addz = 0;
+			for (int i = 0; i <= stop; i++) //add new sheets to the envelope one at a time
 			{
-				//remove a sheet of paper from the current envelope column, and then add a sheet of paper to all 
-				//subsequent columns. Then recurse down.
-				current_envelope[i]--;
-				current_sheets -= powers_of_ten[i];
-				total_sheets--;
-
-				for (int j = i - 1; j >= 0; j--)
-				{
-					current_envelope[j]++;
-					current_sheets += powers_of_ten[j];
-					total_sheets++;
-				}
-
-				Fraction recurse = recursiveSheetSelectWithProbability(current_envelope, current_sheets, discovered_ways, total_sheets);
-
-				//After returning from the recursion we need to reset the envelope array before the next iteration, and then 
-				//add the results from the recursion
-				for (int j = i - 1; j >= 0; j--)
-				{
-					current_envelope[j]--;
-					current_sheets -= powers_of_ten[j];
-					total_sheets--;
-				}
-
-				current_envelope[i]++;
-				current_sheets += powers_of_ten[i];
-				total_sheets++;
-
-				recurse.numerator *= current_envelope[i];
-				recurse.denominator *= total_sheets;
-
-				//When adding the number of paths and hits that were found, we multiply be the number of sheets of paper
-				//that are in the column. In theory any of these sheets could've been picked and not changed the outcome
-				//so we need to ensure that all possible paths are explored.
-				discovered_ways[current_sheets] += recurse;
+				recursiveCreateEnvelopesInOrder(max_length, paper_left - i * powers_of_two[current_level], current_envelope + addz, current_level - 1, total_sheets + i, expected_values, adder);
+				addz += powers_of_ten[current_level];
 			}
 		}
-
-		//check to see if there's only one sheet in the envelope currently, if there is it means that all of the paths that were
-		//just explored are guaranteed to give us a hit
-		if (total_sheets == 1) discovered_ways[current_sheets].numerator += discovered_ways[current_sheets].denominator;
 	}
-	return discovered_ways[current_sheets];
-}
+	else
+	{
+		//This portion of the function is for calculating the expected values of already found envelopes
+		long long shifter = current_envelope;
 
-//Fraction recursiveSheetSelect(int current_envelope, int total_sheets, int* sheet_subtraction, Fraction* discovered_ways)
-//{
-//	if (discovered_ways[current_sheets].numerator == 0 && discovered_ways[current_sheets].denominator == 0)
-//	{
-//		//total_calcs++;
-//		//We haven't explored this route yet so we keep recursing downwards. The idea of the recursion is that at each 
-//		//level you can only take a single sheet of paper, so we take one sheet and do that whole recursion. After returning
-//		//we put that piece of paper back and go forwards in the envelope array, taking the next sheet and recursion downwards
-//		//again. All of the recursions initiated at this level will contribute to the number of hits and misses that make up 
-//		//the pair which will go in the discovered ways array.
-//		unsigned int bit_match = 0xF000, bit_adder = 0x0111, bit_subtractor = 0x1000;
-//		for (int i = 3; i >= 0; i--)
-//		{
-//			if (current_envelope && bit_match)
-//			{
-//				//remove a sheet of paper from the current envelope column, and then add a sheet of paper to all 
-//				//subsequent columns. Then recurse down.
-//				current_envelope = current_envelope - bit_subtractor + bit_adder;
-//				current_sheets -= powers_of_ten[i];
-//				total_sheets--;
-//
-//				for (int j = i - 1; j >= 0; j--)
-//				{
-//					current_envelope[j]++;
-//					current_sheets += powers_of_ten[j];
-//					total_sheets++;
-//				}
-//
-//				Fraction recurse = recursiveSheetSelect(current_envelope, current_sheets, discovered_ways, total_sheets);
-//
-//				//After returning from the recursion we need to reset the envelope array before the next iteration, and then 
-//				//add the results from the recursion
-//				for (int j = i - 1; j >= 0; j--)
-//				{
-//					current_envelope[j]--;
-//					current_sheets -= powers_of_ten[j];
-//					total_sheets--;
-//				}
-//
-//				current_envelope[i]++;
-//				current_sheets += powers_of_ten[i];
-//				total_sheets++;
-//
-//				recurse.numerator *= current_envelope[i];
-//				recurse.denominator *= total_sheets;
-//
-//				//When adding the number of paths and hits that were found, we multiply be the number of sheets of paper
-//				//that are in the column. In theory any of these sheets could've been picked and not changed the outcome
-//				//so we need to ensure that all possible paths are explored.
-//				discovered_ways[current_sheets] += recurse;
-//			}
-//			bit_match >>= 4;
-//			bit_adder >= 1;
-//		}
-//
-//		//check to see if there's only one sheet in the envelope currently, if there is it means that all of the paths that were
-//		//just explored are guaranteed to give us a hit
-//		if (total_sheets == 1) discovered_ways[current_sheets].numerator += discovered_ways[current_sheets].denominator;
-//	}
-//	return discovered_ways[current_sheets];
-//}
+		for (int i = 0; i < max_length; i++)
+		{
+			//Find the expected values from all envelopes that can be obtained from the current one by removing
+			//a single piece of paper. Divide these partial values by the probability of selecting them and then
+			//add all these partial values together to get the expected value for the current envelope.
+			int digit = shifter % 10;
+			if (digit) //use modulus division to see what sheets of paper are in the envelope
+			{
+				double previously_calculated_value = expected_values[current_envelope + adder[i]];
+
+				//Multiply the previously calculated value by the probability of picking the current sheet from the envelope.
+				previously_calculated_value *= digit;
+				previously_calculated_value /= total_sheets;
+
+				expected_values[current_envelope] += previously_calculated_value;
+			}
+			shifter /= 10; //shift over to the next paper size
+		}
+
+		//Check to see if there's only one sheet in the envelope currently. If there is it means that the calculated expected value
+		//will go up by 1 for this envelope configuration
+		if (total_sheets == 1) expected_values[current_envelope] += 1;
+	}
+}
 
 std::pair<std::string, double> q151()
 {
 	auto run_time = std::chrono::steady_clock::now();
 
-	const int goal_number = 1111; //must be 1111 or less
-	int goal_copy = goal_number, total_sheets = 0;
+	const int smallest_sheet = 5;
+	long long adders[smallest_sheet], subtractor = 1, adder = 0;
 
-	int current_envelope[4];
-	for (int i = 0; i < 4; i++)
+	//Memoize the amounts to subtract from the envelope configurations when removing a single sheet of paper.
+	//For example, if we have a single sheet of A3, A4, and A5 paper the configuration will be 111. Removing the sheet
+	//of A3 will cause the amount of A4 and A5 paper to increase by one, so overallthe configuration number changes by
+	//11 - 100 = -89. This allows for quick math later on.
+	for (int i = 0; i < smallest_sheet; i++)
 	{
-		current_envelope[i] = goal_copy % 10;
-		goal_copy /= 10;
-		total_sheets += current_envelope[i];
+		adders[i] = adder - subtractor;
+		adder = adder * 10 + 1;
+		subtractor *= 10;
 	}
 
-	Fraction weighted_hits[goal_number + 1];
+	double expected_values[1112] = { 0 };
+	recursiveCreateEnvelopesInOrder(smallest_sheet, powers_of_two[smallest_sheet - 1], 0, smallest_sheet - 1, 0, expected_values, adders);
 
-	weighted_hits[1].numerator = 0;
-	weighted_hits[1].denominator = 1;
-
-	Fraction ans = recursiveSheetSelectWithProbability(current_envelope, goal_number, weighted_hits, total_sheets);
-	std::cout << total_calcs << " calculations were made." << std::endl;
-
-	return { std::to_string((double)ans.numerator / (double)ans.denominator), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
+	return { std::to_string(expected_values[1111] - 1), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 0.464399
-	//ran in 0.0000343 seconds
+	//ran in 0.0000247 seconds
 }
 
 //NOTES
