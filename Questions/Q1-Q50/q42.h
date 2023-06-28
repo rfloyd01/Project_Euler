@@ -24,11 +24,11 @@ std::pair<std::string, double> q42()
 	}
 	char letter = 'a'; //just use a random character to initialize the variable
 
-	//first step is to copy the names
+	//first step is to copy the words
 	std::ifstream inFile;
 	inFile.open("Resources/q42.txt");
 
-	//read all of the names from the text file into the names vector alphabetically
+	//read all of the names from the text file into the words vector alphabetically
 	//wasn't sure how to break the loop when EOF is reached so I just put an '@' character at the very end of the file to signify when to stop
 	while (letter != '@')
 	{

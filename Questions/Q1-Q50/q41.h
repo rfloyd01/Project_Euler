@@ -12,13 +12,10 @@ void checkAllPandigitals(int number_of_digits, long long& answer, int current_le
 
 	if (current_level == number_of_digits)
 	{
-		int last_digit = current_number % 10;
-		if (last_digit % 2 == 0 || last_digit == 5) return;
 		if (primeNumberTest(current_number))
 		{
 			answer = current_number;
 			cont = false;
-			//std::cout << current_number << std::endl;
 		}
 		return;
 	}
@@ -26,6 +23,10 @@ void checkAllPandigitals(int number_of_digits, long long& answer, int current_le
 	{
 		if (!cont) return; //break out of function if the answer has been found
 		if (used_numbers & *(two_powers + i)) continue; //if the number has already been used then skip it
+		if (current_level == (number_of_digits - 1))
+		{
+			if (i % 2 == 0 || i == 5) return; //don't use a number in the one's place that guarantees a non-prime number
+		}
 		checkAllPandigitals(number_of_digits, answer, current_level + 1, current_number * 10 + i, used_numbers | *(two_powers + i), two_powers, cont);
 	}
 }
@@ -38,7 +39,7 @@ std::pair<std::string, double> q41()
 
 	bool cont = true;
 
-	for (int i = 9; i > 0; i--)
+	for (int i = 7; i > 0; i--)
 	{
 		checkAllPandigitals(i, answer, 0, 0, 0, powers_of_two, cont);
 		if (answer > 0) break;
@@ -47,7 +48,7 @@ std::pair<std::string, double> q41()
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 7652413
-	//ran in 0.292167 seconds
+	//ran in 0.0000074 seconds
 }
 
 //NOTES
@@ -57,3 +58,11 @@ std::pair<std::string, double> q41()
 //primes then check 8 digits. Then 7, etc, etc. After completing the problem I can see the answer is a 7 digit pandigital. If I only check 7 digit numbers and skip 8 and 9 digit
 //numbers then the code only takes 0.0004768 seconds to run. I feel like there isn't really a good way to know that without actually running the program so it doesn't seem fair to start
 //my search loop at 7 instead of 9. For that reason I'm keeping the start of the search loop at 9 digits.
+
+//HACKERRANK UPDATE
+/*
+* I realized that it would be much more efficient to remove the check at the bottom of the recursion to see if our number ends in 2, 4, 5, 6 or 8 and instead place it at the top
+* of the recursion (i.e. just don't build any numbers where these are the first digit). Doing this prevents us from creating thousands of numbers and ends up saving a bunch of time.
+* This simple change reduced the runtime from 0.292167 seconds to 0.0457186 seconds. I then realized that testing 8 and 9 digit pandigitals isn't necessary as the sum of these 
+* numbers are 36 and 45 respectively, meaning they're all divisible by 3. If only testing 7-digit numbers then the runtime drops to a mere 0.0000074 seconds
+*/

@@ -1,51 +1,44 @@
 #pragma once
 
-#include <Header_Files/pch.h> //There are a few header files needed to make the below code work, so included them in a precompiled header file
-#include <vector>
-#include <cmath> //pow()
-
-std::vector<std::pair<int, int> > findDigitRange(int limit)
-{
-	int digit_start = 0, digit_end = 0, number_of_digits = 0, number_in_range = 0;
-	std::pair<int, int> range = { 0, 0 };
-	std::vector<std::pair<int, int> > ranges; ranges.push_back(range);
-
-	while (digit_end <= limit)
-	{
-		digit_start = digit_end + 1;
-		number_of_digits++;
-		number_in_range = (int)pow(10, number_of_digits) - (int)pow(10, number_of_digits - 1);
-		digit_end = digit_start + (number_of_digits * number_in_range) - 1;
-		range.first = digit_start; range.second = digit_end;
-		ranges.push_back(range);
-	}
-
-	return ranges;
-}
+#include <Header_Files/pch.h>
+#include <Header_Files/functions.h>
 
 //Champernowne's Constant
 std::pair<std::string, double> q40()
 {
-	//Use a string as the first part of the pair so that every question returns an answer of the same form (normally you would need ints, doubles, long ints, etc. to store different answers)
 	auto run_time = std::chrono::steady_clock::now();
 	int answer = 1;
 
-	std::vector<std::pair<int, int> > digit_ranges = findDigitRange(1000000);
 	int needed_digits[7] = { 1, 10, 100, 1000, 10000, 100000, 1000000 };
+	int maximum_digit = 1000000, num_length = 1;
+	std::vector<int> number_groups = { 0 };
+
+	while (number_groups.back() < maximum_digit)
+	{
+		number_groups.push_back((powers_of_ten[num_length] - powers_of_ten[num_length - 1]) * num_length + number_groups[num_length - 1]);
+		num_length++;
+	}
 
 	for (int i = 0; i < 7; i++)
 	{
-		for (int j = 0; j < digit_ranges.size(); j++)
+		for (int j = 1; j < number_groups.size(); j++)
 		{
-			if (needed_digits[i] <= digit_ranges[j].second)
+			if (number_groups[j] >= needed_digits[i])
 			{
-				//do stuff then break out
-				int numbers_from_start = (needed_digits[i] - digit_ranges[j].first) / j;
-				int digits_into_number = (needed_digits[i] - digit_ranges[j].first) % j;
-				int needed_digit = numbers_from_start + (int)pow(10, j -1);
-				for (int k = 0; k < j - digits_into_number - 1; k++) needed_digit /= 10;
-				answer *= (needed_digit % 10);
+				//the digit we want is in this number group
+				
+				//first figure out which number in the group we want, and which digit of that number we need
+				int number = (needed_digits[i] - number_groups[j - 1] - 1) / j + powers_of_ten[j - 1];
+				int digit_number = (needed_digits[i] - number_groups[j - 1]) % j;
 
+				//The modular division has a weird quirk of giving us the digits we need in order, unless the value 
+				//of the modular division is 0 (which would really mean we need the last digit of the number and not 
+				//the first digit of the number) so we need to handle 0 separately
+				if (digit_number > 0)
+				{
+					for (int k = 0; k < j - digit_number; k++) number /= 10;
+				}
+				answer *= (number % 10);
 				break;
 			}
 		}
@@ -54,7 +47,7 @@ std::pair<std::string, double> q40()
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 210
-	//ran in 0.0000198 seconds
+	//ran in 0.0000049 seconds
 }
 
 //NOTES

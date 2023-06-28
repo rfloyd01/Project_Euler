@@ -7,33 +7,41 @@
 std::pair<std::string, double> q44()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	int answer = 0;
-	int limit = 10000000;
+	int answer = 0, square_count = 0;
 
-	std::vector<int> pentagonal_check, pentagonal_numbers;
-	for (int i = 0; i < limit; i++) pentagonal_check.push_back(0);
-
-	int i = 1;
-	while (true)
+	long long x = 0, adder = 2;
+	bool cont = true;
+	while (cont)
 	{
-		int hex = i * (3 * i - 1) / 2;
-		if (hex > limit) break;
-		pentagonal_check[hex] = 1;
-		pentagonal_numbers.push_back(hex);
-		i++;
-	}
-
-	for (int first_num = 0; first_num < pentagonal_numbers.size(); first_num++)
-	{
-		bool cont = true;
-		for (int second_num = first_num + 1; second_num < pentagonal_numbers.size(); second_num++)
+		square_count++;
+		x += adder;
+		adder += 6;
+		long long max_i = (1 + sqrt(1 + 6 * x)) / 6.0;
+		for (long long i = 1; i <= max_i; i++)
 		{
-			if (pentagonal_numbers[second_num] + pentagonal_numbers[first_num] >= limit) break;
-			if (pentagonal_check[pentagonal_numbers[second_num] + pentagonal_numbers[first_num]])
+			long long c = 3 * i * i - i - x;
+			long long j = (1 + sqrt(1 - 12 * c)) / 6.0;
+			long long potential_root = 3 * i * i - i + 3 * j * j - j;
+
+			//confirm whether or not j had a decimal portion
+			if (potential_root == x)
 			{
-				if (pentagonal_check[pentagonal_numbers[second_num] - pentagonal_numbers[first_num]])
+				long long k = (1 + sqrt(1 + 12 * potential_root)) / 6;
+
+				long long potential_m_one = (1 + sqrt(1 + 12 * (3 * i * i - i + 3 * k * k - k))) / 6;
+				long long potential_m_two = (1 + sqrt(1 + 12 * (3 * j * j - j + 3 * k * k - k))) / 6;
+
+				if (3 * (i * i + k * k - potential_m_one * potential_m_one) == i + k - potential_m_one)
 				{
-					answer = pentagonal_numbers[second_num] - pentagonal_numbers[first_num];
+					answer = j * (3 * j - 1) / 2;
+					cont = false;
+					break;
+				}
+				else if (3 * (j * j + k * k - potential_m_two * potential_m_two) == j + k - potential_m_two)
+				{
+					answer = i * (3 * i - 1) / 2;
+					cont = false;
+					break;
 				}
 			}
 		}
@@ -42,7 +50,7 @@ std::pair<std::string, double> q44()
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 5482660
-	//ran in 0.10292 seconds
+	//ran in 0.0055078 seconds
 }
 
 //NOTES
