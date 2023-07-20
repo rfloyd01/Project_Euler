@@ -159,6 +159,11 @@
     <ClInclude Include="Header_Files\bigint.h" />
     <ClInclude Include="Header_Files\BigInt_128.h" />
     <ClInclude Include="Header_Files\big_number.h" />
+    <ClInclude Include="Header_Files\DataStructures_Algorithms\algorithms.h" />
+    <ClInclude Include="Header_Files\DataStructures_Algorithms\datastructures.h" />
+    <ClInclude Include="Header_Files\DataStructures_Algorithms\graph.h" />
+    <ClInclude Include="Header_Files\DataStructures_Algorithms\list.h" />
+    <ClInclude Include="Header_Files\DataStructures_Algorithms\node.h" />
     <ClInclude Include="Header_Files\functions.h" />
     <ClInclude Include="Header_Files\int_64.h" />
     <ClInclude Include="Header_Files\int_64x.h" />
@@ -254,6 +259,7 @@
     <ClInclude Include="Questions\Q401-Q450\q425.h" />
     <ClInclude Include="Questions\Q451-Q500\q491.h" />
     <ClInclude Include="Questions\Q51-Q100\master51-100.h" />
+    <ClInclude Include="Questions\Q51-Q100\q100.h" />
     <ClInclude Include="Questions\Q51-Q100\q51.h" />
     <ClInclude Include="Questions\Q51-Q100\q52.h" />
     <ClInclude Include="Questions\Q51-Q100\q53.h" />
@@ -298,6 +304,7 @@
     <ClInclude Include="Questions\Q51-Q100\q92.h" />
     <ClInclude Include="Questions\Q51-Q100\q94.h" />
     <ClInclude Include="Questions\Q51-Q100\q95.h" />
+    <ClInclude Include="Questions\Q51-Q100\q97.h" />
     <ClInclude Include="Questions\Q601-Q650\q650.h" />
     <ClInclude Include="Questions\Q651-Q700\q684.h" />
     <ClInclude Include="Questions\Q651-Q700\q686.h" />

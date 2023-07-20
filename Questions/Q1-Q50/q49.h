@@ -7,12 +7,71 @@
 #include <map>
 
 //Prime Permutations
+void findSequences(std::vector<int>& p, int size, int maximum, std::vector<std::vector<std::string>>& answers, int location = 0, int distance = 0, int level = 0, bool recurse = false)
+{
+    //it's possible to find sequences that work where elements aren't right next to
+    //each other. For example, given the primes [a, b, c, d, e, f, g] it's theoretically 
+    //possible for c - b = b - a, as well as for g - e = e - b. For an exhaustive 
+    //search all subsequence will need to be tested. The easiest approach to an
+    //exhaustive search will be recursive.
+    if (!recurse)
+    {
+        //the first two primes chosen set the distance for the arithmetic sequence so 
+        //really any two primes can be chosen as the first two. We just need to make
+        //sure that the first prime is less than the given maximum
+        for (int i = 0; i <= p.size() - size; i++)
+        {
+            if (p[i] >= maximum) return;
+            for (int j = i + 1; j <= p.size() - (size - 1); j++)
+            {
+                findSequences(p, size, maximum, answers, j, p[j] - p[i], 3, true);
+            }
+        }
+    }
+    else
+    {
+        //the recursive part of the sequence, just iterate forwards in an attempt to 
+        //find a prime that's the appropriate distance. The variable "location" marks 
+        //where the last prime in the sequence is.
+        for (int i = location + 1; i < p.size(); i++)
+        {
+            if (p[i] - p[location] == distance)
+            {
+                if (level == size)
+                {
+                    //we've found a hit, print all the primes without spaces
+                    int current_dist = distance * (size - 1);
+                    std::string a = "";
+                    for (int j = 0; j < size; j++)
+                    {
+                        a += std::to_string(p[i] - current_dist);
+                        current_dist -= distance;
+                    }
+                    answers[a.length()].push_back(a);
+                    return;
+                }
+                else
+                {
+                    //go to the next level of the recursion
+                    findSequences(p, size, maximum, answers, i, distance, level + 1, true);
+                }
+            }
+            else if (p[i] - p[location] > distance)
+            {
+                //the primes go in order so as soon as we find one that's too large,
+                //the rest will be even larger so this sequence is a bust
+                return;
+            }
+        }
+    }
+}
+
 std::pair<std::string, double> q49()
 {
 	auto run_time = std::chrono::steady_clock::now();
 	long long answer = 0;
 
-	long long base_five[10] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000 };
+	long long base_ten[10] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000 };
 
 	std::vector<int> prims = primes(10000);
 	std::map<long long, std::vector<int> > permutations;
@@ -26,7 +85,7 @@ std::pair<std::string, double> q49()
 
 		for (int j = 0; j < 4; j++)
 		{
-			feet += base_five[yeet % 10];
+			feet += base_ten[yeet % 10];
 			yeet /= 10;
 		}
 
@@ -55,6 +114,7 @@ std::pair<std::string, double> q49()
 			if (!cont) break; //break out as soon as answer is found
 		}
 	}
+
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 296962999629

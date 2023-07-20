@@ -204,12 +204,12 @@ bool primeNumberTest(long long number)
 	for (int i = 0; i < a.size(); i++)
 	{
 		bool quit = true;
-		long long x = ModPow((long long)a[i], d, number, 0);
+		long long x = ModPow((long long)a[i], d, number, 1);
 		if (x == 1 || x == (number - 1)) continue;
 
 		for (int j = 0; j < (r - 1); j++)
 		{
-			x = ModPow(x, (long long)2, number, 0);
+			x = ModPow(x, (long long)2, number, 1);
 			if (x == (number - 1))
 			{
 				quit = false;

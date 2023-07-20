@@ -1,148 +1,54 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <cmath>
-#include <vector>
-#include <Header_Files/bigint.h>
-#include <Header_Files/print.h>
-#include <map>
+#include <Header_Files/int_64x.h>
 
 //Diophantine Equation
 std::pair<std::string, double> q66()
 {
 	auto run_time = std::chrono::steady_clock::now();
+
 	int answer = 0;
-
-	int* square_root_integers = new int[1001];
-	square_root_integers[0] = 0;
-	long long triple[3] = { 0 };
-
-	for (int i = 1; i < (int)sqrt(1000); i++)
-		for (int j = i * i; j < ((i + 1) * (i + 1)); j++) square_root_integers[j] = i;
-
-	for (int i = 31 * 31; i < 1001; i++) square_root_integers[i] = 31;
-	bigint Maximum(0); //this variable will be used to keep track of the largest x value
-
 	for (int n = 2; n < 1001; n++)
 	{
-		long long n_root = square_root_integers[n];
+		int n_root = sqrt(n);
 		if (n == (n_root * n_root)) continue; //skip numbers that are perfect squares
 
-		std::vector<int> repeating_fraction;
-
-		triple[0] = n_root;
-		triple[1] = 0;
-		triple[2] = 1;
+		int_64x nums[2] = { 1, n_root }, dens[2] = { 0, 1 }, Maximum = 0;
+		bool location = false;
+		long long triple[3] = { n_root, 0, 1 };
 
 		while (true)
 		{
-			repeating_fraction.push_back(triple[0]); //build repeating fraction one element at a time
-
-			//check to see if current iteration of repeating fraction yields an answer
-			bigint numerator(1), denominator(repeating_fraction.back()), temp, D(n);
-			for (int i = repeating_fraction.size() - 2; i >= 0; i--)
-			{
-				numerator += denominator * repeating_fraction[i];
-				temp = denominator;
-				denominator = numerator;
-				numerator = temp;
-			}
-
-			if ((denominator * denominator - D * numerator * numerator) == 1)
-			{
-				if (denominator > Maximum)
-				{
-					Maximum = denominator;
-					answer = n;
-				}
-				break;
-			}
-
-			//if answer wasn't found then go to the next level of the repeated fraction
-			triple[1] = triple[0] * triple[2] - triple[1];
-			triple[2] = (n - (triple[1] * triple[1])) / triple[2];
-			triple[0] = (n_root + triple[1]) / triple[2];
-		}
-	}
-
-	/*
-	for (int n = 2; n < 1001; n++)
-	{
-		long long n_root = square_root_integers[n];
-		if (n == (n_root * n_root)) continue; //skip numbers that are perfect squares
-
-		std::map<std::vector<long long>, bool> used_triplets;
-		std::vector<long long> triple;
-		std::vector<bigint> A; //use a bigint vector for later math
-
-		//numerator and denominator are used to iteratively calculate the current convergent of sqrt(n)
-		bigint numerator[3], denominator[3], current_iteration(0), D(n);
-		numerator[0] = 0; numerator[1] = 1; numerator[2] = n_root;
-		denominator[0] = 1; denominator[1] = 0; denominator[2] = 1;
-
-		triple.push_back(n_root);
-		triple.push_back(0);
-		triple.push_back(1);
-
-		used_triplets[triple] = true;
-		bool cont = true;
-
-		while (true)
-		{
-			//check to see if answer to diophantine is found before finding full continued fraction
-			if (numerator[(current_iteration + 2) % 3] * numerator[(current_iteration + 2) % 3] - D * denominator[(current_iteration + 2) % 3] * denominator[(current_iteration + 2) % 3] == 1)
-			{
-				if (numerator[(current_iteration + 2) % 3] > Maximum)
-				{
-					Maximum = numerator[(current_iteration + 2) % 3];
-					answer = n;
-				}
-				cont = false;
-				break;
-			}
-
-			//if no answer to the diophantine equation is found then keep expanding out the continued fraction
+			//extend down to the next level of the repeated fraction
 			triple[1] = triple[0] * triple[2] - triple[1];
 			triple[2] = (n - (triple[1] * triple[1])) / triple[2];
 			triple[0] = (n_root + triple[1]) / triple[2];
 
-			bigint An(triple[0]);
+			//calculate the next convergent of the repeated fraction
+			nums[location] += triple[0] * nums[!location];
+			dens[location] += triple[0] * dens[!location];
 
-			numerator[current_iteration % 3] = An * numerator[(current_iteration + 2) % 3] + numerator[(current_iteration + 1) % 3];
-			denominator[current_iteration % 3] = An * denominator[(current_iteration + 2) % 3] + denominator[(current_iteration + 1) % 3];
-			current_iteration += 1;
-
-			if (used_triplets[triple] == true) break;
-			used_triplets[triple] = true;
-			A.push_back(An);
-		}
-
-		if (!cont) continue; //go to next number if solution for current number has already been found
-
-		//once the continued fraction representation has been found, iteratively calculated the nth convergent until an answer is found
-		while (true)
-		{
-			if (numerator[(current_iteration + 2) % 3] * numerator[(current_iteration + 2) % 3] - D * denominator[(current_iteration + 2) % 3] * denominator[(current_iteration + 2) % 3] == 1)
+			if ((nums[location] * nums[location] - n * dens[location] * dens[location]) == 1)
 			{
-				if (numerator[(current_iteration + 2) % 3] > Maximum)
+				if (nums[location] > Maximum)
 				{
-					Maximum = numerator[(current_iteration + 2) % 3];
+					
+					Maximum = nums[location];
 					answer = n;
 				}
 				break;
 			}
-			numerator[current_iteration % 3] = A[current_iteration % A.size()] * numerator[(current_iteration + 2) % 3] + numerator[(current_iteration + 1) % 3];
-			denominator[current_iteration % 3] = A[current_iteration % A.size()] * denominator[(current_iteration + 2) % 3] + denominator[(current_iteration + 1) % 3];
-			current_iteration += 1;
+
+			//invert the variable keeping track of the fraction's location inside the num/den arrays
+			location = !location;
 		}
 	}
-	*/
 
-	delete[] square_root_integers;
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 661
-	//ran in 0.0758241 seconds
+	//ran in 0.0122496 seconds
 }
 
 //NOTES
@@ -171,3 +77,17 @@ std::pair<std::string, double> q66()
 //up slowing down the overall problem. In a perfect world I think the iterative approach should still be faster, however, since it requires the use of a map of vectors to known
 //when the continued fraction is complete and uses the bigint class which inherently is slower than c++ built in types it just doesn't work out. I've decided to keep the original
 //algorithm but have left version three commented in place just as a reference.
+
+//--7/3/23 Update
+/*
+Going back over my notes here I had mentioned that I was going to use the convergent = (a[n] * h[n-1] + h[k-2]) / (a[n] * k[n-1] + k[n-2]) method in hopes of getting a 
+speedup, but ultimately wasn't able to. Well I just went and coded this method up again and it's definitely quicker, so I'm not really sure what I did the first time around.
+With that said, it's not as much faster as I would've thought. First, I upgraded the code to use int_64x instead of bigint which made the runtime drop from ~0.07 seconds to 
+~0.04 seconds. Then implementing the quicker convergent method made the runtime drop again to ~0.01 seconds.
+
+Reading the forum it seems that most fast solvers did so in the same manner here (or at least similar). I think what it boils down to is how good your large integer library
+is. It seems that some people running the slow Python were still able to get the answer in a few milliseconds which I can only attribute to much quicker multiplication for 
+numbers larger than 64-bits. The wikipedia page for Pell's equation mentions that an algorithm called the Schönhage–Strassen algorithm for fast integer multiplication can be 
+used to calculate the fundamental solution in logarithmic time. It's been awhile but I think the multiplication technique I used for my int_64x class was based off of the Karatsuba 
+technique so maybe this other technique would give me the speed up I'm looking for.
+*/

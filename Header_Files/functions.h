@@ -95,6 +95,10 @@ T ModMult(T a, T b, T mod)
 	{
 		std::cout << a << ", " << b << std::endl;
 	}
+	if (b >= ((unsigned long long)1 << 63))
+	{
+		std::cerr << "ModMult():: Second input too large, overflow may lead to incorrect answer." << std::endl;
+	}
 
 	T result = 0;
 	while (a != 0)

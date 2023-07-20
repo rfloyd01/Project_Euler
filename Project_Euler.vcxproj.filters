@@ -61,6 +61,9 @@
     <Filter Include="Header Files\Questions\Q700-Q750">
       <UniqueIdentifier>{d97fa98f-7066-4332-acdb-128558ab0914}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Data Structures and Algorithms">
+      <UniqueIdentifier>{c3c30391-bc25-4776-921a-ec3ed93ee65e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -568,6 +571,27 @@
     </ClInclude>
     <ClInclude Include="Questions\Hackerrank\Counting_Blocks_II.h">
       <Filter>Header Files\Hackerrank</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q97.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q51-Q100\q100.h">
+      <Filter>Header Files\Questions\Q51-Q100</Filter>
+    </ClInclude>
+    <ClInclude Include="Header_Files\DataStructures_Algorithms\algorithms.h">
+      <Filter>Header Files\Data Structures and Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="Header_Files\DataStructures_Algorithms\datastructures.h">
+      <Filter>Header Files\Data Structures and Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="Header_Files\DataStructures_Algorithms\node.h">
+      <Filter>Header Files\Data Structures and Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="Header_Files\DataStructures_Algorithms\list.h">
+      <Filter>Header Files\Data Structures and Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="Header_Files\DataStructures_Algorithms\graph.h">
+      <Filter>Header Files\Data Structures and Algorithms</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

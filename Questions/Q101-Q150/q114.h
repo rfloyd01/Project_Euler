@@ -25,7 +25,7 @@ std::pair<std::string, double> q114()
 
 //NOTES
 /*The code below is for solving the HackerRank version. It's slower for smaller wall sizes, but exponentially better 
-* for larger wall sizes
+for larger wall sizes
 std::vector<std::vector<long long>> matrixMultiply114(const std::vector<std::vector<long long>>& A, const std::vector<std::vector<long long>>& B)
 {
     long long n = A.size();

@@ -7,34 +7,14 @@
 std::pair<std::string, double> q63()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	int answer = 1, base = 2, exponent; //make answer equal to one to account for the case of 1^1 being a 1 digit number
-	bool cont = true;
+	int answer = 0;
 
-	while (true)
-	{
-		exponent = 1;
-		float log = log10f(base), current_num = log;
-		while (true)
-		{
-			if ((int)current_num + 1 < exponent) break; //the number of digits will never catch back up to the exponent
-			else if ((int)current_num + 1 > exponent)
-			{
-				//once we hit a point where the number of digits is greater than the exponent, no more numbers will work
-				cont = false;
-				break;
-			}
-			else answer++;
-			exponent++;
-			current_num += log; //instead of calculating the log (x^y) each iteration, just keep adding log(x)
-		}
-		if (!cont) break;
-		base++;
-	}
+	for (int b = 1; b < 10; b++) answer += 1.0 / (1 - log10f(b));
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 49
-	//ran in .0000073 seconds
+	//ran in 0.0000059 seconds
 }
 
 //NOTES
@@ -43,8 +23,13 @@ std::pair<std::string, double> q63()
 //of the built in c++ types) can be found by ceiling(log10(16^25)) = ceiling(25*log10(16)) = ceiling(30.103) = 31 digits. Using this fact it should be possible to solve
 //this problem without the need to use very large numbers. We should only need two loops, one that cycles through base numbers and one that cycles through exponents.
 //Move to the next base number when current exponent makes the number of digits smaller than the exponent itself and break out of both loops if the number of digits
-//becomes greater than the exponent itself as the descepancy will only get worse as larger numbers are used.
+//becomes greater than the exponent itself as the descrepancy will only get worse as larger numbers are used.
 
 //After running the problem I realized that this property can only apply to single digit numbers. As soon as you raise a double digit number to any power there will be more
 //digits in the number than the exponent, and the effect gets worse the higher the exponent gets. The code currently runs in the blink of an eye so changing the first while
 //loop to a for loop that ranges from 1-9 shouldn't really effect the time that much so I'll just leave the code as is.
+
+//UPDATE
+//Knowing that the maximum value for the base is 10, just iterate the base from 1 to 9 and figure out the value of the exponent that will first make the number of digits 
+//less then the actual exponent. This leads to a maximum exponent value of e = 1 / (1 - log(b)). This number will always have a decimal since b < 10 so floor this value
+//and add it to the answer after each iteration.

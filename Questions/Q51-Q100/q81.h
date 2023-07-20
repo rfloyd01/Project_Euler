@@ -2,6 +2,7 @@
 
 #include <Header_Files/pch.h>
 #include <fstream>
+#include <Header_Files/DataStructures_Algorithms/algorithms.h>
 
 //Path Sum: Two Ways
 std::pair<std::string, double> q81()
@@ -10,8 +11,8 @@ std::pair<std::string, double> q81()
 	int answer = 0;
 
 	const int rows = 80, columns = 80;
-	int** board = new int* [rows];
-	for (int i = 0; i < rows; i++) board[i] = new int[columns];
+	/*int** board = new int* [rows];
+	for (int i = 0; i < rows; i++) board[i] = new int[columns];*/
 
 	//first save numbers from text file into an array
 	std::ifstream myFile;
@@ -19,6 +20,9 @@ std::pair<std::string, double> q81()
 
 	std::string line;
 	int num = 0, place;
+
+	//Solve question using user defined Graph class and Dijkstra's algorithm
+	std::vector<int> vertices;
 
 	for (int i = 0; i < rows; i++)
 	{
@@ -28,7 +32,8 @@ std::pair<std::string, double> q81()
 		{
 			if (line[j] == ',')
 			{
-				board[i][place] = num;
+				//board[i][place] = num;
+				vertices.push_back(num);
 				num = 0;
 				place++;
 				continue;
@@ -39,12 +44,32 @@ std::pair<std::string, double> q81()
 				num += (line[j] - 48);
 			}
 		}
-		board[i][columns - 1] = num;
+		//board[i][columns - 1] = num;
+		vertices.push_back(num);
 		num = 0;
 	}
 
+	std::vector<std::pair<std::pair<int, int>, int>> edges;
+	for (int row = 0; row < rows; row++)
+	{
+		//vertices all the way at the right of the graph will only have edges pointing downwards and
+		//vertices at the bottome of the graph will only have edges pointing to the right. All other
+		//vertices will have edges pointing to the right and downwards.
+		int index = row * columns;
+		for (int col = 0; col < columns; col++)
+		{
+			if ((index % columns) < (columns - 1)) edges.push_back({ {index, index + 1}, vertices[index + 1] });
+			if (row < (rows - 1)) edges.push_back({ {index, index + columns}, vertices[index + columns] });
+			index++;
+		}
+	}
+
+	Graph<int> graph(vertices, edges, false);
+
+	std::cout << DijkstrasAlgorithm(graph, *(*graph.first_vertex), *(*graph.last_vertex)) + vertices[0] << std::endl;
+
 	//bottom row and right column should be added up first
-	for (int i = rows - 2; i >= 0; i--)
+	/*for (int i = rows - 2; i >= 0; i--)
 	{
 		board[rows - 1][i] += board[rows - 1][i + 1];
 		board[i][columns - 1] += board[i + 1][columns - 1];
@@ -59,11 +84,11 @@ std::pair<std::string, double> q81()
 			board[i][j] += min;
 		}
 	}
-	answer = board[0][0];
+	answer = board[0][0];*/
 
 	//clean up board array
-	for (int i = 0; i < rows; i++) delete[] board[i];
-	delete[] board;
+	/*for (int i = 0; i < rows; i++) delete[] board[i];
+	delete[] board;*/
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 

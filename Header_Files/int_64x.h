@@ -20,7 +20,7 @@
 //the string method takes a very long time to carry out calculations as each character
 //needs to be converted to an integer before it can be manipulated. This class will save
 //on both space and time by keeping large numbers in a binary representation and splitting
-//the number up between multiple 64-bit words (for example the number 9,223,372,036,854,775,808
+//the number up between multiple 64-bit words (for example the number 18,446,744,073,709,551,616
 //would be represented as [0x0000000000000001], [0x0000000000000000]).
 
 //TODO:
@@ -59,7 +59,7 @@ public:
 	std::vector<unsigned long long> digits;
 
 	//CONSTRUCTORS
-	int_64x() = default; //no special default operator
+	int_64x() = default; //no special default constructor
 	int_64x(int number); //create a new int_64x type from a signed integer
 	int_64x(unsigned int number); //create a new int_64x type from an unsigned integer
 	int_64x(long long number); //create a new int_64x type from a signed long long integer

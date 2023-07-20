@@ -8,39 +8,34 @@
 bool PentagonalTest(long long n)
 {
 	//tests whether or not the given number is a pentagonal number. Worked out on paper with quadratic equation
-	double pent = (1 + sqrt(1 + 24 * n)) / 6.0;
+	long long pent = (1 + sqrt(1 + 24 * n)) / 6.0;
 
 	//check wether or not pent has a decimal
-	long long new_pent = pent * 10 / 10;
-	if ((double)new_pent == pent) return true;
+	if (pent * (3 * pent - 1) / 2 == n) return true;
 	return false;
 }
 
 std::pair<std::string, double> q45()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	long long answer = 0;
 
-	long long i = 1;
-	long long hex;
-
+	long long answer = 0, i = 144, pent, hits = 0;
 	while (true)
 	{
-		hex = i * (2 * i - 1);
-		if (PentagonalTest(hex))
+		answer = i * (2 * i - 1);
+		pent = (1 + sqrt(1 + 24 * answer)) / 6.0;
+		if (pent * (3 * pent - 1) / 2 == answer)
 		{
-			if (hex > 40755)
-			{
-				answer = hex;
-				break;
-			}
+			std::cout << answer << std::endl;
+			hits++;
+			if (hits > 1) break;
 		}
 		i++;
 	}
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 1533776805
-	//ran in 0.0001466 seconds
+	//ran in 0.000092 seconds
 }
 
 //NOTES

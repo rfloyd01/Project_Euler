@@ -8,53 +8,49 @@
 std::pair<std::string, double> q50()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	int answer = 0;
-	int max_chain = 0;
-	const int maximum = 1000000;
+	long long answer = 0, max_chain = 0;
+	const long long maximum = 1000000;
 
-	std::vector<int> prims;
-	bool *prime_test = new bool[maximum]; //create array on heap instead of stack
-	PrimesWithSieve(prime_test, maximum, prims); //fill out prime vector and prime_test array
-
-	std::vector<long long> consecutive_prime_sums = { 2 };
-	for (int i = 1; i < prims.size(); i++)
+	//The prime number theorem tells us that we should only need the first ~550 primes before their cumulative sum
+	//becomes larger than 1,000,000. Sieve primes up to 4,000 to make sure we get all the primes needed.
+	std::vector<int> prims = primes(4000);
+	std::vector<long long> consecutive_prime_sums = { 0 };
+	for (int i = 0; i < prims.size(); i++)
 	{
-		if (prims[i] < (maximum / 250)) consecutive_prime_sums.push_back(prims[i] + consecutive_prime_sums.back());
-		else break; //testing showed that the largest chains have a relatively low maximum prime number so cap the sums at 1/20th the maximum (note this cap needs to change as maximum gets smaller)
+		consecutive_prime_sums.push_back(prims[i] + consecutive_prime_sums.back());
+		if (consecutive_prime_sums.back() > maximum)
+		{
+			//to give ourselves a little extra cushion add the next 10 primes or so
+			consecutive_prime_sums.pop_back();
+			break;
+		}
 	}
 
 	for (int i = consecutive_prime_sums.size() - 1; i >= 0; i--)
 	{
 		if (i < max_chain) break; //no more prime sums can beat the current answer so break out
 
-		if (consecutive_prime_sums[i] < maximum && prime_test[consecutive_prime_sums[i]])
-			if (i > answer)
-			{
-				max_chain = i;
-				answer = consecutive_prime_sums[i];
-			}
-
 		for (int j = 0; j < consecutive_prime_sums.size(); j++)
 		{
-			//as soon as a prime number is created break out of this loop as the primes will only get smaller as loop progresses
-			if ((consecutive_prime_sums[i] - consecutive_prime_sums[j]) < maximum && prime_test[consecutive_prime_sums[i] - consecutive_prime_sums[j]])
+			//as soon as a prime number is created, or the new chain will be smaller than the current best, break out of this loop
+			//as the chain length will only get smaller as loop progresses
+			if (i - j < max_chain) break;
+			if ((consecutive_prime_sums[i] - consecutive_prime_sums[j]) <= maximum && primeNumberTest(consecutive_prime_sums[i] - consecutive_prime_sums[j]))
 			{
 				if (i - j > max_chain)
 				{
 					max_chain = i - j;
 					answer = (consecutive_prime_sums[i] - consecutive_prime_sums[j]);
-					//std::cout << prims[j] << ", " << prims[i] << ", " << max_chain << std::endl;
 				}
 				break;
 			}
 		}
 	}
 
-	delete[] prime_test; //delete prime test off of the heap
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 997651
-	//ran in 0.0032327 seconds
+	//ran in 0.0000744 seconds
 }
 
 //NOTES
@@ -78,3 +74,9 @@ std::pair<std::string, double> q50()
 
 //Changing the ceiling of primes that I look at made the run time go from .42 seconds all the way down to .003 seconds which is a 140x speedup. It always feels a little cheasy when I change
 //my initial ceiling after finding the answer to a problem but at least this time I reasoned out why the celing could be changed instead of changing it blindly so it feels more justified.
+
+//UPDATE 7-7-23
+//Going over this again as I'm making a page for it on my website, instead of just arbitrarily picking the prime limit as 1/250th of the max I used the Prime Number Theorem which states 
+//the number of prime numbers under n is roughly n/ln(n). Combining this with the triangle number formula it turns out that we really only need the first ~550 primes before the 
+//consecutive sum get's larger than 1,000,000. With this few prime numbers it's more efficient to use a prime number test to test primality of the sums instead of sieving primes all 
+//the way up to 1,000,000.
