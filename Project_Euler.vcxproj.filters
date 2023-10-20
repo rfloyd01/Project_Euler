@@ -64,6 +64,9 @@
     <Filter Include="Header Files\Data Structures and Algorithms">
       <UniqueIdentifier>{c3c30391-bc25-4776-921a-ec3ed93ee65e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Questions\Q851-Q900">
+      <UniqueIdentifier>{dac80b1c-ec38-42d3-9c7e-de0deaa59e4c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -592,6 +595,9 @@
     </ClInclude>
     <ClInclude Include="Header_Files\DataStructures_Algorithms\graph.h">
       <Filter>Header Files\Data Structures and Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q851-Q900\q852.h">
+      <Filter>Header Files\Questions\Q851-Q900</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

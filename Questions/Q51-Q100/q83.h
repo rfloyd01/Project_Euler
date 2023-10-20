@@ -93,7 +93,7 @@ std::pair<std::string, double> q83()
 //NOTES
 /*
 * To solve this I decided to use Dijkstra's Algorithm. For the algorithm to work we need a priority queue, and a boolean matrix representing which locations we've 
-* already found the minmal distance for.
+* already found the minimal distance for.
 * 
 * The implementation ends up working perfectly, but, my priority queue class isn't optimized in the slightest. Some work to optimize this class would probably decrease 
 * the run time by a large margin

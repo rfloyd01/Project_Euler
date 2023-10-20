@@ -320,6 +320,7 @@
     <ClInclude Include="Questions\Q751-Q800\q788.h" />
     <ClInclude Include="Questions\Q751-Q800\q799.h" />
     <ClInclude Include="Questions\Q751-Q800\q800.h" />
+    <ClInclude Include="Questions\Q851-Q900\q852.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Resources\q11.txt" />

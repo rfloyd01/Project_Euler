@@ -12,8 +12,8 @@ std::pair<std::string, double> q82()
 	int answer = 427337; //trying to minimize answer, since board is same as last time but there are more moves start with a maximum of the answer to question 81
 
 	const int rows = 80, columns = 80;
-	int** board = new int* [rows];
-	for (int i = 0; i < rows; i++) board[i] = new int[columns];
+	/*int** board = new int* [rows];
+	for (int i = 0; i < rows; i++) board[i] = new int[columns];*/
 
 	//first save numbers from text file into an array
 	std::ifstream myFile;
@@ -21,6 +21,9 @@ std::pair<std::string, double> q82()
 
 	std::string line;
 	int num = 0, place;
+
+	//Solve question using user defined Graph class and Dijkstra's algorithm
+	std::vector<int> vertices;
 
 	for (int i = 0; i < rows; i++)
 	{
@@ -30,7 +33,8 @@ std::pair<std::string, double> q82()
 		{
 			if (line[j] == ',')
 			{
-				board[i][place] = num;
+				//board[i][place] = num;
+				vertices.push_back(num);
 				num = 0;
 				place++;
 				continue;
@@ -41,42 +45,66 @@ std::pair<std::string, double> q82()
 				num += (line[j] - 48);
 			}
 		}
-		board[i][columns - 1] = num;
+		//board[i][columns - 1] = num;
+		vertices.push_back(num);
 		num = 0;
 	}
 
-	int min, running_total;
-	for (int j = columns - 2; j > 0; j--) //start on the second to last column and end on the second column
+	std::vector<std::pair<std::pair<int, int>, int>> edges;
+	for (int row = 0; row < rows; row++)
 	{
-		for (int i = rows - 1; i >= 0; i--) //check every row in the column starting at the bottom and moving to top
+		//Vertices in the left most column will only have edges pointing to the right.
+		//Vertices in the top row won't have any edges pointing upwards.
+		//Vertices in the bottom row won't have any edges pointing downwards.
+		//Vertices in the right most column won't have any edges leaving them.
+		int index = row * columns;
+		for (int col = 0; col < columns; col++)
 		{
-			min = board[i][j] + board[i][j + 1]; //base minimum is always found by looking at box directly to the right
-			if (i < (rows - 1)) //check downwards path if not on bottom row
-				if (board[i][j] + board[i + 1][j] < min) min = board[i][j] + board[i + 1][j];
-
-			//calculation of upwards path
-			running_total = board[i][j];
-			for (int k = i - 1; k >= 0; k--)
-			{
-				running_total += board[k][j];
-				if (running_total > min)
-				{
-					break; //going up any higher will only exceed the current minimum by more, so break out
-				}
-				if (running_total + board[k][j + 1] < min) min = running_total + board[k][j + 1];
-			}
-			board[i][j] = min;
+			if ((index % columns) == (columns - 1)) continue; //vertices in right most column get no edges
+			edges.push_back({ {index, index + 1}, vertices[index + 1] }); //add right edge
+			if ((index % columns) == 0) continue; //vertices in left most column only get a right edge
+			if (row < (rows - 1)) edges.push_back({ {index, index + columns}, vertices[index + columns] }); //add downwards edge
+			if (row > 0) edges.push_back({ {index, index - columns}, vertices[index - columns] }); //add upwards edge
+			
+			index++;
 		}
 	}
-	
-	for (int i = 0; i < rows; i++)
-	{
-		if (board[i][0] + board[i][1] < answer) answer = board[i][0] + board[i][1];
-	}
 
-	//clean up board array
-	for (int i = 0; i < rows; i++) delete[] board[i];
-	delete[] board;
+	Graph<int> graph(vertices, edges, false);
+	std::cout << DijkstrasAlgorithm(graph, *(*graph.first_vertex), *(*graph.last_vertex)) + vertices[0] << std::endl;
+
+	//int min, running_total;
+	//for (int j = columns - 2; j > 0; j--) //start on the second to last column and end on the second column
+	//{
+	//	for (int i = rows - 1; i >= 0; i--) //check every row in the column starting at the bottom and moving to top
+	//	{
+	//		min = board[i][j] + board[i][j + 1]; //base minimum is always found by looking at box directly to the right
+	//		if (i < (rows - 1)) //check downwards path if not on bottom row
+	//			if (board[i][j] + board[i + 1][j] < min) min = board[i][j] + board[i + 1][j];
+
+	//		//calculation of upwards path
+	//		running_total = board[i][j];
+	//		for (int k = i - 1; k >= 0; k--)
+	//		{
+	//			running_total += board[k][j];
+	//			if (running_total > min)
+	//			{
+	//				break; //going up any higher will only exceed the current minimum by more, so break out
+	//			}
+	//			if (running_total + board[k][j + 1] < min) min = running_total + board[k][j + 1];
+	//		}
+	//		board[i][j] = min;
+	//	}
+	//}
+	//
+	//for (int i = 0; i < rows; i++)
+	//{
+	//	if (board[i][0] + board[i][1] < answer) answer = board[i][0] + board[i][1];
+	//}
+
+	////clean up board array
+	//for (int i = 0; i < rows; i++) delete[] board[i];
+	//delete[] board;
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
