@@ -6,22 +6,29 @@
 
 #include <random>
 
+struct ExpectedValueNode
+{
+	//Keeps track of various important odds for each state
+	//of the game.
+	double stay_expected_value = 0.0;
+	double flip_expected_value = 0.0;
+	double good_odds = 0.0;
+	double bad_odds = 0.0;
+	double heads_odds = 0.0;
+	double tails_odds = 0.0;
+};
+
 double recursiveTriangleCreate(std::vector<std::vector<std::pair<double, double> > >& expected_value_triangle, double good_odds, double bad_odds, int location = 0, int flips = 0)
 {
-	//calcualte the combined odds by combining the good and bad odds
-	/*double combined_odds = good_odds + bad_odds;*/
-
 	//Make sure that the triangle is big enough to add these new odds
 	if (expected_value_triangle.size() < (flips + 1)) expected_value_triangle.push_back({});
 
 	//We always pick the highest probability outcome
-	/*if (good_odds > bad_odds) expected_value_triangle[flips].push_back({ good_odds / combined_odds * (20 - flips) - bad_odds / combined_odds * (50 + flips), 0.0 });
-	else expected_value_triangle[flips].push_back({ bad_odds / combined_odds * (20 - flips) - good_odds / combined_odds * (50 + flips), 0.0 });*/
 	if (good_odds > bad_odds) expected_value_triangle[flips].push_back({ good_odds * (20 - flips) - bad_odds * (50 + flips), 0.0 });
 	else expected_value_triangle[flips].push_back({ bad_odds * (20 - flips) - good_odds * (50 + flips), 0.0 });
 
 	//base case for now, will need to tweak this
-	if (flips == 30)
+	if (flips == 50)
 	{
 		expected_value_triangle[flips].back().second = expected_value_triangle[flips].back().first; //give equal odds for staying and flipping at lowest level
 		return expected_value_triangle[flips].back().first;
@@ -29,7 +36,6 @@ double recursiveTriangleCreate(std::vector<std::vector<std::pair<double, double>
 
 	//recursively calcualte the expected value of continuing by weighting the value of flipping heads or tails.
 	double heads_odds = good_odds * 0.5 + bad_odds * 0.75, tails_odds = good_odds * 0.5 + bad_odds * 0.25;
-	//std::cout << "Heads and Tails odds are: " << good_odds + bad_odds << std::endl;
 
 	//Calculate the odds for good and bad coins assuming a heads or tails is flipped
 	double good_heads_odds = good_odds * 0.5, bad_heads_odds = bad_odds * 0.75;
@@ -80,125 +86,108 @@ double recursiveTriangleCreate(std::vector<std::vector<std::pair<double, double>
 	else return expected_value_triangle[flips][location].second;
 }
 
+double recursiveTriangleCreate(std::vector<std::vector<ExpectedValueNode> >& expected_value_triangle, double good_odds, double bad_odds, int max_flips, int location = 0, int flips = 0)
+{
+	//Make sure that the triangle is big enough to add these new odds
+	if (expected_value_triangle.size() < (flips + 1)) expected_value_triangle.push_back({});
+
+	//Calcualte the odds of flipping a heads or tails in our current state
+	double heads_odds = good_odds * 0.5 + bad_odds * 0.75, tails_odds = good_odds * 0.5 + bad_odds * 0.25;
+
+	//We always pick the highest probability outcome
+	if (good_odds > bad_odds) expected_value_triangle[flips].push_back({ good_odds * (20 - flips) - bad_odds * (50 + flips), 0.0, good_odds, bad_odds, heads_odds, tails_odds });
+	else expected_value_triangle[flips].push_back({ bad_odds * (20 - flips) - good_odds * (50 + flips), 0.0, good_odds, bad_odds, heads_odds, tails_odds });
+
+	//base case for now, will need to tweak this
+	if (flips == max_flips)
+	{
+		expected_value_triangle[flips].back().flip_expected_value = expected_value_triangle[flips].back().stay_expected_value; //give equal odds for staying and flipping at lowest level
+		return expected_value_triangle[flips].back().stay_expected_value;
+	}
+
+	//Calculate the odds for good and bad coins assuming a heads or tails is flipped
+	double good_heads_odds = good_odds * 0.5, bad_heads_odds = bad_odds * 0.75;
+	double good_tails_odds = good_odds * 0.5, bad_tails_odds = bad_odds * 0.25;
+	double combined_heads_odds = good_heads_odds + bad_heads_odds, combined_tails_odds = good_tails_odds + bad_tails_odds;
+
+	//heads odds first. Check to see if we've already calculated the odds of flipping a heads as there may be
+	//multiple paths to certain spots in the triangle
+	bool calcualtion_comlete = false;
+	if (expected_value_triangle.size() >= (flips + 2))
+	{
+		if (expected_value_triangle[flips + 1].size() >= (location + 1))
+		{
+			//we've already calculated the necessary odds so take the greater of the two values
+			double better_odds = expected_value_triangle[flips + 1][location].stay_expected_value > expected_value_triangle[flips + 1][location].flip_expected_value 
+				? expected_value_triangle[flips + 1][location].stay_expected_value : expected_value_triangle[flips + 1][location].flip_expected_value;
+			expected_value_triangle[flips][location].flip_expected_value += heads_odds * better_odds;
+			calcualtion_comlete = true;
+		}
+	}
+
+	if (!calcualtion_comlete)
+	{
+		//we need to recursively calculate new odds
+		expected_value_triangle[flips][location].flip_expected_value += heads_odds * recursiveTriangleCreate(expected_value_triangle, good_heads_odds / combined_heads_odds, bad_heads_odds / combined_heads_odds, max_flips,
+			location, flips + 1);
+	}
+
+	//We now do the same thing for tails
+	calcualtion_comlete = false;
+	if (expected_value_triangle.size() >= (flips + 2))
+	{
+		if (expected_value_triangle[flips + 1].size() >= (location + 2))
+		{
+			//we've already calculated the necessary odds so take the greater of the two values
+			double better_odds = expected_value_triangle[flips + 1][location + 1].stay_expected_value > expected_value_triangle[flips + 1][location + 1].flip_expected_value ?
+				expected_value_triangle[flips + 1][location + 1].stay_expected_value : expected_value_triangle[flips + 1][location + 1].flip_expected_value;
+			expected_value_triangle[flips][location].flip_expected_value += tails_odds * better_odds;
+			calcualtion_comlete = true;
+		}
+	}
+
+	if (!calcualtion_comlete)
+	{
+		//we need to recursively calculate new odds
+		expected_value_triangle[flips][location].flip_expected_value += tails_odds * recursiveTriangleCreate(expected_value_triangle, good_tails_odds / combined_tails_odds, bad_tails_odds / combined_tails_odds, max_flips,
+			location + 1, flips + 1);
+	}
+
+	//After calcualting the expected value for flipping, return the higher value of guessing now or doing another flip
+	if (expected_value_triangle[flips][location].stay_expected_value > expected_value_triangle[flips][location].flip_expected_value) return expected_value_triangle[flips][location].stay_expected_value;
+	else return expected_value_triangle[flips][location].flip_expected_value;
+}
+
+
+double recursiveExpectedValueCalculate(std::vector<std::vector<ExpectedValueNode> >& expected_value_triangle, int row = 0, int col = 0, double current_odds = 1.0)
+{
+	//After creating our expected value triangle above, we use this method to recursively drill down into it to calculate our exact expected value
+	if ((row == (expected_value_triangle.size() - 1)) || (expected_value_triangle[row][col].stay_expected_value > expected_value_triangle[row][col].flip_expected_value))
+	{
+		//The base case, we've either reached the end of the triangle or reached a spot where the expected value from taking a guess
+		//is higher than flipping
+		return current_odds * expected_value_triangle[row][col].stay_expected_value;
+	}
+	
+	//Recursively calculate the expected value by looking at the odds of flipping a heads or tails from the current position
+	double expected_value = recursiveExpectedValueCalculate(expected_value_triangle, row + 1, col, current_odds * expected_value_triangle[row][col].heads_odds);
+	return expected_value + recursiveExpectedValueCalculate(expected_value_triangle, row + 1, col + 1, current_odds * expected_value_triangle[row][col].tails_odds);
+}
+
 //Coins in a Box
 std::pair<std::string, long double> q852()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	int answer = 0;
+	double answer = 0;
 
-	srand(run_time.time_since_epoch().count());
+	//Randomize our random number generator for testing purposes
+	//srand(run_time.time_since_epoch().count());
 
-	//Assume that we always call a good coin first
-	int flip_limit = 35;
-	double break_even_odds = 0.5;
-	
-	//std::cout << "Odds at " << flip_limit << " flips:" << std::endl;
+    /*std::vector<std::vector<std::pair<double, double> > > expected_values;
+	recursiveTriangleCreate(expected_values, 0.5, 0.5);*/
 
-	//while (break_even_odds < 1.0)
-	//{
-	//	int game = 0, score = 0;
-	//	while (game < 1000000)
-	//	{
-	//		double good_odds = 0.5, bad_odds = 0.5;
-	//		int coin_type = rand() % 100 + 1, flip = 0;
-
-	//		while (flip <= flip_limit)
-	//		{
-	//			//double break_even_odds = (50.0 + (double)flip) / 70.0;
-	//			//double break_even_odds = 0.9;
-
-	//			if (good_odds > break_even_odds)
-	//			{
-	//				//Guess that the coin is good
-	//				if (coin_type <= 50) score += (20 - flip); //we guessed good and the coin is good, gain points
-	//				else score -= (50 + flip); //we guessed good and the coin is bad, lose points
-	//				break; //play next game
-	//			}
-	//			else if (bad_odds > break_even_odds)
-	//			{
-	//				//Guess that the coin is bad
-	//				if (coin_type <= 50) score -= (50 + flip); //we guessed bad but the coin is good, lose points
-	//				else score += (20 - flip); //we guessed bad and the coin is bad, gain points
-	//				break; //play next game
-	//			}
-
-	//			//We don't know enough to guess so we flip the coin for more
-	//			//information
-	//			flip++;
-	//			int face = rand() % 100 + 1;
-
-	//			//calculate new odds for good and bad coin based on the flip
-	//			//*note - I'm not positive on these calculations
-	//			if (coin_type <= 50)
-	//			{
-	//				//this is a good coin so the odds for heads and tails are 50-50
-	//				if (face <= 50) face = 0; //0 indicates heads
-	//				else face = 1; //1 indicates tails
-	//			}
-	//			else
-	//			{
-	//				//this is a bad coin so the odds for heads and tails are 75-25
-	//				if (face <= 75) face = 0; //0 indicates heads
-	//				else face = 1; //1 indicates tails
-	//			}
-
-	//			if (face == 0)
-	//			{
-	//				//recalculate the odds for good and bad coin based on a heads being flipped
-	//				good_odds = good_odds / 2.0;
-	//				bad_odds *= (3.0 / 4.0);
-	//			}
-	//			else
-	//			{
-	//				//recalculate the odds for good and bad coin based on a tails being flipped
-	//				good_odds = good_odds / 2.0;
-	//				bad_odds *= (1.0 / 4.0);
-	//			}
-
-	//			//Calculate the final good odds and bad odds by comparing the relative chance of
-	//			//good to bad.
-	//			double combined_odds = good_odds + bad_odds;
-	//			good_odds /= combined_odds;
-	//			bad_odds /= combined_odds;
-	//		}
-
-	//		if (flip > flip_limit)
-	//		{
-	//			//no guess was made above so we're forced to make one now. A correct guess get's us
-	//			//zero points so we only remove points for an incorrect guess here.
-	//			if ((good_odds > bad_odds) && (coin_type > 50)) score -= 70;
-	//			else if ((bad_odds > good_odds) && (coin_type <= 50)) score -= 70;
-	//		}
-	//		game++;
-	//	}
-
-	//	std::cout << break_even_odds << " Expected Score = " << (float)score / (float)game << std::endl;
-	//	break_even_odds += 0.05;
-	//}
-
-	//std::vector<std::vector<double> > expected_values;
-
-	//for (int flips = 0; flips <= 20; flips++)
-	//{
-	//	int heads = flips, tails = 0;
-	//	double good_odds = 0.5 / (double)MyPow(2, flips); //with a good coin the odds will always be the same regardless of what is flipped
-	//	double bad_odds = 0.5 * (double)MyPow(3, flips) / (double)MyPow(4, flips); //We start with the all heads permutation and slowly work our way to all tails
-	//	expected_values.push_back({});
-	//	
-	//	for (int perm = 0; perm <= flips; perm++)
-	//	{
-	//		double combined_odds = good_odds + bad_odds;
-
-	//		//We always pick the highest probability outcome
-	//		if (good_odds > bad_odds) expected_values.back().push_back(good_odds / combined_odds * (20 - flips) - bad_odds / combined_odds * (50 + flips));
-	//		else expected_values.back().push_back(bad_odds / combined_odds * (20 - flips) - good_odds / combined_odds * (50 + flips));
-
-	//		bad_odds *= 1.0 / 3.0; //Every heads that gets converted to a tail decreases the odds of the combo by 1/3
-	//	}
-	//}
-
-    std::vector<std::vector<std::pair<double, double> > > expected_values;
-	recursiveTriangleCreate(expected_values, 0.5, 0.5);
+	std::vector<std::vector<ExpectedValueNode> > expected_values;
+	answer = recursiveTriangleCreate(expected_values, 0.5, 0.5, 125);
 	
 	/*std::cout << "Odds when starting at 50-50:" << std::endl;
 	for (int i = 0; i < expected_values.size(); i++)
@@ -209,77 +198,81 @@ std::pair<std::string, long double> q852()
 			std::cout << '(';
 			for (int k = 0; k < i - j; k++) std::cout << 'H';
 			for (int k = i - j; k < i; k++) std::cout << 'T';
-			std::cout << ") {" << expected_values[i][j].first << ", " << expected_values[i][j].second << '}' << std::endl;
+			std::cout << ") {" << expected_values[i][j].stay_expected_value << ", " << expected_values[i][j].flip_expected_value << '}' << std::endl;
 		}
 		std::cout << std::endl;
 	}*/
 
 	//After creating the odds table, do randomized trials to see expected value
-	long long score = 0, game = 0;
+	//long long score = 0, game = 0;
 
-	for (; game < 100000; game++)
-	{
-		//Decide if we pull a good or bad coin
-		int coin = rand() % 100 + 1;
-		if (coin <= 50) coin = 0; //good coin
-		else coin = 1; //bad coin
+	//for (; game < 1; game++)
+	//{
+	//	//Decide if we pull a good or bad coin
+	//	int coin = rand() % 100 + 1;
+	//	if (coin <= 50) coin = 0; //good coin
+	//	else coin = 1; //bad coin
 
-		double good_odds = 0.5, bad_odds = 0.5; //still keep track of our odds so we know which coin to guess
-		int flip = 0;
+	//	int flip = 0;
 
-		//Start at the top of the pyramid, and move through the pyramid based on whether a heads
-		//or tails is flipped. We keep drilling down until we get to a location where the expected
-		//value of flipping is <= the expected value of staying put.
-		std::pair<int, int> location = { 0, 0 };
-		bool guess_made = false;
-		while (location.first < expected_values.size())
-		{
-			if (expected_values[location.first][location.second].first > expected_values[location.first][location.second].second)
-			{
-				//this is our condition for making a guess
-				if (((good_odds > bad_odds) && (coin == 0)) || ((bad_odds > good_odds) && (coin == 1))) score += (20 - flip);
-				else score -= (50 + flip);
-				guess_made = true;
-				break;
-			}
+	//	//Start at the top of the pyramid, and move through the pyramid based on whether a heads
+	//	//or tails is flipped. We keep drilling down until we get to a location where the expected
+	//	//value of flipping is <= the expected value of staying put.
+	//	std::pair<int, int> location = { 0, 0 };
+	//	bool guess_made = false;
+	//	while (location.first < expected_values.size())
+	//	{
+	//		if (expected_values[location.first][location.second].stay_expected_value > expected_values[location.first][location.second].flip_expected_value)
+	//		{
+	//			//this is our condition for making a guess
+	//			if (((expected_values[location.first][location.second].good_odds > expected_values[location.first][location.second].bad_odds) && (coin == 0)) || 
+	//				((expected_values[location.first][location.second].bad_odds > expected_values[location.first][location.second].good_odds) && (coin == 1))) score += (20 - flip);
+	//			else score -= (50 + flip);
+	//			guess_made = true;
+	//			break;
+	//		}
 
-			//If we didn't end the current game then we flip the coin
-			flip++;
-			int face = rand() % 100 + 1;
-			double combined_odds;
+	//		//If we didn't end the current game then we flip the coin
+	//		flip++;
+	//		int face = rand() % 100 + 1;
+	//		double combined_odds;
 
-			//Update the odds of the coin being good or bad based on the flip
-			if ((coin == 0 && face <= 50) || (coin == 1 && face <= 75))
-			{
-				face = 0; //a heads was flipped
-				bad_odds *= 0.75;
-				combined_odds = good_odds * 0.5 + bad_odds;
-			}
-			else
-			{
-				face = 1; //a tails was flipped
-				bad_odds *= 0.25;
-				combined_odds = good_odds * 0.5 + bad_odds;
-			}
-			good_odds = good_odds * 0.5 / combined_odds;
-			bad_odds = bad_odds / combined_odds;
+	//		//Update the odds of the coin being good or bad based on the flip
+	//		if ((coin == 0 && face <= 50) || (coin == 1 && face <= 75))
+	//		{
+	//			face = 0; //a heads was flipped
+	//			/*bad_odds *= 0.75;
+	//			combined_odds = good_odds * 0.5 + bad_odds;*/
+	//		}
+	//		else
+	//		{
+	//			face = 1; //a tails was flipped
+	//			/*bad_odds *= 0.25;
+	//			combined_odds = good_odds * 0.5 + bad_odds;*/
+	//		}
+	//		/*good_odds = good_odds * 0.5 / combined_odds;
+	//		bad_odds = bad_odds / combined_odds;*/
 
-			//Move down the pyramid depending on what was flipped.
-			//We can only move straight down, or down and to the right one.
-			if (face == 1) location.second++;
-			location.first++;
-		}
+	//		//Move down the pyramid depending on what was flipped.
+	//		//We can only move straight down, or down and to the right one.
+	//		if (face == 1) location.second++;
+	//		location.first++;
+	//	}
 
-		if (!guess_made)
-		{
-			//we got to the end of the triangle without making a guess (this is unlikely, but still possible). Guess the
-			//current highest odds.
-			if (((good_odds > bad_odds) && (coin == 0)) || ((bad_odds > good_odds) && (coin == 1))) score += (20 - flip);
-			else score -= (50 + flip);
-		}
-	}
+	//	if (!guess_made)
+	//	{
+	//		//we got to the end of the triangle without making a guess (this is unlikely, but still possible). Guess the
+	//		//current highest odds.
+	//		location.first--;
 
-	std::cout << "Expected Score = " << (float)score / (float)game << std::endl;
+	//		if (((expected_values[location.first][location.second].good_odds > expected_values[location.first][location.second].bad_odds) && (coin == 0)) ||
+	//			((expected_values[location.first][location.second].bad_odds > expected_values[location.first][location.second].good_odds) && (coin == 1))) score += (20 - flip);
+	//		else score -= (50 + flip);
+	//	}
+	//}
+
+	/*std::cout << "Experimental Expected Score = " << (float)score / (float)game << std::endl;
+	std::cout << "Calculated Expected Score = " << final_expected_value << std::endl;*/
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
@@ -455,4 +448,12 @@ running random number tests is given me expected values in the range of 0.45 to 
 got here. To really confirm this though I don't want experimental values obtained from the random number generator. I should be able to just drill down into all possible "dead-ends"
 of the triangle (locations where the expected value for staying is higher than the expected value of flipping) and add weight amounts of all of these expected values. The weighting
 has to do with how likely we are to reach each dead end naturally.
+
+-----
+
+I spent about an hour creating an algorithm to recursively go through the triangle, figure out whether or not we're at a dead-end and calculate the expected value. After going through
+this excercise I realized that my recursive method for building the triangle already returns the calculated expected value, dang I'm good! The value is a little lower than I expected,
+but increasing the number of flips allowed is making it slowly converge to the correct value. It converges to the correct value of 0.558591 when raising the max flip amount to 125,
+which is honestly much higher than expected. The good news is that the algorithm only takes 0.0006355 seconds to reach this value. The bad news is that I'm going to need to create
+lots of different expected value triangles. To be exact I'll need.
 */
