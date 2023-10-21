@@ -14,6 +14,8 @@ struct fraction
 {
 	int numerator;
 	int denominator;
+
+	friend bool operator==(const fraction& a, const fraction& b);
 };
 
 //Prime Number Functions

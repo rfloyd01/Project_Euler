@@ -6,6 +6,12 @@
 const int powers_of_two[11] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024 };
 long long powers_of_ten[11] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000 };
 
+bool operator==(const fraction& a, const fraction& b)
+{
+	//TODO: May want to think about reducing the fractions first
+	return ((a.numerator == b.numerator) && (a.denominator == b.denominator));
+}
+
 std::vector<bool> p_sieve(int maximum)
 {
 	std::vector<bool> sieve;

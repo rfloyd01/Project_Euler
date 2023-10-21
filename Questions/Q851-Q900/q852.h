@@ -16,74 +16,19 @@ struct ExpectedValueNode
 	double bad_odds = 0.0;
 	double heads_odds = 0.0;
 	double tails_odds = 0.0;
+	double arrival_probability = 0.0;
 };
 
-double recursiveTriangleCreate(std::vector<std::vector<std::pair<double, double> > >& expected_value_triangle, double good_odds, double bad_odds, int location = 0, int flips = 0)
+bool fractionCompare(const std::pair<fraction, double>& a, const std::pair<fraction, double>& b)
 {
-	//Make sure that the triangle is big enough to add these new odds
-	if (expected_value_triangle.size() < (flips + 1)) expected_value_triangle.push_back({});
+	return a.first.numerator < b.first.numerator;
+}
 
-	//We always pick the highest probability outcome
-	if (good_odds > bad_odds) expected_value_triangle[flips].push_back({ good_odds * (20 - flips) - bad_odds * (50 + flips), 0.0 });
-	else expected_value_triangle[flips].push_back({ bad_odds * (20 - flips) - good_odds * (50 + flips), 0.0 });
-
-	//base case for now, will need to tweak this
-	if (flips == 50)
-	{
-		expected_value_triangle[flips].back().second = expected_value_triangle[flips].back().first; //give equal odds for staying and flipping at lowest level
-		return expected_value_triangle[flips].back().first;
-	}
-
-	//recursively calcualte the expected value of continuing by weighting the value of flipping heads or tails.
-	double heads_odds = good_odds * 0.5 + bad_odds * 0.75, tails_odds = good_odds * 0.5 + bad_odds * 0.25;
-
-	//Calculate the odds for good and bad coins assuming a heads or tails is flipped
-	double good_heads_odds = good_odds * 0.5, bad_heads_odds = bad_odds * 0.75;
-	double good_tails_odds = good_odds * 0.5, bad_tails_odds = bad_odds * 0.25;
-	double combined_heads_odds = good_heads_odds + bad_heads_odds, combined_tails_odds = good_tails_odds + bad_tails_odds;
-
-	//heads odds first. Check to see if we've already calculated the odds of flipping a heads as there may be
-	//multiple paths to certain spots in the triangle
-	bool calcualtion_comlete = false;
-	if (expected_value_triangle.size() >= (flips + 2))
-	{
-		if (expected_value_triangle[flips + 1].size() >= (location + 1))
-		{
-			//we've already calculated the necessary odds so take the greater of the two values
-			double better_odds = expected_value_triangle[flips + 1][location].first > expected_value_triangle[flips + 1][location].second ? expected_value_triangle[flips + 1][location].first : expected_value_triangle[flips + 1][location].second;
-			expected_value_triangle[flips][location].second += heads_odds * better_odds;
-			calcualtion_comlete = true;
-		}
-	}
-
-	if (!calcualtion_comlete)
-	{
-		//we need to recursively calculate new odds
-		expected_value_triangle[flips][location].second += heads_odds * recursiveTriangleCreate(expected_value_triangle, good_heads_odds / combined_heads_odds, bad_heads_odds / combined_heads_odds, location, flips + 1);
-	}
-
-	//We now do the same thing for tails
-	calcualtion_comlete = false;
-	if (expected_value_triangle.size() >= (flips + 2))
-	{
-		if (expected_value_triangle[flips + 1].size() >= (location + 2))
-		{
-			//we've already calculated the necessary odds so take the greater of the two values
-			double better_odds = expected_value_triangle[flips + 1][location + 1].first > expected_value_triangle[flips + 1][location + 1].second ? expected_value_triangle[flips + 1][location + 1].first : expected_value_triangle[flips + 1][location + 1].second;
-			expected_value_triangle[flips][location].second += tails_odds * better_odds;
-			calcualtion_comlete = true;
-		}
-	}
-
-	if (!calcualtion_comlete)
-	{
-		//we need to recursively calculate new odds
-		expected_value_triangle[flips][location].second += tails_odds * recursiveTriangleCreate(expected_value_triangle, good_tails_odds / combined_tails_odds, bad_tails_odds / combined_tails_odds, location + 1, flips + 1);
-	}
-
-	//After calcualting the expected value for flipping, return the higher value of guessing now or doing another flip
-	if (expected_value_triangle[flips][location].first > expected_value_triangle[flips][location].second) return expected_value_triangle[flips][location].first;
-	else return expected_value_triangle[flips][location].second;
+fraction reducedFraction(int numerator, int denominator)
+{
+	//creates a fraction in reduced form from the given numerator and denominator
+	int common = gcd(numerator, denominator);
+	return { numerator / common, denominator / common };
 }
 
 double recursiveTriangleCreate(std::vector<std::vector<ExpectedValueNode> >& expected_value_triangle, double good_odds, double bad_odds, int max_flips, int location = 0, int flips = 0)
@@ -158,20 +103,73 @@ double recursiveTriangleCreate(std::vector<std::vector<ExpectedValueNode> >& exp
 	else return expected_value_triangle[flips][location].flip_expected_value;
 }
 
-
-double recursiveExpectedValueCalculate(std::vector<std::vector<ExpectedValueNode> >& expected_value_triangle, int row = 0, int col = 0, double current_odds = 1.0)
+double iterativeExpectedValueCalculate(std::vector<std::vector<ExpectedValueNode> >& expected_value_triangle, std::vector<std::vector<std::pair<fraction, double>>>& expected_values, int total_coins)
 {
-	//After creating our expected value triangle above, we use this method to recursively drill down into it to calculate our exact expected value
-	if ((row == (expected_value_triangle.size() - 1)) || (expected_value_triangle[row][col].stay_expected_value > expected_value_triangle[row][col].flip_expected_value))
+	//We start with an equal number of coins (in this case 50 good and 50 bad). We iteratively look
+	//at all possible states for the game (i.e. 50-49 coins, 27-32 coins, 1-5 coins, etc.) and calcualte
+	///the odds of each state occuring. We then multiply these odds by the expected score of each state
+	//to get the final expected score for the game. We take advantage of the already existing ExpectedValueNode
+	//struct to hold these values for us. 
+
+	//Add the top of the triangle which has a 100% chance of occuring
+	expected_value_triangle.push_back({ {expected_values[1][0].second, 0.0, (double) total_coins, (double)total_coins, 0.0, 0.0, 1.0} });
+
+	double expected_score = expected_values[1][0].second;
+	int current_row = total_coins - 1;
+
+	while (current_row > -total_coins)
 	{
-		//The base case, we've either reached the end of the triangle or reached a spot where the expected value from taking a guess
-		//is higher than flipping
-		return current_odds * expected_value_triangle[row][col].stay_expected_value;
+		int numerator = current_row, denominator = total_coins;
+		expected_value_triangle.push_back({}); //add a new row to the triangle
+
+		while (numerator <= total_coins)
+		{
+			expected_value_triangle.back().push_back({ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 });
+
+			if ((numerator >= 0) && (denominator >= 0))
+			{
+				fraction frac = reducedFraction(numerator, denominator); //we use this reduced fraction to find the correct expected score value
+				//double expected_state_score = std::find(expected_values[denominator].begin(), expected_values[denominator].end(), {frac, 0.0})->second;
+
+				//TODO: Should implement a better search algorithm here
+				double expected_state_score = 20.0; //this happens when there are 0 of one coin type, will get overridden in below loop if both coins exist
+				for (int i = 0; i < expected_values[frac.denominator].size(); i++)
+				{
+					if (expected_values[frac.denominator][i].first == frac)
+					{
+						expected_state_score = expected_values[frac.denominator][i].second;
+						break;
+					}
+				}
+				double arrival_probability = 0.0;
+
+				//look at the odds of arriving at the current state from the top left parent (which occurs when choosing a bad coin)
+				if (denominator < total_coins)
+				{
+					ExpectedValueNode* parentNode = &expected_value_triangle[total_coins - current_row - 1][total_coins - (denominator + 1)];
+					double bad_coin_selection_odds = parentNode->bad_odds / (parentNode->bad_odds + parentNode->good_odds);
+					arrival_probability += (parentNode->arrival_probability * bad_coin_selection_odds);
+				}
+
+				//look at the odds of arriving at the current state from the top right parent (which occurs when choosing a good coin)
+				if (numerator < total_coins)
+				{
+					ExpectedValueNode* parentNode = &expected_value_triangle[total_coins - current_row - 1][expected_value_triangle[total_coins - current_row - 1].size() - (total_coins - (numerator + 1)) - 1];
+					double good_coin_selection_odds = parentNode->good_odds / (parentNode->bad_odds + parentNode->good_odds);
+					arrival_probability += (parentNode->arrival_probability * good_coin_selection_odds);
+				}
+
+				expected_value_triangle.back().back() = { expected_state_score, 0.0, (double)numerator, (double)denominator, 0.0, 0.0, arrival_probability};
+				expected_score += expected_value_triangle.back().back().stay_expected_value * expected_value_triangle.back().back().arrival_probability;
+			}
+
+			numerator++;
+			denominator--;
+		}
+		current_row--;
 	}
-	
-	//Recursively calculate the expected value by looking at the odds of flipping a heads or tails from the current position
-	double expected_value = recursiveExpectedValueCalculate(expected_value_triangle, row + 1, col, current_odds * expected_value_triangle[row][col].heads_odds);
-	return expected_value + recursiveExpectedValueCalculate(expected_value_triangle, row + 1, col + 1, current_odds * expected_value_triangle[row][col].tails_odds);
+
+	return expected_score;
 }
 
 //Coins in a Box
@@ -179,105 +177,63 @@ std::pair<std::string, long double> q852()
 {
 	auto run_time = std::chrono::steady_clock::now();
 	double answer = 0;
+	int starting_coins = 50, maximum_flips = 150;
 
-	//Randomize our random number generator for testing purposes
-	//srand(run_time.time_since_epoch().count());
+	//First create all coprime pairs using the numbers 1-50. These will represent
+	//all of the possible states of the game (e.g 50 good coins + 50 bad coins,
+	//23 good coins + 41 bad coins, etc.)
+	std::vector<fraction> coprime_pairs;
+	orderedFaraySequence(starting_coins, coprime_pairs);
 
-    /*std::vector<std::vector<std::pair<double, double> > > expected_values;
-	recursiveTriangleCreate(expected_values, 0.5, 0.5);*/
+	//Sort these coprime pairs by their denominators so they're easier to keep
+	//track of and then calculate the optimal expected value for each of them
+	//(e.g. starting with 50-50 coins has an optimal value of 0.558591).
+	std::vector<std::vector<std::pair<fraction, double>>> expected_values;
+	std::vector<std::vector<ExpectedValueNode> > expected_value_triangle;
+	for (int i = 0; i <= starting_coins; i++) expected_values.push_back({});
 
-	std::vector<std::vector<ExpectedValueNode> > expected_values;
-	answer = recursiveTriangleCreate(expected_values, 0.5, 0.5, 125);
-	
-	/*std::cout << "Odds when starting at 50-50:" << std::endl;
-	for (int i = 0; i < expected_values.size(); i++)
+	for (int i = 0; i < coprime_pairs.size(); i++)
 	{
-		std::cout << i << " Flips:" << std::endl;
-		for (int j = 0; j < expected_values[i].size(); j++)
-		{
-			std::cout << '(';
-			for (int k = 0; k < i - j; k++) std::cout << 'H';
-			for (int k = i - j; k < i; k++) std::cout << 'T';
-			std::cout << ") {" << expected_values[i][j].stay_expected_value << ", " << expected_values[i][j].flip_expected_value << '}' << std::endl;
-		}
-		std::cout << std::endl;
-	}*/
+		double numerator = (double)coprime_pairs[i].numerator / (double)(coprime_pairs[i].numerator + coprime_pairs[i].denominator);
+		double denominator = (double)coprime_pairs[i].denominator / (double)(coprime_pairs[i].numerator + coprime_pairs[i].denominator);
 
-	//After creating the odds table, do randomized trials to see expected value
-	//long long score = 0, game = 0;
+		//The odds aren't the exact same when starting with equal amounts of good 
+		//and bad coins (i.e. the expected value when starting at 4 good coins and 12
+		//bad coins isn't the same as the expected value when starting at 12 good coins
+		//and 4 bad coins) so both expected values must be calculated. Flipping the 
+		//numerator and denominator will put the numbers in reverse order so they get
+		//inserted at the front of their respective array.
+		expected_values[coprime_pairs[i].denominator].push_back({ coprime_pairs[i], recursiveTriangleCreate(expected_value_triangle, numerator, denominator, maximum_flips) });
+		expected_value_triangle.clear();
 
-	//for (; game < 1; game++)
-	//{
-	//	//Decide if we pull a good or bad coin
-	//	int coin = rand() % 100 + 1;
-	//	if (coin <= 50) coin = 0; //good coin
-	//	else coin = 1; //bad coin
+		expected_values[coprime_pairs[i].numerator].push_back({ {coprime_pairs[i].denominator, coprime_pairs[i].numerator}, recursiveTriangleCreate(expected_value_triangle, denominator, numerator, maximum_flips) });
+		expected_value_triangle.clear();
+	}
+	
+	//We also need to add the expected values for when the number of good and bad coins
+	//are equal, or when we have 0 of on type of coin. These aren't coprime pairs so the
+	//didn't get included in the loop above.
+	expected_values[0].push_back({ {0, 0}, 20.0 }); //If theirs 0 of one coin we expect to guess correctly
+	expected_values[1].push_back({ {1, 1}, recursiveTriangleCreate(expected_value_triangle, 0.5, 0.5, maximum_flips) });
 
-	//	int flip = 0;
+	//Sort all of the vectors
+	for (int i = 1; i <= starting_coins; i++) std::sort(expected_values[i].begin(), expected_values[i].end(), fractionCompare);
 
-	//	//Start at the top of the pyramid, and move through the pyramid based on whether a heads
-	//	//or tails is flipped. We keep drilling down until we get to a location where the expected
-	//	//value of flipping is <= the expected value of staying put.
-	//	std::pair<int, int> location = { 0, 0 };
-	//	bool guess_made = false;
-	//	while (location.first < expected_values.size())
-	//	{
-	//		if (expected_values[location.first][location.second].stay_expected_value > expected_values[location.first][location.second].flip_expected_value)
-	//		{
-	//			//this is our condition for making a guess
-	//			if (((expected_values[location.first][location.second].good_odds > expected_values[location.first][location.second].bad_odds) && (coin == 0)) || 
-	//				((expected_values[location.first][location.second].bad_odds > expected_values[location.first][location.second].good_odds) && (coin == 1))) score += (20 - flip);
-	//			else score -= (50 + flip);
-	//			guess_made = true;
-	//			break;
-	//		}
-
-	//		//If we didn't end the current game then we flip the coin
-	//		flip++;
-	//		int face = rand() % 100 + 1;
-	//		double combined_odds;
-
-	//		//Update the odds of the coin being good or bad based on the flip
-	//		if ((coin == 0 && face <= 50) || (coin == 1 && face <= 75))
-	//		{
-	//			face = 0; //a heads was flipped
-	//			/*bad_odds *= 0.75;
-	//			combined_odds = good_odds * 0.5 + bad_odds;*/
-	//		}
-	//		else
-	//		{
-	//			face = 1; //a tails was flipped
-	//			/*bad_odds *= 0.25;
-	//			combined_odds = good_odds * 0.5 + bad_odds;*/
-	//		}
-	//		/*good_odds = good_odds * 0.5 / combined_odds;
-	//		bad_odds = bad_odds / combined_odds;*/
-
-	//		//Move down the pyramid depending on what was flipped.
-	//		//We can only move straight down, or down and to the right one.
-	//		if (face == 1) location.second++;
-	//		location.first++;
-	//	}
-
-	//	if (!guess_made)
-	//	{
-	//		//we got to the end of the triangle without making a guess (this is unlikely, but still possible). Guess the
-	//		//current highest odds.
-	//		location.first--;
-
-	//		if (((expected_values[location.first][location.second].good_odds > expected_values[location.first][location.second].bad_odds) && (coin == 0)) ||
-	//			((expected_values[location.first][location.second].bad_odds > expected_values[location.first][location.second].good_odds) && (coin == 1))) score += (20 - flip);
-	//		else score -= (50 + flip);
-	//	}
-	//}
-
-	/*std::cout << "Experimental Expected Score = " << (float)score / (float)game << std::endl;
-	std::cout << "Calculated Expected Score = " << final_expected_value << std::endl;*/
+	//We now create another triangular shaped structure. In this triangle, each node represents
+	//a different state of the game. We start at the top with 50-50 of each piece which we have 
+	//a 100% chance of getting to. From here there's a 50% chance to move to the 49-50 square 
+	//and a 50% chance of moving to the 50-49 square. Our final expected score would be 
+	//calculate like so: 1.0 * expected_value(1/1) + 0.5 * expected_value(49/50) + 0.5 * expected_value(50/49)...
+	//all the way on down to x.xx * expected value(0/0). Each node has a maximum of two ways 
+	//to get to it, so we start at the top of the triangle and iteratively work our way down
+	//to the bottom.
+	expected_value_triangle.clear();
+	answer = iterativeExpectedValueCalculate(expected_value_triangle, expected_values, starting_coins);
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
-	//the answer is xxx
-	//ran in xxx seconds
+	//the answer is 130.313496
+	//ran in 0.567241 seconds
 }
 
 //NOTES
@@ -449,11 +405,39 @@ got here. To really confirm this though I don't want experimental values obtaine
 of the triangle (locations where the expected value for staying is higher than the expected value of flipping) and add weight amounts of all of these expected values. The weighting
 has to do with how likely we are to reach each dead end naturally.
 
------
+----------------------------------------------------
+* Solving the Problem: Part 2:
+----------------------------------------------------
 
 I spent about an hour creating an algorithm to recursively go through the triangle, figure out whether or not we're at a dead-end and calculate the expected value. After going through
 this excercise I realized that my recursive method for building the triangle already returns the calculated expected value, dang I'm good! The value is a little lower than I expected,
 but increasing the number of flips allowed is making it slowly converge to the correct value. It converges to the correct value of 0.558591 when raising the max flip amount to 125,
 which is honestly much higher than expected. The good news is that the algorithm only takes 0.0006355 seconds to reach this value. The bad news is that I'm going to need to create
-lots of different expected value triangles. To be exact I'll need.
+lots of different expected value triangles. To be exact I'll need 1,544 more of these triangles as there are 772 coprime pairs where the largest number is 50 and the odds will be 
+slightly different depending on which coin we have more of (for example, the expected score when we have 12 good and 4 bad coins is 4.658917 but the expected value changes to 4.542411 when
+we have 12 bad coins and 4 good ones). Each one of these triangles will represent a possible point in our game. All of the above calculations were for maximizing the expected value
+when the current turn of the game starts off with a 50-50 chance of being a good or bad coin (an imaginary coprime pair of 1/1). It'll take roughly 0.981 seconds to calculate all
+1,545 expected value triangles that I need which isn't too too bad.
+
+I'm still going to need to find all possible variations of the game, the total expected value for each of these games, and the odds of each of these games happening. All of these
+factors will combine into the final expected score when playing a game with 100 total coins. This will be a combinatorics work out. Since we start with 50 of each coin it means 
+there are choose(100, 50) = 1.01e29 different ways to play the game so going through each of these game types will be impossible. Instead, it may be better to add some more expected 
+values in here, specifically, the amount of times we expect to reach each coprime pair in the course of a game. For example, the coprime pair of (1, 1) (ok this isn't a coprime pair,
+but it represents equal odds of both coins) is guaranteed to happen at least once a game at the very beginning. Like wise, the coprime pair of (49, 50) is also guaranteed to happen
+once (and only once) every single game. If we can calculate the number of times we expected to encounter each of these coprime pairs in the game, and multiply that by the expected 
+score for the coprime pair we should be able to get our final answer. Believe it or not, we should be able to do this pretty similarly as what was done in the first step with the 
+expected value triangle. Only here it will really be more of a web where each node will have multiple input and output pointers.
+
+I'm actually thinking it'll be easier to have nodes NOT be coprime pairs, but rather just have a node for each possible stage of the game. For example there's a 50-50 node, a 49-50
+node, a 50-49 node, a 49-49 node, etc. By doing it this way then each node will have a maximum of two output nodes and two input nodes each. For example the node 48-48 would have
+input pointers from 49-48 and 48-49 and output pointers to 47-48 and 48-47. Taking this approach and there should only be 2,601 total nodes in our web (51^2). For each node all we
+need to do is calculate the percentage chance of it's input pointers and then multiply this value by the expected score from the appropriate coprime pair triangle. Do this for each
+of the 2,601 nodes and we should have our final answer without too long of a runtime.
+
+-------
+
+It took a little longer to code everything up than I thought it would (classic) but everything seemed to be working. After about 10 minutes of debugging at the end I had an answer
+that looked acceptable. Plugging it into the Euler website though and it was incorrect. Just out of curiosity I wanted to see what the answer looked like when increasing the 
+maximum number of allowed flips up from 125 to 150 and sure enough the answer changed ever so slightly. I then tried 200 flips and saw the answer was the same as 150 flips so I 
+assume it's only changing after 6 decimal points. Plugging this new answer in and I got that beautiful green check mark.
 */
