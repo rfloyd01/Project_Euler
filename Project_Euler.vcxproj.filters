@@ -599,6 +599,9 @@
     <ClInclude Include="Questions\Q851-Q900\q852.h">
       <Filter>Header Files\Questions\Q851-Q900</Filter>
     </ClInclude>
+    <ClInclude Include="Questions\Q851-Q900\q860.h">
+      <Filter>Header Files\Questions\Q851-Q900</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Resources\q11.txt">

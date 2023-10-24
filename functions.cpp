@@ -924,7 +924,10 @@ void modularMultiplicativeInverseRange(int n, long long mod, long long* inverses
 	//	for (long long i = 2; i <= n; i++) inverses[i] = (i * inverses[i - 1]) % mod;
 	//}
 
-	for (long long i = 2; i <= n; i++) inverses[i] = (i * inverses[i - 1]) % mod;
+	for (long long i = 2; i <= n; i++)
+	{
+		inverses[i] = (i * inverses[i - 1]) % mod;
+	}
 	inverses[n] = ModularMultiplicativeInverse(inverses[n], mod); //the sole division takes place on the last element
 
 	for (long long i = n - 1; i >= 0; i--)

@@ -103,6 +103,81 @@ double recursiveTriangleCreate(std::vector<std::vector<ExpectedValueNode> >& exp
 	else return expected_value_triangle[flips][location].flip_expected_value;
 }
 
+double iterativeExpectedScoreCalculate(int max_flips, double good_coin_chance, double bad_coin_chance)
+{
+	//We start out assuming we've flipped the coin max_flips number of times and look at all possibilities of this
+	//(i.e. for four flips we'd have HHHH, HHHT, HHTT, HTTT and TTTT, no need to look at permutations of these flips).
+	//For each of these flip possibilities we keep track of two values, the expected score if we were to guess on 
+	//this turn, or the expected value if we were to flip again. Since we start on the last flip, these two values start
+	//off the same.
+	std::vector<std::pair<double, double> > expected_scores;
+
+	//Initialize the expected scores (have to use a loop as using powers would overflow long long integers)
+	double initial_good_odds = 1.0 / 2.0 * good_coin_chance, initial_bad_odds = 3.0 / 4.0 * bad_coin_chance;
+	for (int i = 0; i < (max_flips - 1); i++)
+	{
+		initial_good_odds *= 0.5;
+		initial_bad_odds *= 0.75;
+	}
+
+	double good_odds = initial_good_odds, bad_odds = initial_bad_odds;
+
+	for (int i = 0; i <= max_flips; i++)
+	{
+		double expected_score = 0.0;
+
+		if (good_odds > bad_odds)
+		{
+			expected_score = good_odds / (good_odds + bad_odds) * (20 - max_flips) - bad_odds / (good_odds + bad_odds) * (50 + max_flips);
+			//final_expected_score += good_odds * expected_score;
+		}
+		else
+		{
+			expected_score = bad_odds / (good_odds + bad_odds) * (20 - max_flips) - good_odds / (good_odds + bad_odds) * (50 + max_flips);
+			//final_expected_score += bad_odds * expected_score;
+		}
+
+		expected_scores.push_back({ expected_score, expected_score });
+		bad_odds /= 3.0; //each time we change a heads to tails the odds of the bad coin drop
+	}
+
+	//After initializing the vector, we work backwards to 0 flips made. In each iteration of this
+	//loop we start at the front of our vector and combine consecutive nodes. Of the current nodes,
+	//one represents flipping a heads from the previous state while one represents flipping a tails,
+	//so we need to combine these two nodes to reach the previous state.
+	for (int flip = max_flips - 1; flip >= 0; flip--)
+	{
+		//reset the all good and bad odds for the all heads scenario with the current flip amount
+		initial_good_odds *= 2.0;
+		initial_bad_odds *= (4.0 / 3.0);
+
+		good_odds = initial_good_odds;
+		bad_odds = initial_bad_odds;
+
+		for (int i = 0; i <= flip; i++)
+		{
+			double higher_heads_odds = expected_scores[i].first > expected_scores[i].second ? expected_scores[i].first : expected_scores[i].second;
+			double higher_tails_odds = expected_scores[i + 1].first > expected_scores[i + 1].second ? expected_scores[i + 1].first : expected_scores[i + 1].second;
+
+			double combined_good_odds = good_odds / (good_odds + bad_odds);
+			double combined_bad_odds = 1.0 - combined_good_odds;
+
+			double heads_odds = good_odds / (good_odds + bad_odds) * 0.5 + bad_odds / (good_odds + bad_odds) * 0.75;
+			double tails_odds = 1 - heads_odds;
+
+			if (good_odds > bad_odds) expected_scores[i].first = good_odds / (good_odds + bad_odds) * (20 - flip) - bad_odds / (good_odds + bad_odds) * (50 + flip);
+			else expected_scores[i].first = bad_odds / (good_odds + bad_odds) * (20 - flip) - good_odds / (good_odds + bad_odds) * (50 + flip);
+
+			expected_scores[i].second = heads_odds * higher_heads_odds + tails_odds * higher_tails_odds;
+
+			bad_odds /= 3.0;
+		}
+	}
+
+	double final_expected_score = expected_scores[0].first > expected_scores[0].second ? expected_scores[0].first : expected_scores[0].second;
+	return final_expected_score;
+}
+
 double iterativeExpectedValueCalculate(std::vector<std::vector<ExpectedValueNode> >& expected_value_triangle, std::vector<std::vector<std::pair<fraction, double>>>& expected_values, int total_coins)
 {
 	//We start with an equal number of coins (in this case 50 good and 50 bad). We iteratively look
@@ -189,7 +264,6 @@ std::pair<std::string, long double> q852()
 	//track of and then calculate the optimal expected value for each of them
 	//(e.g. starting with 50-50 coins has an optimal value of 0.558591).
 	std::vector<std::vector<std::pair<fraction, double>>> expected_values;
-	std::vector<std::vector<ExpectedValueNode> > expected_value_triangle;
 	for (int i = 0; i <= starting_coins; i++) expected_values.push_back({});
 
 	for (int i = 0; i < coprime_pairs.size(); i++)
@@ -203,18 +277,15 @@ std::pair<std::string, long double> q852()
 		//and 4 bad coins) so both expected values must be calculated. Flipping the 
 		//numerator and denominator will put the numbers in reverse order so they get
 		//inserted at the front of their respective array.
-		expected_values[coprime_pairs[i].denominator].push_back({ coprime_pairs[i], recursiveTriangleCreate(expected_value_triangle, numerator, denominator, maximum_flips) });
-		expected_value_triangle.clear();
-
-		expected_values[coprime_pairs[i].numerator].push_back({ {coprime_pairs[i].denominator, coprime_pairs[i].numerator}, recursiveTriangleCreate(expected_value_triangle, denominator, numerator, maximum_flips) });
-		expected_value_triangle.clear();
+		expected_values[coprime_pairs[i].denominator].push_back({ coprime_pairs[i], iterativeExpectedScoreCalculate(maximum_flips, numerator, denominator)});
+		expected_values[coprime_pairs[i].numerator].push_back({ {coprime_pairs[i].denominator, coprime_pairs[i].numerator}, iterativeExpectedScoreCalculate(maximum_flips, denominator, numerator) });
 	}
 	
 	//We also need to add the expected values for when the number of good and bad coins
 	//are equal, or when we have 0 of on type of coin. These aren't coprime pairs so the
 	//didn't get included in the loop above.
 	expected_values[0].push_back({ {0, 0}, 20.0 }); //If theirs 0 of one coin we expect to guess correctly
-	expected_values[1].push_back({ {1, 1}, recursiveTriangleCreate(expected_value_triangle, 0.5, 0.5, maximum_flips) });
+	expected_values[1].push_back({ {1, 1}, iterativeExpectedScoreCalculate(maximum_flips, 0.5, 0.5) });
 
 	//Sort all of the vectors
 	for (int i = 1; i <= starting_coins; i++) std::sort(expected_values[i].begin(), expected_values[i].end(), fractionCompare);
@@ -227,13 +298,13 @@ std::pair<std::string, long double> q852()
 	//all the way on down to x.xx * expected value(0/0). Each node has a maximum of two ways 
 	//to get to it, so we start at the top of the triangle and iteratively work our way down
 	//to the bottom.
-	expected_value_triangle.clear();
+	std::vector<std::vector<ExpectedValueNode> > expected_value_triangle;
 	answer = iterativeExpectedValueCalculate(expected_value_triangle, expected_values, starting_coins);
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 130.313496
-	//ran in 0.567241 seconds
+	//ran in 0.0791731 seconds
 }
 
 //NOTES
@@ -439,5 +510,22 @@ of the 2,601 nodes and we should have our final answer without too long of a run
 It took a little longer to code everything up than I thought it would (classic) but everything seemed to be working. After about 10 minutes of debugging at the end I had an answer
 that looked acceptable. Plugging it into the Euler website though and it was incorrect. Just out of curiosity I wanted to see what the answer looked like when increasing the 
 maximum number of allowed flips up from 125 to 150 and sure enough the answer changed ever so slightly. I then tried 200 flips and saw the answer was the same as 150 flips so I 
-assume it's only changing after 6 decimal points. Plugging this new answer in and I got that beautiful green check mark.
+assume it's only changing after 6 decimal points. Plugging this new answer in and I got that beautiful green check mark. Total runtime is 0.567241 seconds.
+
+----------------------------------------------------
+* Iterative Approach: Part 3:
+----------------------------------------------------
+
+After seeing how much quicker it was to go through all of the possible game states than to calculate the expected score for each game state (even though the data structures are
+roughly equivalent in size) I decided to calculate the expected scores in an iterative way as opposed to a recursive way (I guess you could say this is a dynamic programing approach).
+The logic is identical, however, instead of starting at the top of the triangle and recurively making our way down to the bottom, we just do entire rows of the triangle at a time,
+going from the bottom to the top. This method gave the total runtime an ~7x speedup, lowering it to 0.0791731 seconds. I honestly thought I'd get more of a speedup, however, being
+in the sub 100ms range is nice as it seemingly runs instantly.
+
+I think there are some other things I can do to increase the runtime a bit. First, I can save a little time by not needing to sort the coprime fractions. I should be able to put them
+into their respective arrays in the appropriate order by doing separate passes where the numerator and denominators are swapped. The second pass will go from the back of the coprime
+vector to the front so that everything stays in the correct order after the flip. Second, I need to take advantage of a built-in find method for finding the correct game state
+expected scores. Currently I just do a brute force iteration until I find what I need which is obviously not ideal. A little testing shows me that implementing these speedups will 
+only take 0.005 seconds off the runtime, implying a majority of the runtime still comes from calculating the expected scores for each round. If I want a more drastic speedup it'll 
+need to happen in that method.
 */
