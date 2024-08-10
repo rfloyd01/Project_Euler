@@ -1,5 +1,5 @@
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h>
+#include <Functions/functions.h>
 #include <cmath>
 
 //arrays with common values
@@ -538,7 +538,7 @@ long long ChineseRemainderTheorem(long long n, long long mod, std::vector<std::p
 	//"mod" isn't a prime number and we're using an equation that only works modulo prime numbers (Lucas' Theory as an example).
 
 	//I've designed this function to work in two different ways, we can either feed it a value for n and mod, and let it 
-	//calculate the conruence equations on it's own, or, we can just enter the congruence equations directly if they've
+	//calculate the congruence equations on it's own, or, we can just enter the congruence equations directly if they've
 	//been calculated elsewhere.
 	bool deleteEquations = false;
 	if (equations == nullptr)
@@ -551,14 +551,14 @@ long long ChineseRemainderTheorem(long long n, long long mod, std::vector<std::p
 		deleteEquations = true; //this flag tells the function to delete the equations vector created in the line above before returning
 
 		std::vector<long long> p_factors = PrimeFactors(mod);
-		long long currentFactor = 1, currentPrime = p_factors[0];
+		long long currentFactor = p_factors[0], currentPrime = p_factors[0];
 
 		for (int i = 1; i < p_factors.size(); i++)
 		{
 			if (p_factors[i] != currentPrime)
 			{
 				equations->push_back({ n % currentFactor, currentFactor });
-				currentFactor = 1;
+				currentFactor = p_factors[i];
 				currentPrime = p_factors[i];
 			}
 			else currentFactor *= currentPrime;
@@ -1795,32 +1795,6 @@ long long gcd(long long a, long long b)
 	else return gcd(b, a % b);
 }
 
-//long long extendedEuclideanGCD(long long a, long long b, long long* x, long long* y)
-//{
-//	//The extended Euclidean GCD algorithm.
-//	//Computes x and y for the equation ax + by = gcd(a, b)
-//
-//	//This current version of the algorithm (which I made for the Chinese Remainder function above)
-//	//assumes that a and b are coprime so gcd(a, b) is just 1.
-//	// Base Case
-//	if (a == 0)
-//	{
-//		*x = 0;
-//		*y = 1;
-//		return b;
-//	}
-//
-//	long long x1, y1; // To store results of recursive call
-//	long long gcd = extendedEuclideanGCD(b % a, a, &x1, &y1);
-//
-//	// Update x and y using results of
-//	// recursive call
-//	*x = y1 - (b / a) * x1;
-//	*y = x1;
-//
-//	return gcd;
-//}
-
 long long extendedEuclideanGCD(long long a, long long b, long long* x, long long* y)
 {
 	//The extended Euclidean GCD algorithm.
@@ -1828,23 +1802,122 @@ long long extendedEuclideanGCD(long long a, long long b, long long* x, long long
 
 	//This current version of the algorithm (which I made for the Chinese Remainder function above)
 	//assumes that a and b are coprime so gcd(a, b) is just 1.
-	*x = 0;
-	*y = 0;
-	long long u = 1, v = 0;
-	while (a != 0)
+	// Base Case
+	if (a == 0)
 	{
-		long long q = b / a, r = b % a;
-		long long m = *x - u * q, n = *y - v * q;
-		b = a;
-		a = r;
-		*x = u;
-		*y = v;
-		u = m;
-		v = n;
+		*x = 0;
+		*y = 1;
+		return b;
 	}
-	//gcd = b
-	return 0;
+
+	long long x1, y1; // To store results of recursive call
+	long long gcd = extendedEuclideanGCD(b % a, a, &x1, &y1);
+
+	// Update x and y using results of
+	// recursive call
+	*x = y1 - (b / a) * x1;
+	*y = x1;
+
+	return gcd;
 }
+
+long long lcm(long long x, long long y)
+{
+	std::vector<int> nums = { (int)x, (int)y };
+	return lcm(nums);
+}
+
+long long lcm(std::vector<int>& nums)
+{
+	//Generate all parimes less than or equal to the maximum number of the given vector
+	std::vector<int> primez = primes(*std::max_element(nums.begin(), nums.end()));
+	std::vector<int> primeFactorCount(primez.size(), 0);
+
+	for (int i = 0; i < nums.size(); i++)
+	{
+		int num_copy = nums[i];
+		for (int j = 0; j < primez.size(); j++)
+		{
+			int divisibility_count = 0;
+			while (num_copy % primez[j] == 0)
+			{
+				divisibility_count++;
+				num_copy /= primez[j];
+			}
+
+			if (divisibility_count > primeFactorCount[j]) primeFactorCount[j] = divisibility_count;
+			if (num_copy == 1) break;
+		}
+	}
+
+	long long LCM = 1;
+	for (int i = 0; i < primeFactorCount.size(); i++) LCM *= MyPow(primez[i], primeFactorCount[i]);
+
+	return LCM;
+}
+
+long long lcmOverRange(int start, int end, int skip)
+{
+	//A shorthand way to utilize the above lcm() method. Will aoutomatically 
+	//create an array of numbers to test the lcm of based on the inputs.
+	std::vector<int> nums;
+	for (int i = start; i <= end; i += skip) nums.push_back(i);
+	return lcm(nums);
+}
+
+std::pair<std::pair<long long, long long>, std::pair<long long, long long>> linearDiophantineSolver(long long a, long long b, long long c)
+{
+	//This method solves linear Diophantine equations of the form Ax + By = C. It gives solutions as a pair of pairs
+	//where the first pair contains the values {x_0, -B / GCD(A, B)} and the second pair contains the values {y_0, A / GCD(A, B)}.
+	//An infinite number of solutions can be found with these values via the equations:
+	//
+	//x_k = x_0 - kB / GCD(A, B)
+	//y_k = y_0 + kA / GCD(A, B)
+	//
+	//If there are no solutions to the Diophantine equation this method returns a nullptr.
+
+	bool negativeMultipliers[2] = { a < 0, b < 0 };
+	long long x0, y0;
+	long long gcd = extendedEuclideanGCD(a * (-1 * negativeMultipliers[0] + 1 * !negativeMultipliers[0]), b * (-1 * negativeMultipliers[1] + 1 * !negativeMultipliers[1]), &x0, &y0);
+
+	std::pair<std::pair<long long, long long>, std::pair<long long, long long>> governingEquations;
+	if (c % gcd == 0)
+	{
+		long long cMultiplier = c / gcd;
+		x0 *= cMultiplier * (-1 * negativeMultipliers[0] + 1 * !negativeMultipliers[0]);
+		y0 *= cMultiplier * (-1 * negativeMultipliers[1] + 1 * !negativeMultipliers[1]);
+
+		governingEquations.first = { x0, -b / gcd };
+		governingEquations.second = { y0, a / gcd };
+	}
+
+	return governingEquations;
+}
+
+//long long extendedEuclideanGCD(long long a, long long b, long long* x, long long* y)
+//{
+//	//The extended Euclidean GCD algorithm.
+//	//Computes x and y for the equation ax + by = gcd(a, b)
+//
+//	//This current version of the algorithm (which I made for the Chinese Remainder function above)
+//	//assumes that a and b are coprime so gcd(a, b) is just 1.
+//	*x = 0;
+//	*y = 0;
+//	long long u = 1, v = 0;
+//	while (a != 0)
+//	{
+//		long long q = b / a, r = b % a;
+//		long long m = *x - u * q, n = *y - v * q;
+//		b = a;
+//		a = r;
+//		*x = u;
+//		*y = v;
+//		u = m;
+//		v = n;
+//	}
+//	//gcd = b
+//	return 0;
+//}
 
 bool coprime(int a, int b)
 {

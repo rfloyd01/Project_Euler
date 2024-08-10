@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes PrimeFactors() and <vector>
+#include <Functions/functions.h> //includes PrimeFactors() and <vector>
 #include <Header_Files/print.h> //includes vprint()
 #include <map>
 

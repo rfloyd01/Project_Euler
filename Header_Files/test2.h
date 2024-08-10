@@ -1,5 +1,5 @@
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes permutationsOfPartitions()
+#include <Functions/functions.h> //includes permutationsOfPartitions()
 #include <iostream>
 #include <Header_Files/int_64x.h>
 

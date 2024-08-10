@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h>
+#include <Functions/functions.h>
 
 //Champernowne's Constant
 std::pair<std::string, double> q40()

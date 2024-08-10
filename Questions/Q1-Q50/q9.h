@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes gcd()
+#include <Functions/functions.h> //includes gcd()
 
 //Special Pythagorean triplet
 std::pair <std::string, double> q9()

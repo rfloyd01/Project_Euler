@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h> //There are a few header files needed to make the below code work, so included them in a precompiled header file
-#include <Header_Files/functions.h> //includes powers_of_ten[]
+#include <Functions/functions.h> //includes powers_of_ten[]
 #include <vector>
 
 //Pandigital Multiples

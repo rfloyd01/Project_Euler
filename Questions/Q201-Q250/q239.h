@@ -1,5 +1,5 @@
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes primes(), is_prime()
+#include <Functions/functions.h> //includes primes(), is_prime()
 #include <Header_Files/print.h> //includes vprint()
 #include <Header_Files/int_64x.h>
 #include <iostream>

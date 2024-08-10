@@ -3,7 +3,7 @@
 #include <Header_Files/pch.h>
 #include <fstream>
 #include <Header_Files/int_64x.h>
-#include <Header_Files/functions.h>
+#include <Functions/functions.h>
 
 //Large sum
 std::pair<std::string, double> q13()

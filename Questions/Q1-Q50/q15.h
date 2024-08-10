@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes choose()
+#include <Functions/functions.h> //includes choose()
 
 //Lattice paths
 std::pair<std::string, double> q15()

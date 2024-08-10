@@ -1,5 +1,5 @@
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes polynomial_multiply(), polcoeff() and <vector>
+#include <Functions/functions.h> //includes polynomial_multiply(), polcoeff() and <vector>
 #include <iostream>
 #include <queue>
 

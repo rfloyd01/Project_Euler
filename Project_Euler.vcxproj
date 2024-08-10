@@ -145,17 +145,23 @@
   <ItemGroup>
     <ClCompile Include="BigInt_128.cpp" />
     <ClCompile Include="big_number.cpp" />
-    <ClCompile Include="functions.cpp" />
+    <ClCompile Include="Functions\functions.cpp" />
+    <ClCompile Include="Functions\modular_math.cpp" />
+    <ClCompile Include="Functions\montgomery_space.cpp" />
     <ClCompile Include="int_64.cpp" />
     <ClCompile Include="int_64x.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="print.cpp" />
+    <ClCompile Include="uint128_t.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="array_arrays.h" />
     <ClInclude Include="Code_Parse.h" />
     <ClInclude Include="Frequency_Calculations.h" />
+    <ClInclude Include="Functions\functions.h" />
+    <ClInclude Include="Functions\modular_math.h" />
+    <ClInclude Include="Functions\montgomery_space.h" />
     <ClInclude Include="Header_Files\bigint.h" />
     <ClInclude Include="Header_Files\BigInt_128.h" />
     <ClInclude Include="Header_Files\big_number.h" />
@@ -164,7 +170,6 @@
     <ClInclude Include="Header_Files\DataStructures_Algorithms\graph.h" />
     <ClInclude Include="Header_Files\DataStructures_Algorithms\list.h" />
     <ClInclude Include="Header_Files\DataStructures_Algorithms\node.h" />
-    <ClInclude Include="Header_Files\functions.h" />
     <ClInclude Include="Header_Files\int_64.h" />
     <ClInclude Include="Header_Files\int_64x.h" />
     <ClInclude Include="Header_Files\pch.h" />
@@ -174,6 +179,7 @@
     <ClInclude Include="Header_Files\template.h" />
     <ClInclude Include="Header_Files\test.h" />
     <ClInclude Include="Header_Files\test2.h" />
+    <ClInclude Include="Header_Files\uint128_t.h" />
     <ClInclude Include="Pet_Detective.h" />
     <ClInclude Include="q247.h" />
     <ClInclude Include="Questions\Hackerrank\Counting_Blocks_I.h" />

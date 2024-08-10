@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes char_to_int()
+#include <Functions/functions.h> //includes char_to_int()
 
 //Largest product in a series
 std::pair<std::string, double> q8()

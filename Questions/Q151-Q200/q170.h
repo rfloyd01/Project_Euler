@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes []powers_of_ten
+#include <Functions/functions.h> //includes []powers_of_ten
 #include <Header_Files/print.h>
 #include <vector>
 #include <cmath>

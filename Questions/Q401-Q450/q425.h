@@ -2,7 +2,7 @@
 
 #include <Header_Files/pch.h>
 #include <Header_Files/print.h>
-#include <Header_Files/functions.h> //includes primeNumberTest(), powers_of_ten[]
+#include <Functions/functions.h> //includes primeNumberTest(), powers_of_ten[]
 #include <vector>
 #include <fstream>
 

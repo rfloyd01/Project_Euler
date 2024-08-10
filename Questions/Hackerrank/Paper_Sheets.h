@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h>
+#include <Functions/functions.h>
 #include <Header_Files/SLL.h>
 
 //Paper sheets of standard sizes: an expected-value problem

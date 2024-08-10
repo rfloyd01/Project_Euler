@@ -67,12 +67,12 @@
     <Filter Include="Header Files\Questions\Q851-Q900">
       <UniqueIdentifier>{dac80b1c-ec38-42d3-9c7e-de0deaa59e4c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Functions">
+      <UniqueIdentifier>{b7c453c9-fcd2-488a-a462-5d0910f4c3df}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="functions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="print.cpp">
@@ -92,6 +92,18 @@
     </ClCompile>
     <ClCompile Include="int_64.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Functions\functions.cpp">
+      <Filter>Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="Functions\modular_math.cpp">
+      <Filter>Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="uint128_t.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Functions\montgomery_space.cpp">
+      <Filter>Functions</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -166,9 +178,6 @@
     </ClInclude>
     <ClInclude Include="Questions\q1-q50\q23.h">
       <Filter>Header Files\Questions\Q1-Q50</Filter>
-    </ClInclude>
-    <ClInclude Include="Header_Files\functions.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Header_Files\pch.h">
       <Filter>Header Files</Filter>
@@ -601,6 +610,18 @@
     </ClInclude>
     <ClInclude Include="Questions\Q851-Q900\q860.h">
       <Filter>Header Files\Questions\Q851-Q900</Filter>
+    </ClInclude>
+    <ClInclude Include="Functions\functions.h">
+      <Filter>Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="Functions\modular_math.h">
+      <Filter>Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="Header_Files\uint128_t.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Functions\montgomery_space.h">
+      <Filter>Functions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

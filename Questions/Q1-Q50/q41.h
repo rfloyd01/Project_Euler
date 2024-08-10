@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h> //There are a few header files needed to make the below code work, so included them in a precompiled header file
-#include <Header_Files/functions.h> //includes primeNumberTest(), []powers_of_two
+#include <Functions/functions.h> //includes primeNumberTest(), []powers_of_two
 
 //Pandigital Prime
 void checkAllPandigitals(int number_of_digits, long long& answer, int current_level, long long current_number, uint16_t used_numbers, const int *two_powers, bool &cont)

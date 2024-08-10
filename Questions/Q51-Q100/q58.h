@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes primeNumberTest()
+#include <Functions/functions.h> //includes primeNumberTest()
 
 //Spiral Primes
 std::pair<std::string, double> q58()

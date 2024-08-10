@@ -1,6 +1,6 @@
 #include <Header_Files/pch.h>
 #include <cmath>
-#include <Header_Files/functions.h>
+#include <Functions/functions.h>
 #include <Header_Files/print.h>
 
 //Lattice points on a circle

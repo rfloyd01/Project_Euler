@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h>
+#include <Functions/functions.h>
 
 //Counting Fractions
 void FindAnswer(std::vector<int>& prims, long long* triangle, int& limit, long long& ans, int current_location, int current_number, int level)

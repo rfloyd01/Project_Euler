@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes NumberOfFactors()
+#include <Functions/functions.h> //includes NumberOfFactors()
 
 //Highly divisible triangular number
 int efficientNumberOfFactors(int n, std::vector<int>& primez)

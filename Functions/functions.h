@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <algorithm>
 
 //arrays with common values
 extern const int powers_of_two[11]; // = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024 };
@@ -56,6 +57,10 @@ long long factorial(int n);
 int gcd(int a, int b);
 long long gcd(long long a, long long b);
 long long extendedEuclideanGCD(long long a, long long b, long long *x, long long *y);
+long long lcm(std::vector<int>& nums);
+long long lcm(long long x, long long y);
+long long lcmOverRange(int start, int end, int skip);
+std::pair<std::pair<long long, long long>, std::pair<long long, long long>> linearDiophantineSolver(long long a, long long b, long long c);
 bool coprime(int a, int b);
 int numberOfDigits(long long n);
 void FaraySequence(int maximum, std::vector<fraction>& pairs, fraction low = { 0, 1 }, fraction high = { 1, 1 }, bool new_pair = false);

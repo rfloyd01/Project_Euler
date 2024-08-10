@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes primes()
+#include <Functions/functions.h> //includes primes()
 
 //Prime Summations
 std::pair<std::string, double> q77()

@@ -2,7 +2,7 @@
 
 #include <Header_Files/pch.h>
 #include <Header_Files/int_64x.h>
-#include <Header_Files/functions.h>
+#include <Functions/functions.h>
 
 //Exploring the number of different ways a number can be expressed as a sum of powers of 2
 std::pair<std::string, double> q169()

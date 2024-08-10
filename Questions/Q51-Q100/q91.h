@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes fraction, FaraySequence
+#include <Functions/functions.h> //includes fraction, FaraySequence
 
 //Right Triangles with Integer Coordinates
 std::pair<std::string, double> q91()

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes nonRotatedPermutations() and MyPow()
+#include <Functions/functions.h> //includes nonRotatedPermutations() and MyPow()
 
 //Circular primes
 std::pair<std::string, double> q35()

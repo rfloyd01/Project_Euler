@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes []powers_of_two, []powers_of_ten
+#include <Functions/functions.h> //includes []powers_of_two, []powers_of_ten
 #include <fstream>
 
 //Passcode Derivation

@@ -2,7 +2,7 @@
 
 #include <Header_Files/pch.h>
 #include <Header_Files/print.h>
-#include <Header_Files/functions.h> //includes coprime
+#include <Functions/functions.h> //includes coprime
 #include <algorithm>
 
 //Digit Sum Numbers

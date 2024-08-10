@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes ModPow()
+#include <Functions/functions.h> //includes ModPow()
 
 //Self Powers
 

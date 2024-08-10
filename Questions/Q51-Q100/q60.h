@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes primes(), primeNumberTest(), numberOfDigits(), []powers_of_ten
+#include <Functions/functions.h> //includes primes(), primeNumberTest(), numberOfDigits(), []powers_of_ten
 #include <cmath> //includes pow()
 
 //Prime Pair Sets

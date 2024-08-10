@@ -619,6 +619,7 @@ void int_64x::FastMultiplication(const int_64x& num)
 
 		num_copy[k] += 1;
 		negative[1] = true;
+		uint16_t yo;
 	}
 
 	//we need to resize *this so that the multiplication will fit into it, the new size will be equal to the number of 64-bit words in

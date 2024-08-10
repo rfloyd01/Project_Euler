@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes BigNum:, <vector>
+#include <Functions/functions.h> //includes BigNum:, <vector>
 #include <Header_Files/print.h>
 #include <Header_Files/int_64x.h>
 

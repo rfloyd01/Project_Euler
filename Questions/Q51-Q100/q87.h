@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes primes()
+#include <Functions/functions.h> //includes primes()
 #include <Header_Files/print.h>
 #include <vector>
 #include <cmath>

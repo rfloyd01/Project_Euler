@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes gcd()
+#include <Functions/functions.h> //includes gcd()
 #include <iomanip>
 
 //The Mouse on the Moon

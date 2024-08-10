@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //include MyPow()
+#include <Functions/functions.h> //include MyPow()
 #include <vector>
 
 //Double-base palindromes

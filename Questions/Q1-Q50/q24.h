@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes factorial(), int_to_char()
+#include <Functions/functions.h> //includes factorial(), int_to_char()
 #include <vector>
 #include <cmath> //includes ceil()
 

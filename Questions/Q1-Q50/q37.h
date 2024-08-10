@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes p_sieve(), <vector>
+#include <Functions/functions.h> //includes p_sieve(), <vector>
 #include <algorithm>
 
 //Truncatable primes

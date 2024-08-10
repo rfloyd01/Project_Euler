@@ -1,5 +1,5 @@
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h>
+#include <Functions/functions.h>
 #include <iostream>
 
 long long permutationsOfPartitionsMod(long long n, long long l, long long maximum, long long minimum, long long mod, long long* facts)

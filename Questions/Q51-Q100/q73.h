@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h>
+#include <Functions/functions.h>
 
 //Counting Fractions in a Range
 void generateFaraySequence(int &ans, fraction low = { 1, 3 }, fraction high = { 1, 2 }, bool new_pair = false)

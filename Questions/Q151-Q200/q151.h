@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h>
+#include <Functions/functions.h>
 
 //Paper sheets of standard sizes: an expected-value problem
 void recursiveCreateEnvelopesInOrder(int max_length, int paper_left, long long current_envelope, int current_level, long long total_sheets, double* expected_values, long long* adder,

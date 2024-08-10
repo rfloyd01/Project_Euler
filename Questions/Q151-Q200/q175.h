@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //MyPow
+#include <Functions/functions.h> //MyPow
 
 //Fractions involving the number of different ways a number can be expressed as a sum of powers of 2
 std::pair<std::string, double> q175()

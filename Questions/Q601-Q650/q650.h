@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/functions.h> //includes ModMult()
+#include <Functions/functions.h> //includes ModMult()
 #include <Header_Files/print.h>
 
 //Divisors of Binomial Product
