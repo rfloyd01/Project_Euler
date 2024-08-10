@@ -205,6 +205,7 @@ T BinomialModLargePrime(T n, T k, T m, long long* factorials)
 }
 
 void modularMultiplicativeInverseRange(int n, long long mod, long long* inverses);
+void modularMultiplicativeInverseRangeNonPrimeModulus(int n, long long mod, long long* inverses);
 void modularMultiplicativeInverseRangeOverflowSafe(int n, long long mod, long long* inverses);
 
 long long MyPow(long long x, unsigned long long p);

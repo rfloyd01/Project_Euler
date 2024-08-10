@@ -3,96 +3,9 @@
 #include <Header_Files/pch.h>
 #include <Header_Files/print.h>
 #include <Functions/functions.h>
-#include <Functions/modular_math.h>
-#include <Header_Files/uint128_t.h>
-#include <Header_Files/int_64x.h>
+#include <Functions/montgomery_space.h>
 
 #include <set>
-
-unsigned long long Karatsuba32Bit(const unsigned int& num1, const unsigned int& num2)
-{
-	//First check for trivial multiplications
-	if (num1 == 0 || num2 == 0) return 0;
-	else if (num1 == 1) return num2;
-	else if (num2 == 1) return num1;
-
-	int a = num1 >> 16, b = num1 & 0xFFFF, c = num2 >> 16, d = num2 & 0xFFFF;
-	unsigned int Z2 = a * c, Z0 = b * d;
-
-	//Create Z1 as an unsigned 128-bit integer by multiplying (B - A) and (C - D). If this 
-	//multiplication results in a negative 64-bit number than any necessary leading 1 bits
-	//are automatically added to Z1 due to how signed integers are casted into uint128_t.
-	//This is the reason why A,B,C and D were created as signed integers as opposed to unsigned ones.
-	int ba = b - a, cd = c - d;
-	int bacd = ba * cd;
-
-	unsigned long long Z1;
-	if ((ba & 0x80000000) == (cd & 0x80000000) && (bacd & 0x80000000))
-	{
-		Z1 = unsigned int((b - a) * (c - d));
-	}
-	else if ((ba & 0x80000000) != (cd & 0x80000000) && !(bacd & 0x80000000))
-	{
-		Z1 = (b - a) * (c - d);
-		if (bacd != 0 ) Z1 |= 0xFFFFFFFF00000000;
-	}
-	else
-	{
-		Z1 = (b - a) * (c - d);
-	}
-
-	//Adding Z2 and Z0 together could cause overflow since they are both positive 64-bit numbers.
-	//Add them to Z1 individually as the uint128_t class can handle 64-bit additions without overflow.
-	//Once Z2 and Z0 are added, Z1 will be guaranteed to be a positive number instead of a positive
-	//representation of a negative number (i.e. it's lead bit will be a 0).
-	Z1 += Z2;
-	Z1 += Z0;
-
-	//Right shift Z1 by 32 and then add Z0
-	Z1 <<= 16;
-	Z1 += Z0;
-
-	//Add Z2 to the most significant 32-bits of Z1 (it should be possible to do this
-	//without casting Z2 to an unsigned long long, this was just easier for now).
-	Z1 += (unsigned long long)Z2 << 32;
-
-	return Z1;
-}
-
-unsigned long long Karatsuba32BitSimple(const unsigned int& num1, const unsigned int& num2)
-{
-	//First check for trivial multiplications
-	if (num1 == 0 || num2 == 0) return 0;
-	else if (num1 == 1) return num2;
-	else if (num2 == 1) return num1;
-
-	int a = num1 >> 16, b = num1 & 0xFFFF, c = num2 >> 16, d = num2 & 0xFFFF;
-	unsigned int Z2 = a * c, Z0 = b * d;
-
-	//Create Z1 as an unsigned 128-bit integer by multiplying (B - A) and (C - D). If this 
-	//multiplication results in a negative 64-bit number than any necessary leading 1 bits
-	//are automatically added to Z1 due to how signed integers are casted into uint128_t.
-	//This is the reason why A,B,C and D were created as signed integers as opposed to unsigned ones.
-	unsigned long long Z1 = (b - a);
-	Z1 *= (c - d);
-
-	//Adding Z2 and Z0 together could cause overflow since they are both positive 64-bit numbers.
-	//Add them to Z1 individually as the uint128_t class can handle 64-bit additions without overflow.
-	//Once Z2 and Z0 are added, Z1 will be guaranteed to be a positive number instead of a positive
-	//representation of a negative number (i.e. it's lead bit will be a 0).
-	Z1 += Z2;
-	Z1 += Z0;
-
-	//Right shift Z1 by 32 and then add Z0
-	Z1 <<= 16;
-	Z1 += Z0;
-
-	//Add Z2 to the most significant 32-bits of Z1 (it should be possible to do this
-	//without casting Z2 to an unsigned long long, this was just easier for now).
-	Z1 += (unsigned long long)Z2 << 32;
-
-	return Z1;
-}
 
 bool testCRT(long long a, long long m, long long b, long long n, std::pair<long long, long long>* solution)
 {
@@ -254,17 +167,27 @@ void mySolve(int n, unsigned long long usedModuli, std::pair<long long, long lon
 
 std::pair<std::string, long double> test()
 {          
-	srand(std::chrono::steady_clock::now().time_since_epoch().count()); //set a new random generator seed
-	long long answer = 0;
-
 	auto run_time = std::chrono::steady_clock::now();
+	long long answer = 0;
 	
-	unsigned long long a = -2, b = 2, n = -1;
-	long long yo = MontgomeryMultiplication64Bit(a, b, n);
+	const uint64_t mod = 17;
+	MontgomerySpace space(mod);
+	space.calculateInverses(mod - 1);
+	
+	/*for (int i = 1; i < mod; i++)
+	{
+		std::cout << "Inverse of " << i << "_m (mod " << mod << ") = " << space.getInverses()[i].value << "_m" << std::endl;
+		std::cout << "Inverse of " << i << " (mod " << mod << ") = " << space.Revert(space.getInverses()[space.Transform(i).value]) << std::endl << std::endl;
+	}*/
 
-	uint128_t x = ~(0ULL) - 1, y = 2, m = ~(0ULL);
-	unsigned long long yote = ((x * y) % m).getWords()[0];
-	//std::cout << x / y << std::endl;
+	//Calculate all possible divisions
+	for (int i = 1; i < mod; i++)
+	{
+		MontgomeryNumber test = space.Transform(720720);
+		MontgomeryNumber div = space.Transform(i);
+
+		std::cout << space.Revert(test) << " / " << space.Revert(div) << " (mod " << mod << ") = " << space.Revert(space.Divide(test, div)) << std::endl;
+	}
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 

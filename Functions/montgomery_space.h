@@ -14,6 +14,7 @@ public:
 	MontgomerySpace(uint64_t n);
 
 	void calculateInverses(uint64_t range);
+	std::vector<MontgomeryNumber> const& getInverses() { return this->inverses; }
 
 	MontgomeryNumber Transform(uint64_t a);
 	uint64_t Revert(MontgomeryNumber _a);

@@ -884,6 +884,11 @@ void modularMultiplicativeInverseRange(int n, long long mod, long long* inverses
 	//batch inversion technique. The array is created using only a single division and 3n multiplications. There
 	//are three times as many operations required for this function as there are to just take all of the
 	//inverses individually, but the operations are much quicker than taking the inverses.
+	if (!primeNumberTest(mod))
+	{
+		modularMultiplicativeInverseRangeNonPrimeModulus(n, mod, inverses);
+		return;
+	}
 
 	inverses[0] = 1; inverses[1] = 1; //in case they aren't already, set 0 and 1 inverses to 1
 	if (mod >= 3037000499 || n >= 3037000499)
@@ -905,7 +910,7 @@ void modularMultiplicativeInverseRange(int n, long long mod, long long* inverses
 	//because everything I've read online says that for modular multiplication,
 	//(a * b) % m == ((a % m) * (b % m)) % m. If things start acting fishy with this function 
 	//then this will be my first smoking gun.
-	
+
 	//if (mod <= n)
 	//{
 	//	//if mod is a small number, like 7 for instance, we'll need to mod values before even
@@ -935,6 +940,51 @@ void modularMultiplicativeInverseRange(int n, long long mod, long long* inverses
 		long long temp = inverses[i];
 		inverses[i] = (inverses[i + 1] * (i + 1)) % mod;
 		inverses[i + 1] = (inverses[i + 1] * temp) % mod;
+	}
+}
+void modularMultiplicativeInverseRangeNonPrimeModulus(int n, long long mod, long long* inverses)
+{
+	//If the modulus isn't prime then it's possible that not every number in the specified range will
+	//actually have an inverse. We need to check that the GCD between each number and the modulus is 1
+	//before making calculations
+	inverses[0] = 1; inverses[1] = 1; //in case they aren't already, set 0 and 1 inverses to 1
+	long long j = 1;
+	for (long long i = 2; i <= n; i++)
+	{
+		if (gcd(i, mod) == 1)
+		{
+			inverses[i] = (i * inverses[j]) % mod;
+			j = i;
+		}
+		else inverses[i] = 0;
+	}
+
+	//iterate from the back of the array towards the front, finding the
+	//first non-zero value, and calculate its inverse
+	long long i = n;
+	while (i > 0)
+	{
+		if (inverses[i] != 0)
+		{
+			inverses[i] = ModularMultiplicativeInverse(inverses[i], mod); //the sole division takes place on the last element
+			j = n;
+			break;
+		}
+		i--;
+	}
+
+	i--;
+
+	for (; i >= 0; i--)
+	{
+		if (inverses[i] != 0)
+		{
+			long long temp = inverses[i];
+			inverses[i] = (inverses[j] * (j)) % mod;
+			inverses[j] = (inverses[j] * temp) % mod;
+			j = i;
+		}
+
 	}
 }
 void modularMultiplicativeInverseRangeOverflowSafe(int n, long long mod, long long* inverses)

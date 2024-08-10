@@ -1,6 +1,7 @@
 #include "montgomery_space.h"
 
 #include <Header_Files/uint128_t.h>
+#include "Functions/functions.h"
 #include <cmath>
 
 MontgomerySpace::MontgomerySpace(uint64_t n)
@@ -37,24 +38,19 @@ MontgomerySpace::MontgomerySpace(uint64_t n)
 
 void MontgomerySpace::calculateInverses(uint64_t range)
 {
-	//Using the Montgomery Batch Inversion technique, create the Modular Multiplicative
-	//inverses mod n for 0 through range.
+	//Calculate the inverses outside of Montgomery space and then convert them to their
+	//Montgomery Form
+	//TODO: It may be beneficial to copy the code for modularMultiplicativeInverseRange() here
+	//so that functions.h doesn't need to be included in the header file. This way a circular
+	//reference can be avoided if we ever wanted to include montgomery_space.h inside of functions.
+	long long* inverses = new long long[range + 1];
+	modularMultiplicativeInverseRange(range, this->n, inverses);
+	for (int i = 0; i <= range; i++) this->inverses.push_back({ 0 });
 
-	//First, set the inverses for 0 and 1 to be 1
-	inverses.push_back({ 1 });
-	inverses.push_back({ 1 });
-
-	for (uint64_t i = 2; i <= range; i++)
+	for (int i = 1; i <= range; i++)
 	{
-		inverses.push_back(Multiply({i}, inverses.back()));
-	}
-	inverses[range] = MontgomeryInverse(inverses[range]); //the sole division takes place on the last element
-
-	for (uint64_t i = range - 1; i >= 0; i--)
-	{
-		MontgomeryNumber temp = inverses[i];
-		inverses[i] = Multiply(inverses[i + 1], { i + 1 });
-		inverses[i + 1] = Multiply(inverses[i + 1], temp);
+		MontgomeryNumber num = Transform(i);
+		this->inverses[num.value] = Transform(inverses[i]);
 	}
 }
 
@@ -95,8 +91,10 @@ MontgomeryNumber MontgomerySpace::Multiply(MontgomeryNumber _a, MontgomeryNumber
 MontgomeryNumber MontgomerySpace::Divide(MontgomeryNumber _a, MontgomeryNumber _b)
 {
 	//The division a / b in Montgomery space is the same thing as multiuplying
-	//by the modular multiplicative inverse.
-	return { Multiply(_a, MontgomeryInverse(_b)) };
+	//by the modular multiplicative inverse. If any inverses have been precalculated
+	//use them, otherwise manually compute the inverse
+	if (this->inverses.size() >= _b.value) return { Multiply(_a, this->inverses[_b.value])};
+	else return { Multiply(_a, MontgomeryInverse(_b)) };
 }
 
 uint64_t MontgomerySpace::REDC(uint64_t t)
