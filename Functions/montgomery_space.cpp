@@ -40,9 +40,18 @@ void MontgomerySpace::calculateInverses(uint64_t range)
 {
 	//Calculate the inverses outside of Montgomery space and then convert them to their
 	//Montgomery Form
+
 	//TODO: It may be beneficial to copy the code for modularMultiplicativeInverseRange() here
 	//so that functions.h doesn't need to be included in the header file. This way a circular
 	//reference can be avoided if we ever wanted to include montgomery_space.h inside of functions.
+
+	//TODO: It's possible that the Montgomery forms of numbers fall outside of the original range
+	//given when "range" is smaller than n - 1. For example, if "range" is 10 and n is 101, then it's
+	//likely that some of the inverses calculated will be larger than the original range of 10. Either
+	//need to increase the length of the inverses array to accomodate these cases, or, create a second
+	//array which can be used for quickly pointing non-Montgomery numbers to their Montgomery equivalent
+	//so that the non-montgomery array can be used.
+
 	long long* inverses = new long long[range + 1];
 	modularMultiplicativeInverseRange(range, this->n, inverses);
 	for (int i = 0; i <= range; i++) this->inverses.push_back({ 0 });

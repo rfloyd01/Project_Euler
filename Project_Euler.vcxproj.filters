@@ -623,6 +623,9 @@
     <ClInclude Include="Functions\montgomery_space.h">
       <Filter>Functions</Filter>
     </ClInclude>
+    <ClInclude Include="Questions\Q351-Q400\q374_monty.h">
+      <Filter>Header Files\Questions\Q351-Q400</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Resources\q11.txt">
