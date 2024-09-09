@@ -626,6 +626,12 @@
     <ClInclude Include="Questions\Q351-Q400\q374_monty.h">
       <Filter>Header Files\Questions\Q351-Q400</Filter>
     </ClInclude>
+    <ClInclude Include="Questions\Q151-Q200\q176.h">
+      <Filter>Header Files\Questions\Q151-Q200</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q151-Q200\q177.h">
+      <Filter>Header Files\Questions\Q151-Q200</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Resources\q11.txt">

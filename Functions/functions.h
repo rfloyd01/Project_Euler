@@ -48,6 +48,25 @@ std::vector<T> PrimeFactors(T number)
 	return p_facts;
 }
 
+template <typename T>
+std::vector<T> DistinctPrimeFactors(T number)
+{
+	//returns a list of the prime factors of number, without repititions
+	std::vector<T> p_facts;
+	T i = 2;
+	while (number > 1)
+	{
+		if (number % i == 0)
+		{
+			p_facts.push_back(i);
+			while (number % i == 0) number /= i;
+		}
+		else i++;
+	}
+
+	return p_facts;
+}
+
 int NumberOfFactors(int n);
 int char_to_int(char a);
 char int_to_char(int a);
