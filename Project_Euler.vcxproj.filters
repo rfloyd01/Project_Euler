@@ -70,6 +70,12 @@
     <Filter Include="Functions">
       <UniqueIdentifier>{b7c453c9-fcd2-488a-a462-5d0910f4c3df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Questions\Q551-Q600">
+      <UniqueIdentifier>{cea07de2-fa8d-4d6f-ae14-237c7f7bf1e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Questions\Q901-Q950">
+      <UniqueIdentifier>{3d40cb1e-4ffb-46f2-a93e-1c26ed793522}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -103,6 +109,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Functions\montgomery_space.cpp">
+      <Filter>Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="Functions\continued_fractions.cpp">
       <Filter>Functions</Filter>
     </ClCompile>
   </ItemGroup>
@@ -631,6 +640,30 @@
     </ClInclude>
     <ClInclude Include="Questions\Q151-Q200\q177.h">
       <Filter>Header Files\Questions\Q151-Q200</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q151-Q200\q185.h">
+      <Filter>Header Files\Questions\Q151-Q200</Filter>
+    </ClInclude>
+    <ClInclude Include="Functions\continued_fractions.h">
+      <Filter>Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q151-Q200\q184.h">
+      <Filter>Header Files\Questions\Q151-Q200</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q551-Q600\q575.h">
+      <Filter>Header Files\Questions\Q551-Q600</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q151-Q200\q192.h">
+      <Filter>Header Files\Questions\Q151-Q200</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q901-Q950\q928.h">
+      <Filter>Header Files\Questions\Q901-Q950</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q901-Q950\q929.h">
+      <Filter>Header Files\Questions\Q901-Q950</Filter>
+    </ClInclude>
+    <ClInclude Include="Questions\Q901-Q950\q936.h">
+      <Filter>Header Files\Questions\Q901-Q950</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

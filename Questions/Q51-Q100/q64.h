@@ -9,39 +9,38 @@
 std::pair<std::string, double> q64()
 {
 	auto run_time = std::chrono::steady_clock::now();
-	int answer = 0;
-	int* square_root_integers = new int[10001];
+	int answer = 0, *square_root_integers = new int[10001];
 	square_root_integers[0] = 0; square_root_integers[10000] = 100;
 
+	//Memoize integer part of sqrt(n) from 1 to 10000
 	for (int i = 1; i < sqrt(10000); i++)
 		for (int j = i * i; j < ((i + 1) * (i + 1)); j++) square_root_integers[j] = i;
 
 	for (int n = 2; n < 10001; n++)
 	{
-		long long period_count = 0, n_root = square_root_integers[n];
+		long long period_count = 1, n_root = square_root_integers[n];
 		if (n == (n_root * n_root)) continue; //skip numbers that are perfect squares
 
-		std::map<std::vector<long long>, bool> used_triplets;
-		std::vector<long long> triple;
+		int triple_0 = n_root, triple_1 = 0, triple_2 = 1;
+		int first_triple_1 = triple_0 * triple_2 - triple_1;
+		int first_triple_2 = (n - (first_triple_1 * first_triple_1)) / triple_2;
+		int first_triple_0 = (n_root + first_triple_1) / first_triple_2;
 
-		triple.push_back(n_root);
-		triple.push_back(0);
-		triple.push_back(1);
-
-		used_triplets[triple] = true;
+		triple_0 = first_triple_0;
+		triple_1 = first_triple_1;
+		triple_2 = first_triple_2;
 
 		while (true)
 		{
-			triple[1] = triple[0] * triple[2] - triple[1];
-			triple[2] = (n - (triple[1] * triple[1])) / triple[2];
-			triple[0] = (n_root + triple[1]) / triple[2];
+			triple_1 = triple_0 * triple_2 - triple_1;
+			triple_2 = (n - (triple_1 * triple_1)) / triple_2;
+			triple_0 = (n_root + triple_1) / triple_2;
 
-			if (used_triplets[triple] == true)
+			if (triple_0 == first_triple_0 && triple_1 == first_triple_1 && triple_2 == first_triple_2)
 			{
 				if (period_count % 2 == 1) answer++;
 				break;
 			}
-			used_triplets[triple] = true;
 			period_count++;
 		}
 	}
@@ -50,7 +49,7 @@ std::pair<std::string, double> q64()
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 1322
-	//ran in 0.0776815 seconds
+	//ran in 0.0030059 seconds
 }
 
 //NOTES

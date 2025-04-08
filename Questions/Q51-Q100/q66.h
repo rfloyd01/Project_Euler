@@ -1,25 +1,30 @@
 #pragma once
 
 #include <Header_Files/pch.h>
-#include <Header_Files/int_64x.h>
+#include <Header_Files/uint128_t.h>
+#include <Functions/continued_fractions.h>
 
 //Diophantine Equation
 std::pair<std::string, double> q66()
 {
 	auto run_time = std::chrono::steady_clock::now();
 
-	int answer = 0;
+	int answer = 0, deepestRoute = 0;
+	uint128_t Maximum = 0;
 	for (int n = 2; n < 1001; n++)
 	{
-		int n_root = sqrt(n);
+		int n_root = sqrt(n), currentRoute = 0;;
 		if (n == (n_root * n_root)) continue; //skip numbers that are perfect squares
 
-		int_64x nums[2] = { 1, n_root }, dens[2] = { 0, 1 }, Maximum = 0;
+		uint128_t nums[2] = { 1, n_root }, dens[2] = { 0, 1 };
 		bool location = false;
 		long long triple[3] = { n_root, 0, 1 };
 
 		while (true)
 		{
+			currentRoute++;
+			if (currentRoute > deepestRoute) deepestRoute = currentRoute;
+
 			//extend down to the next level of the repeated fraction
 			triple[1] = triple[0] * triple[2] - triple[1];
 			triple[2] = (n - (triple[1] * triple[1])) / triple[2];
@@ -48,7 +53,7 @@ std::pair<std::string, double> q66()
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
 	//the answer is 661
-	//ran in 0.0122496 seconds
+	//ran in 0.0016516 seconds
 }
 
 //NOTES
@@ -90,4 +95,11 @@ is. It seems that some people running the slow Python were still able to get the
 numbers larger than 64-bits. The wikipedia page for Pell's equation mentions that an algorithm called the Schönhage–Strassen algorithm for fast integer multiplication can be 
 used to calculate the fundamental solution in logarithmic time. It's been awhile but I think the multiplication technique I used for my int_64x class was based off of the Karatsuba 
 technique so maybe this other technique would give me the speed up I'm looking for.
+*/
+
+//--9/26/24 Update
+/*
+A few months ago I made a 128-bit integer class. It's similar to the int64_x class that I made last year, however, since it's capped out at 128-bits a lot of the 
+calculations are much simpler and faster. The largest number seen for this problem just fits into 128-bits so changing from int_64x to uint128_t types gets the same 
+answer here but runs in 1/10 the runtime.
 */

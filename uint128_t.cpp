@@ -365,6 +365,28 @@ uint128_t& uint128_t::operator=(const uint128_t& num)
 	return *this;
 }
 
+//TYPECAST OPERATORS
+uint128_t::operator int()
+{
+	//Simply take the first word and convert it into an int
+	return (int) this->words[0];
+}
+uint128_t::operator unsigned int()
+{
+	//Simply take the first word and convert it into an unsigned int
+	return (unsigned int)this->words[0];
+}
+uint128_t::operator long long()
+{
+	//Simply take the first word and convert it into a normal long long
+	return (long long)this->words[0];
+}
+uint128_t::operator unsigned long long()
+{
+	//Simply return the first word
+	return this->words[0];
+}
+
 uint128_t uint128_t::Karatsuba64Bit(const unsigned long long& num1, const unsigned long long& num2)
 {
 	//This method multiplies two unsigned 64-bit numbers together to get an unsigned 128-bit number.

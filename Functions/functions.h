@@ -2,13 +2,16 @@
 
 #include <Header_Files/print.h>
 #include <Header_Files/int_64x.h>
+#include <Header_Files/uint128_t.h>
 #include <vector>
 #include <string>
 #include <iostream>
 #include <algorithm>
 
+#define PI 3.14159265358979323846;
+
 //arrays with common values
-extern const int powers_of_two[11]; // = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024 };
+extern const int powers_of_two[16]; // = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024 };
 extern long long powers_of_ten[11]; // = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000 };
 
 struct fraction
@@ -17,6 +20,16 @@ struct fraction
 	int denominator;
 
 	friend bool operator==(const fraction& a, const fraction& b);
+	
+	bool operator < (const fraction& b) const
+	{
+		return (((double)numerator / denominator) < ((double)b.numerator / b.denominator));
+	}
+
+	bool operator > (const fraction& b) const
+	{
+		return (((double)numerator / denominator) > ((double)b.numerator / b.denominator));
+	}
 };
 
 //Prime Number Functions
@@ -66,6 +79,75 @@ std::vector<T> DistinctPrimeFactors(T number)
 
 	return p_facts;
 }
+
+//Square Root Methods
+float fastInverseSquareRoot(float number);
+template <typename T>
+std::vector<T> calculateSquareRootLongDivision(int decimal_places, std::vector<T>& number_pairs, T first_x) {
+	std::vector<T> result;
+
+	T p = 0, x, y = 0, c = 0;
+	int i = 1;
+	while (result.size() < decimal_places)
+	{
+		//Bring down the next digit pair to create c
+		c = 100 * y + (i > number_pairs.size() ? 0 : number_pairs[number_pairs.size() - i]);
+
+		//Calculate x by taking a best guess and then shifting up
+		//or down as necessary
+		if (i == 1)
+		{
+			x = first_x;
+			y = x * (20 * p + x);
+		}
+		else
+		{
+			x = c / (20 * p);
+			y = x * (20 * p + x);
+
+			//x (which will be a single digit number)
+			//should be close to correct. The goal is to 
+			//get y as close as possible to c without exceeding 
+			//it so increment x until y just exceeds c 
+			//and then decrement it back.
+			while (y <= c)
+			{
+				x = x + 1;
+				y = x * (20 * p + x);
+			}
+
+			while (y > c)
+			{
+				x = x - 1;
+				y = x * (20 * p + x);
+			}
+		}
+
+		result.push_back(x); //add x to the result
+
+		//Set y to c - y which will be the remainder for 
+		//the next step
+		y = c - y;
+
+		//If there's no remainder and no more numbers 
+		//to bring down we've found the full square root.
+		//Round off to the necessary decimal places by padding
+		//with 0's.
+		if (y == 0 && i > number_pairs.size())
+		{
+			for (int j = 0; j < decimal_places - result.size(); j++) result.push_back(0);
+			break;
+		}
+
+		//Tak on x to p for the and increment our place in the 
+		//number pair array for the next iteration
+		p = p * 10 + x;
+		i++;
+	}
+
+	return result;
+}
+std::vector<int> precisionSquareRoot(unsigned long long n, int decimal_places);
 
 int NumberOfFactors(int n);
 int char_to_int(char a);
@@ -229,6 +311,7 @@ void modularMultiplicativeInverseRangeOverflowSafe(int n, long long mod, long lo
 
 long long MyPow(long long x, unsigned long long p);
 
+//Vector Arithmetic Functions
 template <typename T>
 void MatrixVectorMult(T* M, T* V, const int size)
 {
@@ -252,6 +335,10 @@ void MatrixVectorMult(T* M, T* V, const int size)
 
 	for (int i = 0; i < size; i++) *(V + i) = temp[i];
 }
+std::vector<int> manualMultiplication(std::vector<int>& a, std::vector<int>& b);
+std::vector<int> convertFractionToDecimalVector(unsigned long long numerator, unsigned long long denominator, int digits);
+std::vector<int> addDecimalVectors(const std::vector<int>& vec1, const std::vector<int>& vec2);
+bool greaterVector(const std::vector<int>& num1, const std::vector<int>& num2);
 
 //Other
 std::vector<long long> mintageCount(long long total_mintage, std::vector<long long> highest_value);

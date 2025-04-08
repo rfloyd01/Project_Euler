@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClCompile Include="BigInt_128.cpp" />
     <ClCompile Include="big_number.cpp" />
+    <ClCompile Include="Functions\continued_fractions.cpp" />
     <ClCompile Include="Functions\functions.cpp" />
     <ClCompile Include="Functions\modular_math.cpp" />
     <ClCompile Include="Functions\montgomery_space.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="array_arrays.h" />
     <ClInclude Include="Code_Parse.h" />
     <ClInclude Include="Frequency_Calculations.h" />
+    <ClInclude Include="Functions\continued_fractions.h" />
     <ClInclude Include="Functions\functions.h" />
     <ClInclude Include="Functions\modular_math.h" />
     <ClInclude Include="Functions\montgomery_space.h" />
@@ -252,6 +254,9 @@
     <ClInclude Include="Questions\Q151-Q200\q176.h" />
     <ClInclude Include="Questions\Q151-Q200\q177.h" />
     <ClInclude Include="Questions\Q151-Q200\q178.h" />
+    <ClInclude Include="Questions\Q151-Q200\q184.h" />
+    <ClInclude Include="Questions\Q151-Q200\q185.h" />
+    <ClInclude Include="Questions\Q151-Q200\q192.h" />
     <ClInclude Include="Questions\Q151-Q200\q200.h" />
     <ClInclude Include="Questions\Q201-Q250\q233.h" />
     <ClInclude Include="Questions\Q201-Q250\q239.h" />
@@ -314,6 +319,7 @@
     <ClInclude Include="Questions\Q51-Q100\q94.h" />
     <ClInclude Include="Questions\Q51-Q100\q95.h" />
     <ClInclude Include="Questions\Q51-Q100\q97.h" />
+    <ClInclude Include="Questions\Q551-Q600\q575.h" />
     <ClInclude Include="Questions\Q601-Q650\q650.h" />
     <ClInclude Include="Questions\Q651-Q700\q684.h" />
     <ClInclude Include="Questions\Q651-Q700\q686.h" />
@@ -331,6 +337,9 @@
     <ClInclude Include="Questions\Q751-Q800\q800.h" />
     <ClInclude Include="Questions\Q851-Q900\q852.h" />
     <ClInclude Include="Questions\Q851-Q900\q860.h" />
+    <ClInclude Include="Questions\Q901-Q950\q928.h" />
+    <ClInclude Include="Questions\Q901-Q950\q929.h" />
+    <ClInclude Include="Questions\Q901-Q950\q936.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Resources\q11.txt" />

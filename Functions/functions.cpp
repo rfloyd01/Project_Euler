@@ -3,7 +3,7 @@
 #include <cmath>
 
 //arrays with common values
-const int powers_of_two[11] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024 };
+const int powers_of_two[16] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
 long long powers_of_ten[11] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000, 10000000000 };
 
 bool operator==(const fraction& a, const fraction& b)
@@ -225,6 +225,81 @@ bool primeNumberTest(long long number)
 		if (quit) return false;
 	}
 	return true;
+}
+
+float fastInverseSquareRoot(float number)
+{
+	//long i;
+	//float x2, y;
+	//const float threehalfs = 1.5F;
+
+	//x2 = number * 0.5F;
+	//y = number;
+	//i = *(long*)&y;						// evil floating point bit level hacking
+	//i = 0x5f3759df - (i >> 1);               // what the fuck?
+	//y = *(float*)&i;
+	//y = y * (threehalfs - (x2 * y * y));   // 1st iteration
+	//y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be removed
+
+	//return y;
+
+	if (number <= 0) {
+		return 0; // Handle non-positive inputs
+	}
+
+	// Step 1: Initial approximation using bit-level manipulation
+	union {
+		float f;
+		int i;
+	} conv = { number }; // Use a union to reinterpret the bits
+
+	conv.i = 0x1fbd1df5 + (conv.i >> 1); // Magic number adjusted for square root
+	float approx = conv.f;
+
+	// Step 2: Newton-Raphson refinement for square root
+	approx = 0.5f * (approx + number / approx);
+
+	// Optional: Perform an additional refinement step for better accuracy
+	//approx = 0.5f * (approx + number / approx);
+
+	return approx;
+}
+
+std::vector<int> precisionSquareRoot(unsigned long long n, int decimal_places)
+{
+	//A method that will calculate the square root of n to the given number of decimal places.
+	//To try and be efficient, different numeric types will be used based on the number of 
+	//decimal places needed.
+	std::vector<int> final_result;
+
+	if (decimal_places <= 17)
+	{
+		unsigned long long n_copy = n;
+		std::vector<unsigned long long> number_pairs;
+		while (n_copy > 0)
+		{
+			number_pairs.push_back(n_copy % 100);
+			n_copy /= 100;
+		}
+		std::vector<unsigned long long> long_result = calculateSquareRootLongDivision(decimal_places,
+			number_pairs, (unsigned long long)sqrt(number_pairs.back()));
+		for (int i = 0; i < long_result.size(); i++) final_result.push_back((int)long_result[i]);
+	}
+	else
+	{
+		int_64x n_copy = n;
+		std::vector<int_64x> number_pairs;
+		while (n_copy > 0)
+		{
+			number_pairs.push_back(n_copy % 100);
+			n_copy /= 100;
+		}
+		std::vector<int_64x> long_result = calculateSquareRootLongDivision(decimal_places,
+			number_pairs, (int_64x)((unsigned int)sqrt((unsigned int)number_pairs.back())));
+		for (int i = 0; i < long_result.size(); i++) final_result.push_back((int)long_result[i]);
+	}
+
+	return final_result;
 }
 
 int NumberOfFactors(int n)
@@ -1973,4 +2048,112 @@ bool coprime(int a, int b)
 {
 	if (gcd(a, b) == 1) return true;
 	return false;
+}
+
+//Vector Arithmetic Functions
+std::vector<int> manualMultiplication(std::vector<int>& a, std::vector<int>& b)
+{
+	//Vectors a and b hold the individual digits of large numbers. This method manually 
+	//multiplies them together. The most significant digits are at the beginning of each 
+	//vector, i.e. the number 12345 would be stored as [1, 2, 3, 4, 5].
+	std::vector<int> result(a.size() + b.size(), 0); //At most the multiplication will be the size of both numbers combined.
+
+	for (int i = a.size() - 1; i >= 0; i--)
+	{
+		int distance_from_back = a.size() - 1 - i;
+		for (int j = b.size() - 1; j >= 0; j--)
+		{
+			result[result.size() - 1 - (distance_from_back++)] += a[i] * b[j];
+		}
+	}
+
+	for (int i = result.size() - 1; i > 0; i--)
+	{
+		result[i - 1] += result[i] / 10;
+		result[i] %= 10;
+	}
+
+	//remove leading 0's
+	std::vector<int> nonZeroedResult;
+	int i = 0;
+	for (; i < result.size(); i++)
+	{
+		if (result[i]) break;
+	}
+
+	for (; i < result.size(); i++)
+	{
+		nonZeroedResult.push_back(result[i]);
+	}
+
+	return nonZeroedResult;
+}
+
+std::vector<int> convertFractionToDecimalVector(unsigned long long numerator, unsigned long long denominator, int digits) {
+	std::vector<int> decimalVector;
+
+	if (denominator == 0) {
+		throw std::invalid_argument("Denominator cannot be zero");
+	}
+
+	// Calculate the integer part
+	unsigned long long integerPart = numerator / denominator;
+	while (integerPart > 0)
+	{
+		decimalVector.insert(decimalVector.begin(), integerPart % 10);
+		integerPart /= 10;
+	}
+	//decimalVector.push_back(integerPart);
+
+	// Calculate the decimal part
+	numerator %= denominator; // Remainder after the integer part
+	for (int i = 0; i < digits; ++i) {
+		numerator *= 10;
+		decimalVector.push_back(numerator / denominator);
+		numerator %= denominator;
+	}
+
+	return decimalVector;
+}
+
+std::vector<int> addDecimalVectors(const std::vector<int>& vec1, const std::vector<int>& vec2) {
+	size_t size = std::max(vec1.size(), vec2.size());
+	std::vector<int> result(size, 0);
+
+	// Extend vectors to the same size
+	std::vector<int> extendedVec1 = vec1;
+	std::vector<int> extendedVec2 = vec2;
+	extendedVec1.resize(size, 0);
+	extendedVec2.resize(size, 0);
+
+	// Perform addition
+	int carry = 0;
+	for (int i = size - 1; i > 0; --i) { // Start from decimal places
+		int sum = extendedVec1[i] + extendedVec2[i] + carry;
+		result[i] = sum % 10;
+		carry = sum / 10;
+	}
+
+	// Handle integer part
+	result[0] = extendedVec1[0] + extendedVec2[0] + carry;
+
+	if (result[0] >= 10)
+	{
+		result.insert(result.begin(), result[0] / 10);
+		result[1] %= 10;
+	}
+
+	return result;
+}
+
+bool greaterVector(const std::vector<int>& num1, const std::vector<int>& num2)
+{
+	//returns true if num1 >= num2
+	for (int i = 0; i < num1.size(); i++)
+	{
+		if (num1[i] < num2[i]) return false;
+		else if (num1[i] > num2[i]) return true;
+	}
+
+	return true;
 }

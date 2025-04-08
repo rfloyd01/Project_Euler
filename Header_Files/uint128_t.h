@@ -5,7 +5,7 @@
 /*
 * This class represents an unsigned 128-bit integer. The largest built-in integer type that works with 
 * most compilers is only 64-bits, so this class doubles that. Unlike the int_64x class that I created,
-* this one is limited at 128-bits which means most of the arithmetic operations becomes much simpler.
+* this one is limited at 128-bits which means most of the arithmetic operations become much simpler.
 * 
 * The main uses for this class will be in functions that are meant to not overflow a standard 64-bit
 * integer, but need 128-bits for some of the intermediate steps. A good example is the ModMult method
@@ -75,6 +75,12 @@ public:
 
 	//ASSIGNMENT OPERATORS
 	uint128_t& operator=(const uint128_t& num);
+
+	//TYPECAST OPERATORS
+	explicit operator int();
+	explicit operator unsigned int();
+	explicit operator long long();
+	explicit operator unsigned long long();
 
 	//OTHER METHODS
 	//std::string getNumberString();

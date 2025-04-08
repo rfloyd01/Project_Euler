@@ -146,7 +146,6 @@ std::pair<std::string, double> q51()
 		}
 		if (!cont) break; //stop searching as soon as an answer is found
 	}
-	//runs in 0.0575925 seconds
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
@@ -161,8 +160,9 @@ std::pair<std::string, double> q51()
 //in the vector will be a pair where the first element is a base 10 number which keeps track of what the non-repeated digits are (in the example above 12451 would be written as
 //0000110120 == 110120) and the second element of the pair will be another vector which holds all prime numbers that fit into that repeated and non-repeated digits category. If
 //a number has more than one set of repeating digits it will be saved in more than one section of the overall container. Once all primes have been sorted through, obtaining the
-//answer should just be a matter of iterating over the primes one last time, seeing which container has a length of 8 and then returning the first element of that vector. Didn't
-//initially find the answer, my theory for this is because not every number has only one representation. For example the prime number 56333 can be represented as either a single
+//answer should just be a matter of iterating over the primes one last time, seeing which container has a length of 8 and then returning the first element of that vector.
+//
+//Didn't initially find the answer, my theory for this is because not every number has only one representation. For example the prime number 56333 can be represented as either a single
 //triple (56xxx) or three different doubles (563xx, 56x3x, and 56xx3). Because some numbers have multiple representations my method isn't properly putting a single number into
 //every category it belongs to. This is a shame because my code currently runs in .04 seconds which is a good amount of time, but the extra code necessary to put a number into 
 //all potential categories will mostly likely slow it down by a good amount. If there's only a pair of matching numbers then nothing will change, however, as soon as a third

@@ -165,29 +165,116 @@ void mySolve(int n, unsigned long long usedModuli, std::pair<long long, long lon
 	}
 }
 
+int globalTestCounter = 0;
+
+void createPartionsOfNWithLengthLTest(int n, int l, int loc, std::vector<int>& current_partition)
+{
+	//First calculate the maximum number that can go in the current location
+	if (l == 0)
+	{
+		//vprint(current_partition);
+		globalTestCounter++;
+	}
+	else
+	{
+		int max = n - l + 1;
+
+		if (max == 1)
+		{
+			//vprint(current_partition);
+			globalTestCounter++;
+			return;
+		}
+		if ((loc > 0) && (max > current_partition[loc - 1])) max = current_partition[loc - 1];
+
+		for (int i = max; i > 0; i--)
+		{
+			//if i * l < n then break loop
+			if (i * l < n) break;
+
+			current_partition[loc] = i;
+			createPartionsOfNWithLengthLTest(n - i, l - 1, loc + 1, current_partition);
+		}
+
+		current_partition[loc] = 1; //reset the current digit
+	}
+
+	return;
+}
+
 std::pair<std::string, long double> test()
 {          
 	auto run_time = std::chrono::steady_clock::now();
 	long long answer = 0;
-	
-	const uint64_t mod = 17;
-	MontgomerySpace space(mod);
-	space.calculateInverses(mod - 1);
-	
-	/*for (int i = 1; i < mod; i++)
-	{
-		std::cout << "Inverse of " << i << "_m (mod " << mod << ") = " << space.getInverses()[i].value << "_m" << std::endl;
-		std::cout << "Inverse of " << i << " (mod " << mod << ") = " << space.Revert(space.getInverses()[space.Transform(i).value]) << std::endl << std::endl;
-	}*/
 
-	//Calculate all possible divisions
-	for (int i = 1; i < mod; i++)
+	for (int nodes = 3; nodes <= 50; nodes++)
 	{
-		MontgomeryNumber test = space.Transform(720720);
-		MontgomeryNumber div = space.Transform(i);
-
-		std::cout << space.Revert(test) << " / " << space.Revert(div) << " (mod " << mod << ") = " << space.Revert(space.Divide(test, div)) << std::endl;
+		std::vector<int> current_partition(nodes, 1);
+		createPartionsOfNWithLengthLTest(2 * (nodes - 1), nodes, 0, current_partition);
 	}
+
+	answer = globalTestCounter;
+	
+	//std::vector<std::vector<std::vector<int> > > all_partitions;
+
+	//int nodes = 50;
+	////getPartitions(2 * (nodes - 1), all_partitions);
+	//getPartitions(13, all_partitions);
+
+	//for (int i = 0; i < all_partitions.size(); i++)
+	//{
+	//	for (int j = 0; j < all_partitions[i].size(); j++)
+	//	{
+	//		//if (all_partitions[i][j].size() == nodes) vprint(all_partitions[i][j]);
+	//		if (all_partitions[i][j].size() == 6) vprint(all_partitions[i][j]);
+	//	}
+	//}
+
+	//int goodPartitionsCount = 0, totalPartitions = 0, goodPartitionsWithSuiteCount = 0;
+
+	//go through all of the partitions and remove any which feature more than 4 of a given digit.
+	/*for (int i = 0; i < all_partitions.size(); i++)
+	{
+		for (int j = 0; j < all_partitions[i].size(); j++)
+		{
+			int count[14] = { 0 };
+			bool good = true;
+			totalPartitions++;
+			for (int k = 0; k < all_partitions[i][j].size(); k++)
+			{
+				if (++count[all_partitions[i][j][k]] > 4)
+				{
+					good = false;
+					break;
+				}
+			}
+
+			if (good)
+			{
+				goodPartitionsCount++;
+				int suiteFactor = 1;
+				for (int k = 1; k < 14; k++)
+				{
+					switch (count[k])
+					{
+					case 0:
+					default: break;
+					case 1:
+					case 3:
+						suiteFactor *= 4;
+						break;
+					case 2: suiteFactor *= 6;
+					}
+				}
+
+				goodPartitionsWithSuiteCount += goodPartitionsCount;
+				vprint(all_partitions[i][j]);
+			}
+		}
+	}
+
+	std::cout << "Out of " << totalPartitions << " total partitions, " << goodPartitionsCount << " contain 4 or less of each digit" << std::endl;
+	std::cout << "There are " << goodPartitionsWithSuiteCount << " distinct ways to make 15 when taking suite into account." << std::endl;*/
 
 	return { std::to_string(answer), std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now() - run_time).count() / 1000000000.0 };
 
